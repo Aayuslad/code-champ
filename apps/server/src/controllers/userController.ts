@@ -8,7 +8,7 @@ import {
 	updatePasswordAfterVerificationSchema,
 	verifyPasswordResetOTPSchema,
 	verifySignupOTPSchema,
-} from "@repo/common/datatypes";
+} from "@repo/common/zod";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 const prisma = new PrismaClient();

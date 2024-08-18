@@ -4,10 +4,13 @@
 	"description": "",
 	"main": "dist/index.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"build": "tsup",
+		"dev": "tsup --watch",
+		"lint": "eslint src/",
+		"typecheck": "tsc --noEmit"
 	},
 	"exports": {
-		"./datatypes": "./datatypes/index.ts"
+		"./zod": "./src/index.ts"
 	},
 	"keywords": [],
 	"author": "",
