@@ -5,7 +5,7 @@ import {
 	sendPasswordResetOTPShema,
 	signinUserSchema,
 	signupUserSchema,
-	updatePasswordAfterVerificationSchema,
+	updatePasswordSchema,
 	verifyPasswordResetOTPSchema,
 	verifySignupOTPSchema,
 } from "@repo/common/zod";
@@ -61,10 +61,12 @@ export async function verifySignupOTP(req: Request, res: Response) {
 	const { otp } = req.body;
 
 	try {
-		const parsed = verifySignupOTPSchema.safeParse(otp);
+		const parsed = verifySignupOTPSchema.safeParse({ otp });
 		if (!parsed.success) return res.status(422).json({ message: "Invalid OTP" });
 
-		if (otp !== req.session.signupOTP) {
+		console.log(req.session.signupOTP, otp);
+
+		if (parseInt(otp) !== req.session.signupOTP) {
 			return res.status(400).json({
 				message: "Wrong OTP",
 			});
@@ -103,7 +105,7 @@ export async function verifySignupOTP(req: Request, res: Response) {
 }
 
 // Retrieves the user's profile
-export async function getUserProfile(req: Request, res: Response) {}
+export async function fetchUserProfile(req: Request, res: Response) {}
 
 // Signs in the user
 export async function signinUser(req: Request, res: Response) {
@@ -156,9 +158,9 @@ export async function signinUser(req: Request, res: Response) {
 }
 
 // Logs out the user
-export async function logoutUser(req: Request, res: Response) {
+export async function signoutUser(req: Request, res: Response) {
 	res.clearCookie("token");
-	return res.json({ message: "logged out" });
+	return res.json({ message: "sign out" });
 }
 
 // Sends an OTP to the user's email when they forget their password
@@ -166,7 +168,7 @@ export async function sendPasswordResetOTP(req: Request, res: Response) {
 	const { email } = req.body;
 
 	try {
-		const parsed = sendPasswordResetOTPShema.safeParse(email);
+		const parsed = sendPasswordResetOTPShema.safeParse({ email });
 		if (!parsed.success) return res.status(422).json({ message: "Invalid email" });
 
 		const user = await prisma.user.findFirst({ where: { email } });
@@ -198,7 +200,7 @@ export async function verifyPasswordResetOTP(req: Request, res: Response) {
 	const { otp } = req.body;
 
 	try {
-		const parsed = verifyPasswordResetOTPSchema.safeParse(otp);
+		const parsed = verifyPasswordResetOTPSchema.safeParse({ otp });
 		if (!parsed.success) return res.status(422).json({ message: "Invalid OTP" });
 
 		if (otp !== req.session.passwordResetOTP) {
@@ -218,11 +220,11 @@ export async function verifyPasswordResetOTP(req: Request, res: Response) {
 }
 
 // Allows the user to update their password after OTP verification
-export async function updatePasswordAfterVerification(req: Request, res: Response) {
-	const { newPassword } = req.body;
+export async function updatePassword(req: Request, res: Response) {
+	const { password } = req.body;
 
 	try {
-		const parsed = updatePasswordAfterVerificationSchema.safeParse(newPassword);
+		const parsed = updatePasswordSchema.safeParse({ password });
 		if (!parsed.success) return res.status(422).json({ message: "Invalid password" });
 
 		if (!req.session.canResetPassword) {
@@ -231,7 +233,7 @@ export async function updatePasswordAfterVerification(req: Request, res: Respons
 			});
 		}
 
-		const passwordWithPepper = newPassword + PEPPER;
+		const passwordWithPepper = password + PEPPER;
 		const hashedPassword = await bcrypt.hash(passwordWithPepper, 10);
 
 		await prisma.user.update({

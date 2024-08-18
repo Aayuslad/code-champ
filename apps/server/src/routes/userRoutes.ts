@@ -2,12 +2,12 @@ import { Router } from "express";
 import {
 	signupUser,
 	verifySignupOTP,
-	getUserProfile,
+	fetchUserProfile,
 	signinUser,
-	logoutUser,
+	signoutUser,
 	sendPasswordResetOTP,
 	verifyPasswordResetOTP,
-	updatePasswordAfterVerification,
+	updatePassword,
 } from "../controllers/userController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 import { sessionMiddleware } from "../middlewares/sessionMiddleware";
@@ -15,12 +15,12 @@ import { sessionMiddleware } from "../middlewares/sessionMiddleware";
 const userRouter = Router();
 
 userRouter.post("/signup", sessionMiddleware, signupUser);
-userRouter.post("/verify-signup-otp", sessionMiddleware, verifySignupOTP);
-userRouter.get("/profile", getUserProfile);
+userRouter.post("/signup/verify-otp", sessionMiddleware, verifySignupOTP);
+userRouter.get("/profile", fetchUserProfile);
 userRouter.post("/signin", signinUser);
-userRouter.post("/logout", authMiddleware, logoutUser);
-userRouter.post("/send-password-reset-otp", sessionMiddleware, sendPasswordResetOTP);
-userRouter.post("/verify-password-reset-otp", sessionMiddleware, verifyPasswordResetOTP);
-userRouter.post("/update-password", sessionMiddleware, updatePasswordAfterVerification);
+userRouter.post("/signout", authMiddleware, signoutUser);
+userRouter.post("/password-reset/send-otp", sessionMiddleware, sendPasswordResetOTP);
+userRouter.post("/password-reset/verify-otp", sessionMiddleware, verifyPasswordResetOTP);
+userRouter.post("/password-reset/update", sessionMiddleware, updatePassword);
 
 export default userRouter;
