@@ -6,6 +6,7 @@
 			"use": "@vercel/node"
 		}
 	],
+	"installCommand": "npm install && npm run build --workspace=@repo/common",
 	"routes": [
 		{
 			"src": "/(.*)",
