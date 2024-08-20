@@ -8,11 +8,7 @@ import cors from "cors";
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-app.use(express.json());
-app.use(cookieParser());
 app.set("trust proxy", 1);
-app.disable("x-powerd-by");
-app.use(express.urlencoded({ extended: true }));
 app.use(
 	cors({
 		origin: ["https://app.code-champ.xyz", "http://localhost:5173"],
@@ -20,6 +16,10 @@ app.use(
 		credentials: true,
 	}),
 );
+app.use(express.json());
+app.use(cookieParser());
+app.disable("x-powerd-by");
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
 	res.send("Welcome, This is code champ server 🔥.");
