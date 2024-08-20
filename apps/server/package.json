@@ -15,6 +15,7 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"@repo/common": "*",
 		"@prisma/client": "^5.18.0",
 		"@types/axios": "^0.14.0",
 		"@types/bcrypt": "^5.0.2",
