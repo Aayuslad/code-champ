@@ -1,6 +1,7 @@
 import express from "express";
 import "dotenv/config";
 import axios from "axios";
+import cookieParser from "cookie-parser";	
 import userRouter from "./routes/userRoutes";
 import cors from "cors";
 
@@ -8,7 +9,10 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(express.json());
+app.use(cookieParser());
 app.set("trust proxy", 1);
+app.disable("x-powerd-by");
+app.use(express.urlencoded({ extended: true }));
 app.use(
 	cors({
 		origin: ["https://app.code-champ.xyz", "http://localhost:5173"],

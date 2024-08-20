@@ -8,7 +8,7 @@ export function sessionMiddleware(req: Request, res: Response, next: NextFunctio
 		saveUninitialized: true,
 		cookie: {
 			maxAge: 5 * 60 * 1000, // 5 minutes
-			secure: true,
+			secure: process.env.NODE_ENV === "production",
 			httpOnly: true,
 			sameSite: "none",
 		},
