@@ -2,15 +2,15 @@
 	"version": 2,
 	"builds": [
 		{
-			"src": "apps/server/src/**/*.ts",
+			"src": "apps/server/package.json",
 			"use": "@vercel/node"
 		}
 	],
-	"installCommand": "npm install && npm run build --workspace=@repo/common",
+	"installCommand": "npm install && npm run build --workspace=@repo/common && npm run build --workspace=apps/server",
 	"routes": [
 		{
 			"src": "/(.*)",
-			"dest": "apps/server/src/index.ts"
+			"dest": "/dist/index.js"
 		}
 	]
 }
