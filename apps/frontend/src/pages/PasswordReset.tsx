@@ -33,8 +33,8 @@ export default function PasswordReset() {
 					placeholder="confirm new password"
 					{...formik.getFieldProps("confirmPassword")}
 				/>
-				<button type="submit" className="border border-black">
-					Reset
+				<button type="submit" className="border border-black" disabled={authStore.buttonLoading}>
+					{authStore.buttonLoading ? "Processing..." : "Reset Password"}
 				</button>
 			</form>
 		</div>

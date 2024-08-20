@@ -2,12 +2,14 @@ import express from "express";
 import "dotenv/config";
 import axios from "axios";
 import userRouter from "./routes/userRoutes";
+import cors from "cors";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(express.json());
 app.set("trust proxy", 1);
+app.use(cors())
 
 app.get("/", (req, res) => {
 	res.send("Welcome, This is code champ server 🔥.");

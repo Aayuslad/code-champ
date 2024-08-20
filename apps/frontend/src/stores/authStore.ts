@@ -2,6 +2,7 @@ import { create } from "zustand";
 import axios from "axios";
 import toast from "react-hot-toast";
 import apiErrorHandler from "../helper/apiCallErrorHandler";
+import navigateTo from "../helper/pageNavigator";
 
 interface authStoreType {
 	userProfile:
@@ -10,8 +11,9 @@ interface authStoreType {
 				email: string;
 		  }
 		| [];
+	buttonLoading: boolean;
 
-	signupUser: (values: { email: string; password: string; userName: string }) => Promise<void>;
+	signupUser: (values?: { email: string; password: string; userName: string }) => Promise<void>;
 	verifySignupOtp: (values: { otp: string }) => Promise<void>;
 	fetchUserProfile: () => Promise<void>;
 	signinUser: (values: { emailOrUsername: string; password: string }) => Promise<void>;
@@ -21,31 +23,40 @@ interface authStoreType {
 	updatePassword: (values: { password: string }) => Promise<void>;
 }
 
-export const AuthStore = create<authStoreType>(() => ({
+export const AuthStore = create<authStoreType>((set) => ({
 	userProfile: [],
+	buttonLoading: false,
 
 	signupUser: async function (values) {
 		try {
+			set({ buttonLoading: true });
 			const result = await axios.post("/user/signup", values);
 			toast.success(result.data.message);
+			navigateTo("/verify-signup-otp");
 		} catch (error) {
 			apiErrorHandler(error);
+		} finally {
+			set({ buttonLoading: false });
 		}
 	},
 
 	verifySignupOtp: async function (values) {
 		try {
-			const result = await axios.post("/user/verify-signup-otp", values);
+			set({ buttonLoading: true });
+			const result = await axios.post("/user/signup/verify-otp", values);
 			toast.success(result.data.message);
+			navigateTo("/home");
 		} catch (error) {
 			apiErrorHandler(error);
+		} finally {
+			set({ buttonLoading: false });
 		}
 	},
 
 	fetchUserProfile: async function () {
 		try {
 			const result = await axios.get("/user/profile");
-			this.userProfile = result.data.userProfile;
+			set({ userProfile: result.data.userProfile });
 		} catch (error) {
 			apiErrorHandler(error);
 		}
@@ -53,46 +64,65 @@ export const AuthStore = create<authStoreType>(() => ({
 
 	signinUser: async function (values) {
 		try {
+			set({ buttonLoading: true });
 			const result = await axios.post("/user/signin", values);
 			toast.success(result.data.message);
+			navigateTo("/home");
 		} catch (error) {
 			apiErrorHandler(error);
+		} finally {
+			set({ buttonLoading: false });
 		}
 	},
 
 	signoutUser: async function () {
 		try {
-			const result = await axios.post("/user/logout");
+			set({ buttonLoading: true });
+			const result = await axios.post("/user/signout");
 			toast.success(result.data.message);
 		} catch (error) {
 			apiErrorHandler(error);
+		} finally {
+			set({ buttonLoading: false });
 		}
 	},
 
 	sendPasswordResetOtp: async function (values) {
 		try {
-			const result = await axios.post("/user/send-password-reset-otp", values);
+			set({ buttonLoading: true });
+			const result = await axios.post("/user/password-reset/send-otp", values);
 			toast.success(result.data.message);
+			navigateTo("/verify-password-reset-otp");
 		} catch (error) {
 			apiErrorHandler(error);
+		} finally {
+			set({ buttonLoading: false });
 		}
 	},
 
 	verifyPasswordResetOtp: async function (values) {
 		try {
-			const result = await axios.post("/user/verify-password-reset-otp", values);
+			set({ buttonLoading: true });
+			const result = await axios.post("/user/password-reset/verify-otp", values);
 			toast.success(result.data.message);
+			navigateTo("/password-reset");
 		} catch (error) {
 			apiErrorHandler(error);
+		} finally {
+			set({ buttonLoading: false });
 		}
 	},
 
 	updatePassword: async function (values) {
 		try {
-			const result = await axios.post("/user/update-password-after-verification", values);
+			set({ buttonLoading: true });
+			const result = await axios.post("/user/password-reset/update", values);
 			toast.success(result.data.message);
+			navigateTo("/signin");
 		} catch (error) {
 			apiErrorHandler(error);
+		} finally {
+			set({ buttonLoading: false });
 		}
 	},
 }));

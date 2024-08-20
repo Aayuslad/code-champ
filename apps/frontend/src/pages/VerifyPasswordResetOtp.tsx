@@ -62,8 +62,8 @@ export default function VerifyPasswordResetOtp() {
 					</div>
 				</div>
 
-				<button className="border border-black" type="submit">
-					Recover
+				<button className="border border-black" type="submit" disabled={authStore.buttonLoading}>
+					{authStore.buttonLoading ? "Verifying OTP..." : "Verify OTP"}
 				</button>
 
 				<div className="form_footer text-center">

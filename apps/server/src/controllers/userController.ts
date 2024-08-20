@@ -20,6 +20,22 @@ export async function signupUser(req: Request, res: Response) {
 	const { email, userName, password } = req.body;
 
 	try {
+		if (req.session.signupEmail && !email && !userName && !password) {
+			const otp = parseInt(
+				Math.floor(100000 + Math.random() * 900000)
+					.toString()
+					.slice(0, otpLength),
+			);
+
+			req.session.signupOTP = otp;
+
+			await sendOTPMail(req.session.signupEmail, otp);
+
+			return res.status(200).json({
+				message: "OTP Resent to Email",
+			});
+		}
+
 		const parsed = signupUserSchema.safeParse({
 			email,
 			userName,
@@ -63,8 +79,6 @@ export async function verifySignupOTP(req: Request, res: Response) {
 	try {
 		const parsed = verifySignupOTPSchema.safeParse({ otp });
 		if (!parsed.success) return res.status(422).json({ message: "Invalid OTP" });
-
-		console.log(req.session.signupOTP, otp);
 
 		if (parseInt(otp) !== req.session.signupOTP) {
 			return res.status(400).json({
@@ -168,6 +182,22 @@ export async function sendPasswordResetOTP(req: Request, res: Response) {
 	const { email } = req.body;
 
 	try {
+		if (req.session.passwordResetEmail && !email) {
+			const otp = parseInt(
+				Math.floor(100000 + Math.random() * 900000)
+					.toString()
+					.slice(0, otpLength),
+			);
+
+			req.session.signupOTP = otp;
+
+			await sendOTPMail(req.session.passwordResetEmail, otp);
+
+			return res.status(200).json({
+				message: "OTP Resent to Email",
+			});
+		}
+
 		const parsed = sendPasswordResetOTPShema.safeParse({ email });
 		if (!parsed.success) return res.status(422).json({ message: "Invalid email" });
 

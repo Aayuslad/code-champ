@@ -62,14 +62,14 @@ export default function VerifySignupOtp() {
 					</div>
 				</div>
 
-				<button className="border border-black" type="submit">
-					Recover
+				<button className="border border-black" type="submit" disabled={authStore.buttonLoading}>
+					{authStore.buttonLoading ? "Verifying OTP..." : "Verify OTP"}
 				</button>
 
 				<div className="form_footer text-center">
 					<span>
 						Can't get OTP ?{" "}
-						<button className="link underline" onClick={() => console.log("resend otp")}>
+						<button className="link underline" onClick={() => authStore.signupUser()}>
 							Resend
 						</button>
 					</span>
