@@ -9,7 +9,13 @@ const PORT = process.env.PORT || 8080;
 
 app.use(express.json());
 app.set("trust proxy", 1);
-app.use(cors())
+app.use(
+	cors({
+		origin: ["https://app.code-champ.xyz", "http://localhost:5173"],
+		methods: ["GET", "POST", "PUT", "DELETE"],
+		credentials: true,
+	}),
+);
 
 app.get("/", (req, res) => {
 	res.send("Welcome, This is code champ server 🔥.");

@@ -76,6 +76,8 @@ export async function signupUser(req: Request, res: Response) {
 export async function verifySignupOTP(req: Request, res: Response) {
 	const { otp } = req.body;
 
+	console.log(req.session.signupOTP, parseInt(otp));
+
 	try {
 		const parsed = verifySignupOTPSchema.safeParse({ otp });
 		if (!parsed.success) return res.status(422).json({ message: "Invalid OTP" });
