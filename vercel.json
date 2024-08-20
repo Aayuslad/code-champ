@@ -1,0 +1,13 @@
+{
+	"version": 2,
+	"projects": [
+		{
+			"src": "apps/client/",
+			"use": "@vercel/static-build",
+			"config": {
+				"distDir": "apps/client/public"
+			},
+			"buildCommand": "npm run build"
+		}
+	]
+}
