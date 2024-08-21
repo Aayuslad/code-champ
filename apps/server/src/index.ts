@@ -4,6 +4,7 @@ import axios from "axios";
 import cookieParser from "cookie-parser";	
 import userRouter from "./routes/userRoutes";
 import cors from "cors";
+import session from "express-session";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -20,6 +21,19 @@ app.use(express.json());
 app.use(cookieParser());
 app.disable("x-powerd-by");
 app.use(express.urlencoded({ extended: true }));
+app.use(
+	session({
+		secret: process.env.SESSION_SECRET as string,
+		resave: false,
+		saveUninitialized: true,
+		cookie: {
+			maxAge: 5 * 60 * 1000, // 5 minutes
+			secure: true,
+			httpOnly: true,
+			sameSite: "none",
+		},
+	}),
+);
 
 app.get("/", (req, res) => {
 	res.send("Welcome, This is code champ server 🔥.");

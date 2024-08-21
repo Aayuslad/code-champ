@@ -62,6 +62,9 @@ export async function signupUser(req: Request, res: Response) {
 
 		await sendOTPMail(email, otp);
 
+		console.log(req.session.signupOTP);
+		
+
 		return res.status(200).json({
 			message: "OTP Sent to Email",
 		});
@@ -76,6 +79,9 @@ export async function signupUser(req: Request, res: Response) {
 export async function verifySignupOTP(req: Request, res: Response) {
 	const { otp } = req.body;
 
+	console.log(req.cookies);
+	console.log(req.session);
+	
 	console.log(req.session.signupOTP, parseInt(otp));
 
 	try {

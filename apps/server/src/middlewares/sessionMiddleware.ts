@@ -1,7 +1,7 @@
 import session from "express-session";
 import { Request, Response, NextFunction } from "express";
 
-export function sessionMiddleware(req: Request, res: Response, next: NextFunction) {
+const sessionMiddleware = async (req: Request, res: Response, next: NextFunction) => {
 	session({
 		secret: process.env.SESSION_SECRET as string,
 		resave: false,
@@ -13,7 +13,11 @@ export function sessionMiddleware(req: Request, res: Response, next: NextFunctio
 			sameSite: "none",
 		},
 	})(req, res, next);
-}
+};
+
+export default sessionMiddleware;
+
+// TODO : this exported session middleware is not working, most probably because of the session store is in memory so it creates new session everytime. can be solved if we add sql store.
 
 // TODO : add postgress store for session
 
