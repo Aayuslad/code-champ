@@ -3,6 +3,7 @@ import App from "./App.tsx";
 import "./index.css";
 import axios from "axios";
 import { Toaster } from "react-hot-toast";
+axios.defaults.withCredentials = true;
 axios.defaults.baseURL = "https://backend.code-champ.xyz";
 // axios.defaults.baseURL = "http://localhost:8080";
 
