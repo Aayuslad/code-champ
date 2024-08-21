@@ -7,32 +7,35 @@ import navigateTo from "../helper/pageNavigator";
 interface authStoreType {
 	userProfile:
 		| {
-				userName: string;
+				id: string;
 				email: string;
+				userName: string;
 		  }
-		| [];
+		| undefined;
 	buttonLoading: boolean;
+	skeletonLoading: boolean;
 
 	signupUser: (values?: { email: string; password: string; userName: string }) => Promise<void>;
 	verifySignupOtp: (values: { otp: string }) => Promise<void>;
 	fetchUserProfile: () => Promise<void>;
 	signinUser: (values: { emailOrUsername: string; password: string }) => Promise<void>;
 	signoutUser: () => Promise<void>;
-	sendPasswordResetOtp: (values: { email: string }) => Promise<void>;
+	sendPasswordResetOtp: (values?: { email: string }) => Promise<void>;
 	verifyPasswordResetOtp: (values: { otp: string }) => Promise<void>;
 	updatePassword: (values: { password: string }) => Promise<void>;
 }
 
 export const AuthStore = create<authStoreType>((set) => ({
-	userProfile: [],
+	userProfile: undefined,
 	buttonLoading: false,
+	skeletonLoading: false,
 
 	signupUser: async function (values) {
 		try {
 			set({ buttonLoading: true });
 			const result = await axios.post("/user/signup", values);
 			toast.success(result.data.message);
-			navigateTo("/verify-signup-otp");
+			values && navigateTo("/verify-signup-otp");
 		} catch (error) {
 			apiErrorHandler(error);
 		} finally {
@@ -55,10 +58,13 @@ export const AuthStore = create<authStoreType>((set) => ({
 
 	fetchUserProfile: async function () {
 		try {
+			set({ skeletonLoading: true });
 			const result = await axios.get("/user/profile");
-			set({ userProfile: result.data.userProfile });
+			set({ userProfile: result.data });
 		} catch (error) {
 			apiErrorHandler(error);
+		} finally {
+			set({ skeletonLoading: false });
 		}
 	},
 
@@ -80,6 +86,7 @@ export const AuthStore = create<authStoreType>((set) => ({
 			set({ buttonLoading: true });
 			const result = await axios.post("/user/signout");
 			toast.success(result.data.message);
+			navigateTo("/signin");
 		} catch (error) {
 			apiErrorHandler(error);
 		} finally {
@@ -92,7 +99,7 @@ export const AuthStore = create<authStoreType>((set) => ({
 			set({ buttonLoading: true });
 			const result = await axios.post("/user/password-reset/send-otp", values);
 			toast.success(result.data.message);
-			navigateTo("/verify-password-reset-otp");
+			values && navigateTo("/verify-password-reset-otp");
 		} catch (error) {
 			apiErrorHandler(error);
 		} finally {

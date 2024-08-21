@@ -26,7 +26,9 @@ export async function authMiddleware(req: Request, res: Response, next: any) {
 			},
 		});
 
-        req.user = user;
+		req.user = user;
+
+		next();
 	} catch {
 		res.status(500).json({
 			message: "Internal Server Error",

@@ -25,7 +25,7 @@ export default function PasswordReset() {
 					type="password"
 					className="border border-black"
 					placeholder="new password"
-					{...formik.getFieldProps("emailOrUsername")}
+					{...formik.getFieldProps("password")}
 				/>
 				<input
 					type="password"

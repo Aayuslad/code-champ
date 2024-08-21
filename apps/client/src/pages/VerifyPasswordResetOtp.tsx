@@ -63,13 +63,15 @@ export default function VerifyPasswordResetOtp() {
 				</div>
 
 				<button className="border border-black" type="submit" disabled={authStore.buttonLoading}>
-					{authStore.buttonLoading ? "Verifying OTP..." : "Verify OTP"}
+					{authStore.buttonLoading && formik.values.otp.every((value) => value !== "")
+						? "Verifying OTP..."
+						: "Verify OTP"}{" "}
 				</button>
 
 				<div className="form_footer text-center">
 					<span>
 						Can't get OTP ?{" "}
-						<button className="link underline" onClick={() => console.log("resend otp")}>
+						<button className="link underline" type="button" onClick={() => authStore.sendPasswordResetOtp()}>
 							Resend
 						</button>
 					</span>

@@ -52,6 +52,7 @@ export default function VerifySignupOtp() {
 									maxLength={1}
 									className="border border-black w-10 h-10 px-2 mx-2"
 									inputMode="numeric"
+									required
 									onChange={(e) => handleChange(e, index)}
 									ref={(input) => (inputRef.current[index] = input)}
 									onKeyDown={(e) => handleKeyDown(e, index)}
@@ -63,13 +64,15 @@ export default function VerifySignupOtp() {
 				</div>
 
 				<button className="border border-black" type="submit" disabled={authStore.buttonLoading}>
-					{authStore.buttonLoading ? "Verifying OTP..." : "Verify OTP"}
+					{authStore.buttonLoading && formik.values.otp.every((value) => value !== "")
+						? "Verifying OTP..."
+						: "Verify OTP"}
 				</button>
-
+				
 				<div className="form_footer text-center">
 					<span>
 						Can't get OTP ?{" "}
-						<button className="link underline" onClick={() => authStore.signupUser()}>
+						<button className="link underline" type="button" onClick={() => authStore.signupUser()}>
 							Resend
 						</button>
 					</span>

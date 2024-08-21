@@ -15,7 +15,7 @@ const userRouter = Router();
 
 userRouter.post("/signup", signupUser);
 userRouter.post("/signup/verify-otp", verifySignupOTP);
-userRouter.get("/profile", fetchUserProfile);
+userRouter.get("/profile", authMiddleware, fetchUserProfile);
 userRouter.post("/signin", signinUser);
 userRouter.post("/signout", authMiddleware, signoutUser);
 userRouter.post("/password-reset/send-otp", sendPasswordResetOTP);

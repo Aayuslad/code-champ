@@ -43,10 +43,14 @@ export async function signupUser(req: Request, res: Response) {
 		});
 		if (!parsed.success) return res.status(422).json({ message: "Invalid data" });
 
-		const user = await prisma.user.findFirst({ where: { OR: [{ email }, { userName }] } });
-		if (user) {
-			res.status(400).json({ message: "Email or username is already in use" });
-			return;
+		const emailExists = await prisma.user.findUnique({ where: { email } });
+		if (emailExists) {
+			return res.status(400).json({ message: "Email is already in use" });
+		}
+
+		const userNameExists = await prisma.user.findUnique({ where: { userName } });
+		if (userNameExists) {
+			return res.status(400).json({ message: "Username is already in use" });
 		}
 
 		const otp = parseInt(
@@ -62,9 +66,6 @@ export async function signupUser(req: Request, res: Response) {
 
 		await sendOTPMail(email, otp);
 
-		console.log(req.session.signupOTP);
-		
-
 		return res.status(200).json({
 			message: "OTP Sent to Email",
 		});
@@ -78,11 +79,6 @@ export async function signupUser(req: Request, res: Response) {
 // Verifies the OTP sent during signup
 export async function verifySignupOTP(req: Request, res: Response) {
 	const { otp } = req.body;
-
-	console.log(req.cookies);
-	console.log(req.session);
-	
-	console.log(req.session.signupOTP, parseInt(otp));
 
 	try {
 		const parsed = verifySignupOTPSchema.safeParse({ otp });
@@ -109,7 +105,7 @@ export async function verifySignupOTP(req: Request, res: Response) {
 
 		res.cookie("token", token, {
 			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
+			secure: true,
 			sameSite: "none",
 		});
 
@@ -127,7 +123,32 @@ export async function verifySignupOTP(req: Request, res: Response) {
 }
 
 // Retrieves the user's profile
-export async function fetchUserProfile(req: Request, res: Response) {}
+export async function fetchUserProfile(req: Request, res: Response) {
+	try {
+		const user = await prisma.user.findFirst({
+			where: {
+				id: req.user?.id,
+			},
+		});
+
+		if (!user) {
+			return res.status(404).json({
+				message: "User not found",
+			});
+		}
+
+		return res.json({
+			id: user.id,
+			email: user.email,
+			userName: user.userName,
+		});
+
+	} catch (error) {
+		res.status(500).json({
+			message: "Internal Server Error",
+		});
+	}
+}
 
 // Signs in the user
 export async function signinUser(req: Request, res: Response) {
@@ -159,7 +180,7 @@ export async function signinUser(req: Request, res: Response) {
 		const isPasswordCorrect = await bcrypt.compare(passwordWithPepper, user.password);
 		if (!isPasswordCorrect) {
 			return res.status(400).json({
-				message: "Invalid password",
+				message: "wrong password",
 			});
 		}
 
@@ -167,7 +188,7 @@ export async function signinUser(req: Request, res: Response) {
 
 		res.cookie("token", token, {
 			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
+			secure: true,
 			sameSite: "none",
 		});
 
@@ -197,7 +218,7 @@ export async function sendPasswordResetOTP(req: Request, res: Response) {
 					.slice(0, otpLength),
 			);
 
-			req.session.signupOTP = otp;
+			req.session.passwordResetOTP = otp;
 
 			await sendOTPMail(req.session.passwordResetEmail, otp);
 
@@ -241,7 +262,7 @@ export async function verifyPasswordResetOTP(req: Request, res: Response) {
 		const parsed = verifyPasswordResetOTPSchema.safeParse({ otp });
 		if (!parsed.success) return res.status(422).json({ message: "Invalid OTP" });
 
-		if (otp !== req.session.passwordResetOTP) {
+		if (parseInt(otp) !== req.session.passwordResetOTP) {
 			return res.status(400).json({
 				message: "Wrong OTP",
 			});
