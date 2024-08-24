@@ -114,7 +114,7 @@ export async function verifySignupOTP(req: Request, res: Response) {
 		req.session.userName = undefined;
 		req.session.password = undefined;
 
-		return res.json({ message: "Successfully signed up! Welcome to Code Champ." });
+		return res.json({ message: "Successfully signed up!" });
 	} catch {
 		res.status(500).json({
 			message: "Internal Server Error",
@@ -192,7 +192,7 @@ export async function signinUser(req: Request, res: Response) {
 			sameSite: "none",
 		});
 
-		return res.json({ message: "Successfully signed in! Welcome to Code Champ." });
+		return res.json({ message: "Successfully signed in!" });
 	} catch {
 		res.status(500).json({
 			message: "Internal Server Error",
@@ -203,7 +203,7 @@ export async function signinUser(req: Request, res: Response) {
 // Logs out the user
 export async function signoutUser(req: Request, res: Response) {
 	res.clearCookie("token");
-	return res.json({ message: "sign out" });
+	return res.json({ message: "signed out" });
 }
 
 // Sends an OTP to the user's email when they forget their password

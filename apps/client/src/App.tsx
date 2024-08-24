@@ -7,6 +7,10 @@ import Signin from "./pages/Signin";
 import Signup from "./pages/Signup";
 import VerifyPasswordResetOtp from "./pages/VerifyPasswordResetOtp";
 import VerifySignupOtp from "./pages/VerifySignupOtp";
+import Problems from "./pages/Problems";
+import Contribute from "./pages/Contribute";
+import Profile from "./pages/Profile";
+import Blogs from "./pages/Blogs";
 
 function App() {
 	return (
@@ -21,6 +25,11 @@ function App() {
 					<Route path="/signup" element={<Signup />} />
 					<Route path="/verify-password-reset-otp" element={<VerifyPasswordResetOtp />} />
 					<Route path="/verify-signup-otp" element={<VerifySignupOtp />} />
+
+					<Route path="/problems" element={<Problems />} />
+					<Route path="/contribute" element={<Contribute />} />
+					<Route path="/profile" element={<Profile />} />
+					<Route path="/blogs" element={<Blogs />} />
 				</Routes>
 			</div>
 		</Router>

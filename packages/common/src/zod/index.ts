@@ -1,5 +1,39 @@
 import zod from "zod";
 
+const structureSchema = zod.object({
+	title: zod.string(),
+	functionName: zod.string(),
+	description: zod.string(),
+	inputFields: zod.array(
+		zod.object({
+			name: zod.string(),
+			type: zod.string(),
+			description: zod.string(),
+		}),
+	),
+	outputType: zod.string(),
+});
+
+// Schema for the sample test cases
+const testCaseSchema = zod.object({
+	input: zod.string(),
+	output: zod.string(),
+	explanation: zod.string().optional(),
+});
+
+// Main schema for the entire problem object
+export const problemSchema = zod.object({
+	title: zod.string(),
+	problemStatement: zod.string(),
+	structre: structureSchema,
+	sampleTestCases: zod.array(testCaseSchema),
+	testCases: zod.array(testCaseSchema),
+	constraints: zod.array(zod.string()),
+	difficulty: zod.enum(["Easy", "Medium", "Hard"]),
+	topicTags: zod.array(zod.string()),
+	Hints: zod.array(zod.string()),
+});
+
 export const signupUserSchema = zod.object({
 	email: zod.string().email().refine((value) => value.trim() === value),
 	userName: zod.string().refine((value) => value.trim() === value),

@@ -19,4 +19,53 @@ model User {
   email      String  @unique
   password   String
   profileImg String?
+
+  Problem Problem[]
+}
+
+model Problem {
+  id                       String       @id @default(uuid())
+  title                    String       @unique @db.VarChar(50)
+  slug                     String       @unique
+  difficulty               Difficulty
+  problemStatement                String       @db.VarChar(1000)
+  boilerplateCode          String
+  sampleTestCasesObjectkey String // URL to the sample test cases JSON in S3
+  testCasesObjectKey       String // URL to the test cases JSON in S3
+  constraints              Constraint[]
+  topicTags                TopicTag[]
+  hints                    Hint[]
+  likeCount                Int          @default(0)
+  submissionCount          Int          @default(0)
+  acceptedSubmissions      Int          @default(0)
+  isApproved               Boolean      @default(false)
+  createdAt                DateTime     @default(now())
+  createdById              String
+  createdBy                User         @relation(fields: [createdById], references: [id])
+}
+
+model Constraint {
+  id        String  @id @default(uuid())
+  content   String
+  problemId String
+  problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+}
+
+model TopicTag {
+  id       String    @id @default(uuid())
+  content  String
+  problems Problem[]
+}
+
+model Hint {
+  id        String  @id @default(uuid())
+  content   String
+  problemId String
+  problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+}
+
+enum Difficulty {
+  Easy
+  Medium
+  Hard
 }

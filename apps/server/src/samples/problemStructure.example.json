@@ -1,0 +1,18 @@
+{
+	"title": "Concatenate two arrays",
+	"functionName": "concatenateArrays",
+	"description": "This function concatenates two arrays of integers.",
+	"inputFields": [
+		{
+			"name": "arr1",
+			"type": "Array<int>",
+			"description": "The first array to concatenate."
+		},
+		{
+			"name": "arr2",
+			"type": "Array<int>",
+			"description": "The second array to concatenate."
+		}
+	],
+	"outputType": "Array<int>"
+}
