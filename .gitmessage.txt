@@ -1,0 +1,16 @@
+# Commit Message Guidelines for Code-Champ
+#
+# <type>(scope): <subject>
+# Example: feat(auth): add JWT authentication
+#
+# Reference any issues or PRs, e.g., "Closes #123"
+#
+# Type Categories:
+# - feat: New feature
+# - fix: Bug fix
+# - docs: Documentation changes
+# - style: Code style changes (formatting, etc.)
+# - refactor: Code refactoring
+# - perf: Performance improvements
+# - test: Tests added or updated
+# - chore: Maintenance or non-production code changes
