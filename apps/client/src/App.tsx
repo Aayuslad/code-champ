@@ -15,7 +15,7 @@ import Blogs from "./pages/Blogs";
 function App() {
 	return (
 		<Router>
-			<div>
+			<div className="DefaultPage w-screen h-fit min-h-screen bg-light100 dark:bg-dark100 text-black dark:text-white">
 				<Routes>
 					<Route path="/" element={<LandingPage />} />
 					<Route path="/home" element={<Home />} />
