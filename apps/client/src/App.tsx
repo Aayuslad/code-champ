@@ -11,11 +11,23 @@ import Problems from "./pages/Problems";
 import Contribute from "./pages/Contribute";
 import Profile from "./pages/Profile";
 import Blogs from "./pages/Blogs";
+import Contest from "./pages/Contest";
+import SolveProblem from "./pages/SolveProblem";
+import { UiStore } from "./stores/uiStore";
+import { useEffect } from "react";
+import { defineEditorThemes } from "./utils/editorThemes";
 
 function App() {
+	const uiStore = UiStore();
+
+	useEffect(() => {
+		uiStore.setTheme();
+		defineEditorThemes();
+	}, []);
+
 	return (
 		<Router>
-			<div className="DefaultPage w-screen h-fit min-h-screen bg-light100 dark:bg-dark100 text-black dark:text-white">
+			<div className="DefaultPage h-fit min-h-screen bg-light100 dark:bg-dark100 text-lightText900 dark:text-darkText900">
 				<Routes>
 					<Route path="/" element={<LandingPage />} />
 					<Route path="/home" element={<Home />} />
@@ -30,6 +42,8 @@ function App() {
 					<Route path="/contribute" element={<Contribute />} />
 					<Route path="/profile" element={<Profile />} />
 					<Route path="/blogs" element={<Blogs />} />
+					<Route path="/contest" element={<Contest />} />
+					<Route path="/solve-problem/:id" element={<SolveProblem />} />
 				</Routes>
 			</div>
 		</Router>

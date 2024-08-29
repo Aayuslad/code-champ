@@ -2,15 +2,17 @@ import { Header } from "../components/headers/hader";
 import { SideNavbar } from "../components/navbars/sideNavbar";
 import MainWrapper from "../components/wrappers/mainWrapper";
 
-export default function Home() {
+export default function Contest() {
 	return (
-		<div className="Home Page">
+		<div className="Contest Page">
 			<SideNavbar />
 
 			<MainWrapper>
 				<Header />
 
-				<div className="flex items-center justify-center gap-3 border-red-500">Home Page</div>
+				<div className="flex items-center justify-center gap-3 border-red-500">
+					<div>Contest</div>
+				</div>
 			</MainWrapper>
 		</div>
 	);

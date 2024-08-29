@@ -25,10 +25,11 @@ model User {
 
 model Problem {
   id                       String       @id @default(uuid())
+  problemNumber            Int          @unique 
   title                    String       @unique @db.VarChar(50)
   slug                     String       @unique
   difficulty               Difficulty
-  problemStatement                String       @db.VarChar(1000)
+  problemStatement         String       @db.VarChar(1000)
   boilerplateCode          String
   sampleTestCasesObjectkey String // URL to the sample test cases JSON in S3
   testCasesObjectKey       String // URL to the test cases JSON in S3

@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { AuthStore } from "../stores/authStore";
-import { Header } from "../components/hader";
+import { Header } from "../components/headers/hader";
 import MainWrapper from "../components/wrappers/mainWrapper";
-import { SideNavbar } from "../components/sideNavbar";
+import { SideNavbar } from "../components/navbars/sideNavbar";
 
 export default function Profile() {
 	const authStore = AuthStore();

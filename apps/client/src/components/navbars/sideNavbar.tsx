@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
-import NavToggleButton from "./buttons/navToggleButton";
-import { UiStore } from "../stores/uiStore";
+import NavToggleButton from "../buttons/navToggleButton";
+import { UiStore } from "../../stores/uiStore";
+import { AuthStore } from "../../stores/authStore";
 import { GoDiscussionClosed } from "react-icons/go";
 import { RiApps2AddLine } from "react-icons/ri";
 import { LuCode2 } from "react-icons/lu";
 import { FiUser } from "react-icons/fi";
 import { HiOutlineHome } from "react-icons/hi2";
 import { MdLogout } from "react-icons/md";
-import { AuthStore } from "../stores/authStore";
+import { GoTrophy } from "react-icons/go";
 
 export const SideNavbar = () => {
 	const uiStore = UiStore();
@@ -21,11 +22,11 @@ export const SideNavbar = () => {
 				<NavToggleButton />
 			</div>
 
-			<nav className="pt-8 h-full">
+			<nav className="pt-4 h-full">
 				<ul
-					className={`h-full flex pl-[20px] flex-col ${uiStore.sideBarToggle ? "items-start" : "items-start"} text-xl gap-4`}
+					className={`h-full flex pl-[20px] pr-4 flex-col ${uiStore.sideBarToggle ? "items-start" : "items-start"} text-xl gap-1`}
 				>
-					<li>
+					<li className="w-full">
 						<Link to="/home" className="flex items-center gap-4 hover:underline">
 							<div className="text-2xl py-4">
 								<HiOutlineHome />
@@ -37,7 +38,7 @@ export const SideNavbar = () => {
 							</div>
 						</Link>
 					</li>
-					<li>
+					<li className="w-full">
 						<Link to="/profile" className="flex items-center gap-4 hover:underline">
 							<div className="text-2xl py-4">
 								<FiUser />
@@ -49,7 +50,7 @@ export const SideNavbar = () => {
 							</div>
 						</Link>
 					</li>
-					<li>
+					<li className="w-full">
 						<Link to="/problems" className="flex items-center gap-4 hover:underline">
 							<div className="text-2xl py-4">
 								<LuCode2 />
@@ -61,7 +62,19 @@ export const SideNavbar = () => {
 							</div>
 						</Link>
 					</li>
-					<li>
+					<li className="w-full">
+						<Link to="/contest" className="flex items-center gap-4 hover:underline">
+							<div className="text-2xl py-4">
+								<GoTrophy />
+							</div>
+							<div
+								className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0"}`}
+							>
+								Contest
+							</div>
+						</Link>
+					</li>
+					<li className="w-full">
 						<Link to="/contribute" className="flex items-center gap-4 hover:underline">
 							<div className="text-2xl py-4">
 								<RiApps2AddLine />
@@ -73,7 +86,7 @@ export const SideNavbar = () => {
 							</div>
 						</Link>
 					</li>
-					<li>
+					<li className="w-full">
 						<Link to="/blogs" className="flex items-center gap-4 hover:underline">
 							<div className="text-2xl py-4">
 								<GoDiscussionClosed />
@@ -85,8 +98,12 @@ export const SideNavbar = () => {
 							</div>
 						</Link>
 					</li>
-					<li className="mt-auto mb-4 text-red-600">
-						<button type="button" className="flex items-center gap-4 hover:underline" onClick={() => authStore.signoutUser()}>
+					<li className="mt-auto mb-4 text-red-600 w-full">
+						<button
+							type="button"
+							className="flex items-center gap-4 hover:underline"
+							onClick={() => authStore.signoutUser()}
+						>
 							<div className="text-2xl py-4">
 								<MdLogout />
 							</div>

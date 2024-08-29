@@ -1,9 +1,11 @@
-import { ThemeChanger } from "./theme-changer";
+import { ThemeChanger } from "../themeChanger";
 
 export const Header = () => {
 	return (
-		<div className="Header w-full flex-1 h-14 px-5 border-b-2 bg-light200 dark:bg-dark200 border-light300 dark:border-dark300">
-			<ThemeChanger />
+		<div className="Header w-full flex-1 h-14 px-5 border-b-2 flex items-center bg-light200 dark:bg-dark200 border-light300 dark:border-dark300">
+			<div className="ml-auto">
+				<ThemeChanger />
+			</div>
 
 			{/* // TODO: add logo Here
 

@@ -1,10 +1,12 @@
 import { Router } from "express";
-import { contributeProblem } from "../controllers/problemController";
+import { contributeProblem, getProblem, getProblems } from "../controllers/problemController";
 import axios from "axios";
 import { authMiddleware } from "../middlewares/authMiddleware";
 const problemRouter = Router();
 
 problemRouter.post("/contribute", authMiddleware, contributeProblem);
+problemRouter.get("/bulk", getProblems);
+problemRouter.get("/:id", getProblem);
 
 export default problemRouter;
 
