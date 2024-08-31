@@ -1,18 +1,27 @@
 {
-	"title": "Concatenate two arrays",
-	"functionName": "concatenateArrays",
-	"description": "This function concatenates two arrays of integers.",
-	"inputFields": [
+	"title": "problem titile here",
+	"functionName": "functionName",
+	"description": "description here",
+	"parameters": [
 		{
 			"name": "arr1",
-			"type": "Array<int>",
-			"description": "The first array to concatenate."
+			"baseType": "int",
+			"derivedType": "",
+			"category": "base",
+			"description": "description here"
 		},
 		{
-			"name": "arr2",
-			"type": "Array<int>",
-			"description": "The second array to concatenate."
+			"name": "arr",
+			"baseType": "int",
+			"derivedType": "Array<int>",
+			"category": "derived",
+			"description": "description here"
 		}
 	],
-	"outputType": "Array<int>"
+	"returnType": {
+		"baseType": "int",
+		"derivedType": "",
+		"category": "base",
+		"description": "description here"
+	}
 }

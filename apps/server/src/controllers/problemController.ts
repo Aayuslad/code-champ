@@ -1,68 +1,67 @@
 import { Request, Response } from "express";
 import { getObjectFromS3, uploadJsonToS3 } from "../services/awsS3";
 import { generateUniqueSlug } from "../helper/generateUniqueSlug";
-import { generateBoilerplate } from "../services/boilerplateGenerator/generateBoilerplate";
+import { generateBoilerplate } from "../services/boilerplateGenerator/boilerplateGenerator";
 import { PrismaClient } from "@prisma/client";
-import { problemSchema } from "@repo/common/zod";
+import { problemSchema, sumitSolutionSchema, TestCaseType } from "@repo/common/zod";
+import { generateSubmissionCode } from "../services/boilerplateGenerator/submissionCodeGenerator";
+import axios from "axios";
+import { sortAndDeduplicateDiagnostics } from "typescript";
 const prisma = new PrismaClient();
 
 export async function contributeProblem(req: Request, res: Response) {
-	const { title, problemStatement, structre, sampleTestCases, testCases, constraints, difficulty, topicTags, Hints } = req.body;
-
 	try {
 		const parsed = problemSchema.safeParse(req.body);
 		if (!parsed.success) return res.status(422).json({ message: "Invalid data" });
 
-		// generate slug
+		const {
+			title,
+			difficultyLevel,
+			description,
+			sampleTestCases,
+			testCases,
+			functionStructure,
+			topicTags,
+			hints,
+			constraints,
+		} = parsed.data;
+
 		const slug = await generateUniqueSlug(title);
 
-		// upload sample test cases .json to s3
-		await uploadJsonToS3(`problem-test-cases/${slug}/sampleTestCases.json`, sampleTestCases);
+		await Promise.all([
+			uploadJsonToS3(`problem-test-cases/${slug}/sampleTestCases.json`, sampleTestCases),
+			uploadJsonToS3(`problem-test-cases/${slug}/testCases.json`, testCases),
+		]);
 
-		// upload test cases .json to s3
-		await uploadJsonToS3(`problem-test-cases/${slug}/testCases.json`, testCases);
+		const boilerplateCode = generateBoilerplate(functionStructure);
+		const submissionCode = generateSubmissionCode(functionStructure);
 
-		// generate boilerplate code for all languages
-		const boilerplateCode = generateBoilerplate(structre);
+		const topicTagIdsToAdd = await Promise.all(
+			topicTags
+				.filter((tag) => tag.trim())
+				.map(async (tag) => {
+					const existingTag = await prisma.topicTag.findFirst({ where: { content: tag } });
+					if (existingTag) {
+						return existingTag.id;
+					} else {
+						const newTag = await prisma.topicTag.create({ data: { content: tag } });
+						return newTag.id;
+					}
+				}),
+		);
 
-		// Prepare topic IDs to connect
-		let topicTagIdsToAdd: string[] = [];
-		if (topicTags && topicTags.length > 0) {
-			// Check if topics already exist in the database
-			for (const tag of topicTags) {
-				if (tag == "") continue;
-
-				const existingTopicTags = await prisma.topicTag.findFirst({
-					where: {
-						content: tag,
-					},
-				});
-
-				if (existingTopicTags) {
-					// If topic already exists, get its ID
-					topicTagIdsToAdd.push(existingTopicTags.id);
-				} else {
-					// If topic doesn't exist, create it and get its ID
-					const newTopic = await prisma.topicTag.create({
-						data: {
-							content: tag,
-						},
-					});
-					topicTagIdsToAdd.push(newTopic.id);
-				}
-			}
-		}
-
-		// update the db
 		const newProblem = await prisma.problem.create({
 			data: {
 				title,
 				problemNumber: 1,
-				slug,
-				problemStatement,
-				difficulty,
-				sampleTestCasesObjectkey: `problem-test-cases/${slug}/sampleTestCases.json`,
-				testCasesObjectKey: `problem-test-cases/${slug}/testCases.json`,
+				slug: slug,
+				description: description,
+				difficultyLevel: difficultyLevel,
+				sampleTestCasesKey: `problem-test-cases/${slug}/sampleTestCases.json`,
+				testCasesKey: `problem-test-cases/${slug}/testCases.json`,
+				boilerplateCode: JSON.stringify(boilerplateCode),
+				submissionCode: JSON.stringify(submissionCode),
+				functionStructure: JSON.stringify(functionStructure),
 				constraints: {
 					create: constraints.map((constraint: string) => ({
 						content: constraint,
@@ -72,11 +71,10 @@ export async function contributeProblem(req: Request, res: Response) {
 					connect: topicTagIdsToAdd.map((id) => ({ id })),
 				},
 				hints: {
-					create: Hints.map((hint: string) => ({
+					create: hints.map((hint: string) => ({
 						content: hint,
 					})),
 				},
-				boilerplateCode: JSON.stringify(boilerplateCode),
 				createdBy: {
 					connect: {
 						id: req.user?.id,
@@ -90,6 +88,7 @@ export async function contributeProblem(req: Request, res: Response) {
 			problem: newProblem,
 		});
 	} catch (err) {
+		console.log(err);
 		res.status(500).json({
 			message: "Internal Server Error",
 		});
@@ -107,7 +106,7 @@ export async function getProblems(req: Request, res: Response) {
 				id: true,
 				problemNumber: true,
 				title: true,
-				difficulty: true,
+				difficultyLevel: true,
 				submissionCount: true,
 				acceptedSubmissions: true,
 			},
@@ -121,7 +120,7 @@ export async function getProblems(req: Request, res: Response) {
 				id: problem.id,
 				problemNumber: problem.problemNumber,
 				title: problem.title,
-				difficulty: problem.difficulty,
+				difficulty: problem.difficultyLevel,
 				acceptanceRate: `${acceptanceRate}%`,
 			};
 		});
@@ -144,9 +143,9 @@ export async function getProblem(req: Request, res: Response) {
 				id: true,
 				problemNumber: true,
 				title: true,
-				problemStatement: true,
-				difficulty: true,
-				sampleTestCasesObjectkey: true,
+				description: true,
+				difficultyLevel: true,
+				sampleTestCasesKey: true,
 				constraints: { select: { content: true } },
 				topicTags: { select: { content: true } },
 				hints: { select: { content: true } },
@@ -165,14 +164,13 @@ export async function getProblem(req: Request, res: Response) {
 
 		if (!problem) return;
 
-		const sampleTestCasesJson = await getObjectFromS3(problem.sampleTestCasesObjectkey);
+		const sampleTestCasesJson = await getObjectFromS3(problem.sampleTestCasesKey);
 		const parsedTestCases = JSON.parse(sampleTestCasesJson);
 
-		const acceptanceRate = problem.submissionCount > 0
-			? ((problem.acceptedSubmissions / problem.submissionCount) * 100).toFixed(2)
-			: "0.00";
+		const acceptanceRate =
+			problem.submissionCount > 0 ? ((problem.acceptedSubmissions / problem.submissionCount) * 100).toFixed(2) : "0.00";
 
-		const { sampleTestCasesObjectkey, ...editedProblem } = {
+		const { sampleTestCasesKey, ...editedProblem } = {
 			...problem,
 			exampleTestCases: parsedTestCases,
 			acceptanceRate,
@@ -180,6 +178,51 @@ export async function getProblem(req: Request, res: Response) {
 		};
 		return res.status(200).json(editedProblem);
 	} catch (err) {
+		res.status(500).json({
+			message: "Internal Server Error",
+		});
+	}
+}
+
+export async function sumitSolution(req: Request, res: Response) {
+	const { id, language, solutionCode } = req.body;
+
+	try {
+		// zod validation
+		const parsed = sumitSolutionSchema.safeParse(req.body);
+		if (!parsed.success) return res.status(422).json({ message: "Invalid data" });
+		const { id, language, solutionCode } = parsed.data;
+
+		const problem = await prisma.problem.findFirst({
+			where: { id },
+			select: {
+				id: true,
+				testCasesKey: true,
+				submissionCode: true,
+			},
+		});
+
+		if (!problem) return res.status(404).json({ message: "Problem not found" });
+
+		const testCases: TestCaseType[] = JSON.parse(await getObjectFromS3(problem.testCasesKey));
+		const submissionCode: { c: string; cpp: string; java: string; python3: string } = JSON.parse(problem.submissionCode);
+
+		const finalCode = submissionCode[language].replace("{solution_code}", solutionCode);
+
+		const tokens = axios.post("http://x.x.x.x:2358/submissions", {
+			submissions: testCases.map((testCase) => ({
+				language_id: language,
+				source_code: finalCode,
+				stdin: testCase.input,
+				expected_output: testCase.output,
+			})),
+		});
+
+		// entry in db
+
+		// return tokens
+	} catch (err) {
+		console.log(err);
 		res.status(500).json({
 			message: "Internal Server Error",
 		});

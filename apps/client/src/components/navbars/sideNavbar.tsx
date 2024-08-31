@@ -32,7 +32,7 @@ export const SideNavbar = () => {
 								<HiOutlineHome />
 							</div>
 							<div
-								className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0"}`}
+								className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0 hidden"}`}
 							>
 								Home
 							</div>
@@ -44,7 +44,7 @@ export const SideNavbar = () => {
 								<FiUser />
 							</div>
 							<div
-								className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0"}`}
+								className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0 hidden"}`}
 							>
 								Profile
 							</div>
@@ -56,7 +56,7 @@ export const SideNavbar = () => {
 								<LuCode2 />
 							</div>
 							<div
-								className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0"}`}
+								className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0 hidden"}`}
 							>
 								Problems
 							</div>
@@ -68,7 +68,7 @@ export const SideNavbar = () => {
 								<GoTrophy />
 							</div>
 							<div
-								className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0"}`}
+								className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0 hidden"}`}
 							>
 								Contest
 							</div>
@@ -80,7 +80,7 @@ export const SideNavbar = () => {
 								<RiApps2AddLine />
 							</div>
 							<div
-								className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0"}`}
+								className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0 hidden"}`}
 							>
 								Contribute
 							</div>
@@ -92,7 +92,7 @@ export const SideNavbar = () => {
 								<GoDiscussionClosed />
 							</div>
 							<div
-								className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0"}`}
+								className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0 hidden"}`}
 							>
 								Blogs
 							</div>
@@ -108,7 +108,7 @@ export const SideNavbar = () => {
 								<MdLogout />
 							</div>
 							<div
-								className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0"} whitespace-nowrap`}
+								className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0 hidden"} whitespace-nowrap`}
 							>
 								Sign out
 							</div>

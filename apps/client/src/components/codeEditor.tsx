@@ -13,7 +13,7 @@ export default function CodeEditor({ problemId, boilerplateCode }: props) {
 	const uiStore = UiStore();
 	const problemStore = ProblemStore();
 	const [language, setLanguage] = useState<string>("cpp");
-	const languages = ["c", "ruby", "go", "csharp", "cpp", "java", "javascript", "python"];
+	const languages = ["c", "cpp", "python3", "java"];
 
 	// UseEffect to initialize the problem if it doesn't exist
 	useEffect(() => {
@@ -27,7 +27,7 @@ export default function CodeEditor({ problemId, boilerplateCode }: props) {
 			});
 		}
 	}, [problemId, language, problemStore, boilerplateCode]);
-	
+
 	const solutionCode = problemStore.onGoingProblems[problemId]?.[language]?.solutionCode || "";
 	const theme = uiStore.theme === "dark" ? "vs-dark" : "hc-light";
 
@@ -36,7 +36,7 @@ export default function CodeEditor({ problemId, boilerplateCode }: props) {
 			<div className="h-[100%] rounded-lg overflow-hidden">
 				<Editor
 					height="100%"
-					language={language}
+					language={language === "python3" ? "python" : language}
 					theme={theme}
 					value={solutionCode}
 					onChange={(code) => {

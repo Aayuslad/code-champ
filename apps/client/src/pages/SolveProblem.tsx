@@ -36,7 +36,7 @@ export default function SolveProblem() {
 					<div className="w-full h-[calc(100vh-3rem)] flex ">
 						{/* Left container */}
 						<div
-							className="w-[50%] py-1 px-6 flex flex-col gap-2 overflow-y-auto no-scrollbar"
+							className="w-[50%] pt-2.5 pb-1.5 px-6 flex flex-col gap-2 overflow-y-auto no-scrollbar"
 							style={{ width: `${leftWidth}%` }}
 						>
 							<Navbar02
@@ -55,7 +55,7 @@ export default function SolveProblem() {
 						<ContainerSplitter setLeftWidth={setLeftWidth} />
 
 						{/* Right container */}
-						<div className="flex-1 w-[50%] py-1 px-6" style={{ width: `${100 - leftWidth}%` }}>
+						<div className="flex-1 w-[50%] pt-2.5 pb-1.5 px-6" style={{ width: `${100 - leftWidth}%` }}>
 							<Navbar02 navs={["Code", "Test Cases"]} currentNav={activeNav2} setCurrentNav={setActiveNav2} />
 
 							{activeNav2 === "Code" && (
@@ -75,7 +75,7 @@ const Problem = ({ problem }: { problem: ProblemType }) => {
 	return (
 		<div>
 			<h2 className="text-lg font-semibold pt-1 pb-2 -ml-1">Problem Statement</h2>
-			<p className="text-justify pb-5">{problem.problemStatement}</p>
+			<p className="text-justify pb-5">{problem.description}</p>
 			{problem.exampleTestCases.map((example, index) => {
 				return (
 					<div key={index} className="pb-5">

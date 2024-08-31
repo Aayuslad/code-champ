@@ -21,6 +21,8 @@
 		"packages/*"
 	],
 	"dependencies": {
-		"aws-sdk": "^2.1681.0"
+		"@types/morgan": "^1.9.9",
+		"aws-sdk": "^2.1681.0",
+		"morgan": "^1.10.0"
 	}
 }

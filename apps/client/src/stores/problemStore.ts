@@ -3,22 +3,18 @@ import { create } from "zustand";
 import apiErrorHandler from "../helper/apiCallErrorHandler";
 
 export type boilerplateCode = {
-	python: string;
-	javascript: string;
-	java: string;
-	cpp: string;
-	csharp: string;
-	go: string;
-	ruby: string;
 	c: string;
+	cpp: string;
+	java: string;
+	python3: string;
 };
 
 export interface ProblemType {
 	id: string;
 	problemNumber: number;
 	title: string;
-	problemStatement: string;
-	difficulty: string;
+	description: string;
+	difficultyLevel: string;
 	constraints: {
 		content: string;
 	}[];
