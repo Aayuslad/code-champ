@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { boilerplateCode, ProblemStore } from "../stores/problemStore";
 import { UiStore } from "../stores/uiStore";
 import CustomDropdown2 from "./inputs/CustomDropDown2";
+import { languageIdMppings } from "../config/languageIdMppings";
 
 interface props {
 	problemId: string;
@@ -32,7 +33,7 @@ export default function CodeEditor({ problemId, boilerplateCode }: props) {
 	const theme = uiStore.theme === "dark" ? "vs-dark" : "hc-light";
 
 	return (
-		<div className="h-[87%] mt-3">
+		<div className="h-[92%] mt-3">
 			<div className="h-[100%] rounded-lg overflow-hidden">
 				<Editor
 					height="100%"
@@ -63,7 +64,21 @@ export default function CodeEditor({ problemId, boilerplateCode }: props) {
 				/>
 			</div>
 
-			<div className="flex items-center justify-end">
+			<div className="flex items-end justify-between pt-2">
+				<button
+					type="button"
+					className="bg-red-600 py-1 px-3"
+					disabled={!solutionCode && problemStore.skeletonLoading}
+					onClick={() =>
+						problemStore.submitProblem({
+							problemId,
+							languageId: languageIdMppings[language as keyof typeof languageIdMppings],
+							solutionCode,
+						})
+					}
+				>
+					Submit
+				</button>
 				<CustomDropdown2
 					minWidth={"100px"}
 					options={languages}

@@ -27,7 +27,7 @@ export default function CustomDropdown2({ minWidth , options, selectedOption, se
 			<button
 				type="button"
 				onClick={() => setIsOpen((prevState) => !prevState)}
-				className={`pt-1 pb-1 px-2 mt-2 flex items-center justify-between gap-2 dark:bg-dark300 bg-light300 rounded-md`}
+				className={`pt-1 pb-1 px-2 mt-1 flex items-center justify-between gap-2 dark:bg-dark300 bg-light300 rounded-md`}
 				style={{ minWidth: minWidth }}
 				aria-haspopup="listbox"
 				aria-expanded={isOpen}

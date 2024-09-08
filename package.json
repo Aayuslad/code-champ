@@ -8,9 +8,8 @@
 		"format": "prettier --write \"**/*.{ts,tsx,md}\""
 	},
 	"devDependencies": {
-		"prettier": "^3.2.5",
-		"turbo": "^2.0.11",
-		"typescript": "^5.4.5"
+		"prettier": "^3.3.3",
+		"turbo": "^2.1.1"
 	},
 	"engines": {
 		"node": ">=18"
@@ -20,9 +19,9 @@
 		"apps/*",
 		"packages/*"
 	],
-	"dependencies": {
-		"@types/morgan": "^1.9.9",
-		"aws-sdk": "^2.1681.0",
-		"morgan": "^1.10.0"
+	"resolutions": {
+		"rimraf": "^4.0.0",
+		"glob": "^9.0.0",
+		"gauge": "^4.0.0"
 	}
 }

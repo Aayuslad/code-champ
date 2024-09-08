@@ -31,7 +31,12 @@ export interface ProblemType {
 		profileImg: string | null;
 	};
 	exampleTestCases: {
-		input: string;
+		input: [
+			{
+				name: string;
+				value: string;
+			},
+		];
 		output: string;
 		explanation: string;
 	}[];
@@ -68,6 +73,7 @@ interface ProblemStoreType {
 	getProblems: () => Promise<void>;
 	getProblem: (values: { id: string }) => Promise<ProblemType | undefined>;
 	setOnGoingPrblem: (values: { problemId: string; solutionCode: string; language: string }) => void;
+	submitProblem: (values: { problemId: string; languageId: number; solutionCode: string }) => Promise<void>;
 }
 
 export const ProblemStore = create<ProblemStoreType>((set) => ({
@@ -109,5 +115,17 @@ export const ProblemStore = create<ProblemStoreType>((set) => ({
 				},
 			},
 		}));
+	},
+
+	submitProblem: async function (values) {
+		try {
+			set({ skeletonLoading: true });
+			const result = await axios.post("/problem/submit", values);
+			return result.data;
+		} catch (error) {
+			apiErrorHandler(error);
+		} finally {
+			set({ skeletonLoading: false });
+		}
 	},
 }));

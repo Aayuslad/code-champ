@@ -55,11 +55,13 @@ export default function SolveProblem() {
 						<ContainerSplitter setLeftWidth={setLeftWidth} />
 
 						{/* Right container */}
-						<div className="flex-1 w-[50%] pt-2.5 pb-1.5 px-6" style={{ width: `${100 - leftWidth}%` }}>
+						<div className="flex-1 w-[50%] pt-2.5 pb-1.5 px-6 flex flex-col" style={{ width: `${100 - leftWidth}%` }}>
 							<Navbar02 navs={["Code", "Test Cases"]} currentNav={activeNav2} setCurrentNav={setActiveNav2} />
 
 							{activeNav2 === "Code" && (
-								<CodeEditor problemId={problem.id} boilerplateCode={problem.boilerplateCode} />
+								<div className="flex-1">
+									<CodeEditor problemId={problem.id} boilerplateCode={problem.boilerplateCode} />
+								</div>
 							)}
 						</div>
 					</div>
@@ -82,9 +84,16 @@ const Problem = ({ problem }: { problem: ProblemType }) => {
 						<h2 className="text-lg font-semibold pt-1 pb-2 -ml-1">Example {index + 1}</h2>
 
 						<div className="border-l-4 border-light300 dark:border-dark300 pl-4">
-							<div className="space-x-2">
+							<div className="space-x-2 flex">
 								<span className="font-medium">Input: </span>
-								<span>{example.input}</span>
+								<span>
+									{example.input.map((input, index) => (
+										<div key={index}>
+											<span>{input.name + " = "}</span>
+											<span>{input.value}</span>
+										</div>
+									))}
+								</span>
 							</div>
 							<div className="space-x-2">
 								<span className="font-medium">Output: </span>

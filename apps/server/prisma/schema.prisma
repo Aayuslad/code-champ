@@ -32,7 +32,6 @@ model Problem {
   description         String          @db.VarChar(1000)
   functionStructure   String          @db.VarChar(1000)
   boilerplateCode     String
-  submissionCode      String
   sampleTestCasesKey  String // URL to the sample test cases JSON in S3
   testCasesKey        String // URL to the test cases JSON in S3
   constraints         Constraint[]

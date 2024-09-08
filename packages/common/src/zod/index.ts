@@ -33,7 +33,12 @@ export type FunctionStructureType = zod.infer<typeof functionStructureSchema>;
 
 // Schema for the sample test cases
 const testCaseSchema = zod.object({
-	input: zod.string(),
+	input: zod.array(
+		zod.object({
+			name: zod.string(),
+			value: zod.string(),
+		})
+	),
 	output: zod.string(),
 	explanation: zod.string().optional(),
 });
@@ -109,8 +114,8 @@ export const updatePasswordSchema = zod.object({
 export type updatePasswordSchemaType = zod.infer<typeof updatePasswordSchema>;
 
 export const sumitSolutionSchema = zod.object({
-	id: zod.string(),
-	language: zod.enum(["c", "cpp", "java", "python3"]),
+	problemId: zod.string(),
+	languageId: zod.number(),
 	solutionCode: zod.string(),
 });
 

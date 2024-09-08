@@ -1,17 +1,17 @@
-import { Request, Response } from "express";
-import { getObjectFromS3, uploadJsonToS3 } from "../services/awsS3";
-import { generateUniqueSlug } from "../helper/generateUniqueSlug";
-import { generateBoilerplate } from "../services/boilerplateGenerator/boilerplateGenerator";
 import { PrismaClient } from "@prisma/client";
-import { problemSchema, sumitSolutionSchema, TestCaseType } from "@repo/common/zod";
-import { generateSubmissionCode } from "../services/boilerplateGenerator/submissionCodeGenerator";
+import { FunctionStructureType, problemSchema, sumitSolutionSchema, TestCaseType } from "@repo/common/zod";
+import { Request, Response } from "express";
+import { generateUniqueSlug } from "../helper/generateUniqueSlug";
+import { getObjectFromS3, uploadJsonToS3 } from "../services/awsS3";
+import { generateBoilerplate } from "../services/boilerplateGenerator/boilerplateGenerator";
+import { generateSubmissionCode } from "../services/boilerplateGenerator/2submissionCodeGenerator";
 import axios from "axios";
-import { sortAndDeduplicateDiagnostics } from "typescript";
 const prisma = new PrismaClient();
 
 export async function contributeProblem(req: Request, res: Response) {
 	try {
 		const parsed = problemSchema.safeParse(req.body);
+		console.log(parsed.error);
 		if (!parsed.success) return res.status(422).json({ message: "Invalid data" });
 
 		const {
@@ -34,7 +34,6 @@ export async function contributeProblem(req: Request, res: Response) {
 		]);
 
 		const boilerplateCode = generateBoilerplate(functionStructure);
-		const submissionCode = generateSubmissionCode(functionStructure);
 
 		const topicTagIdsToAdd = await Promise.all(
 			topicTags
@@ -60,7 +59,6 @@ export async function contributeProblem(req: Request, res: Response) {
 				sampleTestCasesKey: `problem-test-cases/${slug}/sampleTestCases.json`,
 				testCasesKey: `problem-test-cases/${slug}/testCases.json`,
 				boilerplateCode: JSON.stringify(boilerplateCode),
-				submissionCode: JSON.stringify(submissionCode),
 				functionStructure: JSON.stringify(functionStructure),
 				constraints: {
 					create: constraints.map((constraint: string) => ({
@@ -165,7 +163,7 @@ export async function getProblem(req: Request, res: Response) {
 		if (!problem) return;
 
 		const sampleTestCasesJson = await getObjectFromS3(problem.sampleTestCasesKey);
-		const parsedTestCases = JSON.parse(sampleTestCasesJson);
+		const parsedTestCases: TestCaseType = JSON.parse(sampleTestCasesJson);
 
 		const acceptanceRate =
 			problem.submissionCount > 0 ? ((problem.acceptedSubmissions / problem.submissionCount) * 100).toFixed(2) : "0.00";
@@ -185,42 +183,43 @@ export async function getProblem(req: Request, res: Response) {
 }
 
 export async function sumitSolution(req: Request, res: Response) {
-	const { id, language, solutionCode } = req.body;
-
 	try {
-		// zod validation
 		const parsed = sumitSolutionSchema.safeParse(req.body);
 		if (!parsed.success) return res.status(422).json({ message: "Invalid data" });
-		const { id, language, solutionCode } = parsed.data;
+		const { problemId, languageId, solutionCode } = parsed.data;
 
 		const problem = await prisma.problem.findFirst({
-			where: { id },
+			where: { id: problemId },
 			select: {
 				id: true,
 				testCasesKey: true,
-				submissionCode: true,
+				functionStructure: true,
 			},
 		});
 
 		if (!problem) return res.status(404).json({ message: "Problem not found" });
 
 		const testCases: TestCaseType[] = JSON.parse(await getObjectFromS3(problem.testCasesKey));
-		const submissionCode: { c: string; cpp: string; java: string; python3: string } = JSON.parse(problem.submissionCode);
+		const functionStructure: FunctionStructureType = JSON.parse(problem.functionStructure);
 
-		const finalCode = submissionCode[language].replace("{solution_code}", solutionCode);
+		console.log(testCases.map((p) => generateSubmissionCode(functionStructure, p, solutionCode, languageId)));
 
-		const tokens = axios.post("http://x.x.x.x:2358/submissions", {
-			submissions: testCases.map((testCase) => ({
-				language_id: language,
-				source_code: finalCode,
-				stdin: testCase.input,
-				expected_output: testCase.output,
+		const response = await axios.post("https://codesandbox.code-champ.xyz/submit-batch-task", {
+			tasks: testCases.map((testCase) => ({
+				languageId: languageId,
+				code: generateSubmissionCode(functionStructure, testCase, solutionCode, languageId),
+				expeexpectedOutput: testCase.output,
 			})),
 		});
 
 		// entry in db
+		console.log(response);
 
 		// return tokens
+		return res.status(200).json({
+			message: "Solution submitted successfully",
+			submissionId: response,
+		});
 	} catch (err) {
 		console.log(err);
 		res.status(500).json({
