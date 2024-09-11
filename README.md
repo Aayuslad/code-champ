@@ -16,6 +16,13 @@ CodeChamp is a competitive coding platform that allows users to practice coding 
 - 📝 **Detailed Explanations:** Solutions with detailed explanations to help you understand different approaches.
 - 👥 **Community:** Engage with the coding community, discuss problems, and share insights.
 
+## Challenges:
+
+- **Code Sandboxing:** Developed a secure server that executes code within isolated containers and returns the output. This involves integrating a Redis queue for task management and Docker for containerization. [Successfully implemented]
+
+- **Boilerplate and Submission Code Generation:** Developed a script that automates the generation of missing components for code submissions. This includes completing the main function, adding test case inputs, and providing outputs to ensure the program is compilable and functional. The script generates these components based on user-defined function signatures and test cases and supports multiple programming languages. It also creates starter code for each language, which appears in the code editor on the problem page. [Successfully implemented for single variables and arrays]
+
+
 ## Getting Started
 
 To get a local copy of the project up and running, follow these steps:
