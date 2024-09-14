@@ -4,7 +4,7 @@ interface Props {
 	minWidth?: string;
 	options: string[];
 	selectedOption: string;
-	setSelectedOption: React.Dispatch<React.SetStateAction<string>>;
+	setSelectedOption: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
 export default function CustomDropdown2({ minWidth , options, selectedOption, setSelectedOption }: Props) {

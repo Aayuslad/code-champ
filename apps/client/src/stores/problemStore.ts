@@ -1,131 +1,146 @@
-import axios from "axios";
 import { create } from "zustand";
 import apiErrorHandler from "../helper/apiCallErrorHandler";
+import { FeedProblemsType, ProblemType, sumitSolutionSchemaType, checkBatchSubmissionType } from "@repo/common/zod";
+import axios from "axios";
 
-export type boilerplateCode = {
-	c: string;
-	cpp: string;
-	java: string;
-	python3: string;
+type ProblemStoreType = {
+    feedProblems: FeedProblemsType[];
+    onGoingProblems: ProblemType[];
+    skeletonLoading: boolean;
+    buttonLoading: boolean;
+
+    getFeedProblems: () => Promise<void>;
+    getProblem: (problemId: string) => Promise<void>;
+    setOngoingProblem: (problem: ProblemType) => void;
+    addSolution: (
+        problemId: string,
+        solutionCode: {
+            languageId: number;
+            solutionCode: string;
+        },
+    ) => void;
+    updateSolution: (
+        problemId: string,
+        solutionCode: {
+            languageId: number;
+            solutionCode: string;
+        },
+    ) => void;
+    submitProblem: (values: sumitSolutionSchemaType) => Promise<boolean>;
+    checkBatchSubmission: (taskId: string, problemId: string) => Promise<void>;
+    getProblemSubmissions: (problemId: string) => Promise<void>;
 };
 
-export interface ProblemType {
-	id: string;
-	problemNumber: number;
-	title: string;
-	description: string;
-	difficultyLevel: string;
-	constraints: {
-		content: string;
-	}[];
-	topicTags: {
-		content: string;
-	}[];
-	hints: {
-		content: string;
-	}[];
-	boilerplateCode: boilerplateCode;
-	createdBy: {
-		id: string;
-		userName: string;
-		profileImg: string | null;
-	};
-	exampleTestCases: {
-		input: [
-			{
-				name: string;
-				value: string;
-			},
-		];
-		output: string;
-		explanation: string;
-	}[];
-	acceptanceRate: string;
-	submissionCount: number;
-	acceptedSubmissions: number;
-}
+export const ProblemStore = create<ProblemStoreType>((set, get) => ({
+    feedProblems: [],
+    onGoingProblems: [],
+    skeletonLoading: false,
+    buttonLoading: false,
 
-interface OnGoingProblem {
-	problemId: string;
-	language: string;
-	solutionCode: string;
-}
+    getFeedProblems: async () => {
+        try {
+            set({ skeletonLoading: true });
+            const { data } = await axios.get<FeedProblemsType[]>("/problem/bulk");
+            set({ feedProblems: data });
+        } catch (error) {
+            apiErrorHandler(error);
+        } finally {
+            set({ skeletonLoading: false });
+        }
+    },
 
-type OnGoingProblems = {
-	[problemId: string]: {
-		[language: string]: OnGoingProblem;
-	};
-};
+    getProblem: async problemId => {
+        try {
+            set({ skeletonLoading: true });
+            const { data } = await axios.get<ProblemType>(`/problem/${problemId}`);
+            set(state => ({ onGoingProblems: [...state.onGoingProblems, data] }));
+        } catch (error) {
+            apiErrorHandler(error);
+        } finally {
+            set({ skeletonLoading: false });
+        }
+    },
 
-interface ProblemStoreType {
-	skeletonLoading: boolean;
-	problems:
-		| {
-				id: string;
-				problemNumber: number;
-				title: string;
-				difficulty: string;
-				acceptanceRate: string;
-		  }[]
-		| [];
-	onGoingProblems: OnGoingProblems;
+    setOngoingProblem: problem => {
+        set(state => ({ onGoingProblems: [...state.onGoingProblems, problem] }));
+    },
 
-	getProblems: () => Promise<void>;
-	getProblem: (values: { id: string }) => Promise<ProblemType | undefined>;
-	setOnGoingPrblem: (values: { problemId: string; solutionCode: string; language: string }) => void;
-	submitProblem: (values: { problemId: string; languageId: number; solutionCode: string }) => Promise<void>;
-}
+    addSolution: (problemId, solutioncode) => {
+        set(state => ({
+            onGoingProblems: state.onGoingProblems.map(problem =>
+                problem.id === problemId ? { ...problem, solutions: [...(problem.solutions || []), solutioncode] } : problem,
+            ),
+        }));
+    },
 
-export const ProblemStore = create<ProblemStoreType>((set) => ({
-	problems: [],
-	skeletonLoading: false,
-	onGoingProblems: {},
+    updateSolution: (problemId, solutionCode) => {
+        set(state => ({
+            onGoingProblems: state.onGoingProblems.map(problem =>
+                problem.id === problemId
+                    ? {
+                          ...problem,
+                          solutions: problem.solutions?.map(solution =>
+                              solution.languageId === solutionCode.languageId ? { ...solution, ...solutionCode } : solution,
+                          ),
+                      }
+                    : problem,
+            ),
+        }));
+    },
 
-	getProblems: async function () {
-		try {
-			set({ skeletonLoading: true });
-			const result = await axios.get("/problem/bulk");
-			set({ problems: result.data });
-		} catch (error) {
-			apiErrorHandler(error);
-		} finally {
-			set({ skeletonLoading: false });
-		}
-	},
+    submitProblem: async values => {
+        const state = ProblemStore.getState();
+        let flag = true;
+        try {
+            set({ buttonLoading: true });
+            const { data } = await axios.post("/problem/submit", values);
+            state.checkBatchSubmission(data.taskId, values.problemId);
+        } catch (error) {
+            apiErrorHandler(error);
+            flag = false;
+        } finally {
+            set({ buttonLoading: false });
+            return flag;
+        }
+    },
 
-	getProblem: async function (values) {
-		try {
-			set({ skeletonLoading: true });
-			const result = await axios.get(`/problem/${values.id}`);
-			return result.data as ProblemType;
-		} catch (error) {
-			apiErrorHandler(error);
-		} finally {
-			set({ skeletonLoading: false });
-		}
-	},
+    checkBatchSubmission: async (taskId, problemId) => {
+        try {
+            set({ buttonLoading: true });
+            while (1) {
+                const { data }: { data: checkBatchSubmissionType } = await axios.get(`/problem/check/${taskId}/${problemId}`);
+                set(state => ({
+                    onGoingProblems: state.onGoingProblems.map(problem => {
+                        if (problem.id === problemId) {
+                            return {
+                                ...problem,
+                                result: data,
+                            };
+                        }
+                        return problem;
+                    }),
+                }));
+                if (data.status === "rejected" || data.status === "accepted") {
+                    break;
+                }
+                await new Promise(resolve => setTimeout(resolve, 4000));
+            }
+        } catch (error) {
+            apiErrorHandler(error);
+        } finally {
+            set({ buttonLoading: false });
+        }
+    },
 
-	setOnGoingPrblem: function (values: OnGoingProblem) {
-		set((state) => ({
-			onGoingProblems: {
-				...state.onGoingProblems,
-				[values.problemId]: {
-					...(state.onGoingProblems[values.problemId] || {}),
-					[values.language]: values,
-				},
-			},
-		}));
-	},
-
-	submitProblem: async function (values) {
-		try {
-			set({ skeletonLoading: true });
-			const result = await axios.post("/problem/submit", values);
-			return result.data;
-		} catch (error) {
-			apiErrorHandler(error);
-		} finally {
-			set({ skeletonLoading: false });
-		}
-	},
+    getProblemSubmissions: async problemId => {
+        try {
+            set({ skeletonLoading: true });
+            const { data } = await axios.get<ProblemType>(`/problem/submission/${problemId}`);
+            set(state => ({ onGoingProblems: [...state.onGoingProblems, data] }));
+        } catch (error) {
+            apiErrorHandler(error);
+        } finally {
+            set({ skeletonLoading: false });
+        }
+    },
 }));

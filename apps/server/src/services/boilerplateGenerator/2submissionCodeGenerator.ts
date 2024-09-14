@@ -89,8 +89,10 @@ int main() {
 
 		submissionCode = submissionCode.replace("{print_result}", printResult);
 	}
-
-	return submissionCode;
+		
+	const base64SubmissionCode = Buffer.from(submissionCode).toString("base64");
+	return base64SubmissionCode;
+	// return submissionCode;
 };
 
 const generateCSubmissionCode = (structure: FunctionStructureType, testCase: TestCaseType, solutionCode: string) => {
@@ -159,7 +161,8 @@ int main() {
 		submissionCode = submissionCode.replace("{print_result}", printResult);
 	}
 
-	return submissionCode;
+	const base64SubmissionCode = Buffer.from(submissionCode).toString("base64");
+	return base64SubmissionCode;
 };
 
 const generateJavaSubmissionCode = (structure: FunctionStructureType, testCase: TestCaseType, solutionCode: string) => {
@@ -230,7 +233,8 @@ public class Solution {
 		submissionCode = submissionCode.replace("{print_result}", printResult);
 	}
 
-	return submissionCode;
+	const base64SubmissionCode = Buffer.from(submissionCode).toString("base64");
+	return base64SubmissionCode;
 };
 
 const generatePython3SubmissionCode = (structure: FunctionStructureType, testCase: TestCaseType, solutionCode: string) => {
@@ -281,5 +285,6 @@ if __name__ == "__main__":
 		submissionCode = submissionCode.replace("{print_result}", printResult);
 	}
 
-	return submissionCode;
+	const base64SubmissionCode = Buffer.from(submissionCode).toString("base64");
+	return base64SubmissionCode;
 };

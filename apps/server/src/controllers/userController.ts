@@ -142,7 +142,6 @@ export async function fetchUserProfile(req: Request, res: Response) {
 			email: user.email,
 			userName: user.userName,
 		});
-
 	} catch (error) {
 		res.status(500).json({
 			message: "Internal Server Error",
