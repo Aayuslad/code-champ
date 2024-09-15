@@ -23,5 +23,8 @@
 		"rimraf": "^4.0.0",
 		"glob": "^9.0.0",
 		"gauge": "^4.0.0"
+	},
+	"dependencies": {
+		"tsup": "^8.2.4"
 	}
 }
