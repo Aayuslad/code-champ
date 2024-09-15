@@ -16,9 +16,9 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@repo/common": "*",
         "@aws-sdk/client-s3": "^3.645.0",
         "@prisma/client": "^5.18.0",
+        "@repo/common": "*",
         "@types/bcrypt": "^5.0.2",
         "@types/cookie-parser": "^1.4.7",
         "@types/cors": "^2.8.17",
@@ -40,5 +40,8 @@
         "prisma": "^5.19.1",
         "tsup": "^8.2.4",
         "typescript": "^5.5.4"
+    },
+    "devDependencies": {
+        "@types/nodemailer": "^6.4.15"
     }
 }
