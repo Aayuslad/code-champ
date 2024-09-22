@@ -41,7 +41,7 @@ export default function CodeEditor({ problemId, navToResult }: { problemId: stri
             };
             problemStore.addSolution(problemId, solution);
         } else {
-            // problemStore.addSolution(problemId, exist);
+            problemStore.addSolution(problemId, exist);
         }
     }, [language]);
 
@@ -103,7 +103,7 @@ export default function CodeEditor({ problemId, navToResult }: { problemId: stri
                                         solution => solution.languageId === languageToIdMppings[language as string],
                                     )?.solutionCode as string,
                                 });
-                                if (res) navToResult();
+                                if (res === true) navToResult();
                             }}
                         >
                             {problemStore.buttonLoading ? "Submiting..." : "Submit"}

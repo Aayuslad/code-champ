@@ -4,8 +4,10 @@ import { Request, Response } from "express";
 import { generateUniqueSlug } from "../helper/generateUniqueSlug";
 import { getObjectFromS3, uploadJsonToS3 } from "../services/awsS3";
 import { generateBoilerplate } from "../services/boilerplateGenerator/boilerplateGenerator";
-import { generateSubmissionCode } from "../services/boilerplateGenerator/2submissionCodeGenerator";
+import { generateSubmissionCode } from "../services/boilerplateGenerator/submissionCodeGenerator";
 import axios from "axios";
+import { stdinGenerator } from "../services/stdinGenerator";
+import { idToLanguageMappings } from "../config/languageIdmappings";
 const prisma = new PrismaClient();
 
 export async function contributeProblem(req: Request, res: Response) {
@@ -34,6 +36,7 @@ export async function contributeProblem(req: Request, res: Response) {
         ]);
 
         const boilerplateCode = generateBoilerplate(functionStructure);
+        const submissionCode = generateSubmissionCode(functionStructure);
 
         const topicTagIdsToAdd = await Promise.all(
             topicTags
@@ -59,6 +62,8 @@ export async function contributeProblem(req: Request, res: Response) {
                 sampleTestCasesKey: `problem-test-cases/${slug}/sampleTestCases.json`,
                 testCasesKey: `problem-test-cases/${slug}/testCases.json`,
                 boilerplateCode: JSON.stringify(boilerplateCode),
+                submissionCode: JSON.stringify(submissionCode),
+                testCasesCount: testCases.length || 0,
                 functionStructure: JSON.stringify(functionStructure),
                 constraints: {
                     create: constraints.map((constraint: string) => ({
@@ -200,6 +205,7 @@ export async function submitSolution(req: Request, res: Response) {
                 id: true,
                 testCasesKey: true,
                 functionStructure: true,
+                submissionCode: true,
             },
         });
 
@@ -207,6 +213,10 @@ export async function submitSolution(req: Request, res: Response) {
 
         const testCases: TestCaseType[] = JSON.parse(await getObjectFromS3(problem.testCasesKey));
         const functionStructure: FunctionStructureType = JSON.parse(problem.functionStructure);
+        const parcedSubmissionCode = JSON.parse(problem.submissionCode);
+        const solutionCodee = parcedSubmissionCode[idToLanguageMappings[languageId] as string];
+        const finalCode = solutionCodee.replace("{solution_code}", solutionCode);
+        const encodedFinalCode = Buffer.from(finalCode).toString("base64");
 
         const submission = await prisma.submission.create({
             data: {
@@ -218,13 +228,27 @@ export async function submitSolution(req: Request, res: Response) {
             },
         });
 
+        console.log({
+            submissionId: submission.id,
+            callbackUrl: `https://code-champ-webhook-handler.vercel.app/submit-task-callback`,
+            languageId: languageId,
+            code: encodedFinalCode,
+            tasks: testCases.map((testCase, index) => ({
+                id: index,
+                stdin: stdinGenerator(functionStructure, testCase),
+                expectedOutput: testCase.output,
+                inputs: JSON.stringify(testCase.input),
+            })),
+        });
+
         const response = await axios.post("http://localhost:3000/submit-batch-task", {
             submissionId: submission.id,
             callbackUrl: `https://code-champ-webhook-handler.vercel.app/submit-task-callback`,
             languageId: languageId,
+            code: encodedFinalCode,
             tasks: testCases.map((testCase, index) => ({
                 id: index,
-                code: generateSubmissionCode(functionStructure, testCase, solutionCode, languageId),
+                stdin: stdinGenerator(functionStructure, testCase),
                 expectedOutput: testCase.output,
                 inputs: JSON.stringify(testCase.input),
             })),
@@ -245,7 +269,6 @@ export async function submitSolution(req: Request, res: Response) {
 export async function checkBatchSubmission(req: Request, res: Response) {
     try {
         const { taskId, problemId } = req.params;
-
         const result = await axios.get(`http://localhost:3000/batch-task-status/${taskId}`);
 
         console.log(result.data);
@@ -260,7 +283,6 @@ export async function checkBatchSubmission(req: Request, res: Response) {
                     inputs: JSON.parse(task.inputs),
                 })) || [],
         };
-
         return res.json(editedResult);
     } catch (err) {
         console.log(err);
@@ -285,6 +307,7 @@ export async function getSubmissions(req: Request, res: Response) {
             },
             select: {
                 id: true,
+                code: true,
                 languageId: true,
                 status: true,
                 createdAt: true,

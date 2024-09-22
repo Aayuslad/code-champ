@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { ProblemType, submission } from "@repo/common/zod";
+import { useEffect, useRef, useState } from "react";
+import { IoIosArrowForward } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
 import CodeEditor from "../components/codeEditor";
 import { ContainerSplitter } from "../components/containerSplitter";
@@ -6,10 +8,9 @@ import { PorblemPageHeader } from "../components/headers/problemPageHeader";
 import { Navbar02 } from "../components/navbars/navbar02";
 import { SideNavbar } from "../components/navbars/sideNavbar";
 import MainWrapper from "../components/wrappers/mainWrapper";
-import { ProblemStore } from "../stores/problemStore";
+import { idToLanguageMappings } from "../config/languageIdMppings";
 import { formatDate } from "../helper/formatDate";
-import { ProblemType, submission } from "@repo/common/zod";
-import { IoIosArrowForward } from "react-icons/io";
+import { ProblemStore } from "../stores/problemStore";
 
 export default function SolveProblem() {
     const problemStore = ProblemStore();
@@ -52,6 +53,7 @@ export default function SolveProblem() {
                 //     console.log(submissions);
                 //     submissions && setSubmissions(submissions);
                 // })();
+                problemStore.getProblemSubmissions(id as string);
                 break;
             default:
                 break;
@@ -74,16 +76,7 @@ export default function SolveProblem() {
     }, [nav2]);
 
     const problem = problemStore.onGoingProblems.find(problem => problem.id === id);
-
     console.log(problem);
-
-    useEffect(() => {
-        const problem = problemStore.onGoingProblems.find(problem => problem.id === id);
-        if (problem?.result) {
-            setActiveNav2("Result");
-            navigate(`/solve-problem/${id}/${activeNav1}/Result`);
-        }
-    }, [problemStore.onGoingProblems]);
 
     return (
         <div className="SolveProblemPage">
@@ -128,7 +121,9 @@ export default function SolveProblem() {
                                 <div className="flex-1">
                                     <CodeEditor
                                         problemId={problem.id}
-                                        navToResult={() => navigate(`/solve-problem/${id}/${activeNav1}/Result`)}
+                                        navToResult={() => {
+                                            navigate(`/solve-problem/${id}/${activeNav1}/Result`);
+                                        }}
                                     />
                                 </div>
                             )}
@@ -236,8 +231,13 @@ const Submissions = ({ submissions }: { submissions?: submission[] }) => {
                     const date = new Date(submission.createdAt);
                     const string = date.toISOString();
                     return (
-                        <div className="bg-dark300 mb-2 px-4 py-6 rounded-md flex justify-between items-center cursor-pointer">
-                            <span>{submission.status}</span>
+                        <div className="  bg-light300 dark:bg-dark300 mb-2 px-4 py-6 rounded-md flex justify-between items-center cursor-pointer">
+                            <span
+                                className={`font-semibold ${submission.status === "Accepted" ? "text-green-500" : "text-red-600"}`}
+                            >
+                                {submission.status}
+                            </span>
+                            <span>{idToLanguageMappings[parseInt(submission.languageId)]}</span>
                             <span>{formatDate(string)}</span>
                         </div>
                     );
@@ -247,13 +247,22 @@ const Submissions = ({ submissions }: { submissions?: submission[] }) => {
 };
 
 const Result = ({ problem }: { problem: ProblemType }) => {
+    const problemStore = ProblemStore();
+    const resultRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (resultRef.current && problemStore.skeletonLoading) {
+            resultRef.current.scrollTop = resultRef.current.scrollHeight;
+        }
+    }, [problem.result?.tasks?.length]);
+
     return (
-        <div className="flex flex-col overflow-scroll pt-2">
+        <div ref={resultRef} className="flex flex-col overflow-scroll pt-2 overflow-y-auto overflow-x-hidden no-scrollbar h-full">
             {problem.result &&
                 problem.result.tasks &&
                 problem.result.tasks.map((testCase, index) => {
                     return (
-                        <details key={index} className="flex flex-col gap-2 bg-dark300 rounded-md mb-3 mr-6">
+                        <details key={index} className="flex flex-col gap-2 rounded-md mb-3 mr-6 bg-light300 dark:bg-dark300">
                             <summary
                                 className={`py-2 pl-3 pr-4 font-semibold cursor-pointer flex gap-3 justify-between items-center`}
                             >
@@ -289,7 +298,7 @@ const Result = ({ problem }: { problem: ProblemType }) => {
                         </details>
                     );
                 })}
-            {problem.result && problem.result.tasks === undefined && <div>Loading...</div>}
+            {problemStore.skeletonLoading && problem.result && <div>executing...</div>}
             {!problem.result && <div>No Results</div>}
         </div>
     );

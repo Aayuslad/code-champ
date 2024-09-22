@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import apiErrorHandler from "../helper/apiCallErrorHandler";
-import { FeedProblemsType, ProblemType, sumitSolutionSchemaType, checkBatchSubmissionType } from "@repo/common/zod";
+import { FeedProblemsType, ProblemType, sumitSolutionSchemaType, checkBatchSubmissionType, submission } from "@repo/common/zod";
 import axios from "axios";
 
 type ProblemStoreType = {
@@ -31,7 +31,7 @@ type ProblemStoreType = {
     getProblemSubmissions: (problemId: string) => Promise<void>;
 };
 
-export const ProblemStore = create<ProblemStoreType>((set, get) => ({
+export const ProblemStore = create<ProblemStoreType>(set => ({
     feedProblems: [],
     onGoingProblems: [],
     skeletonLoading: false,
@@ -106,7 +106,7 @@ export const ProblemStore = create<ProblemStoreType>((set, get) => ({
 
     checkBatchSubmission: async (taskId, problemId) => {
         try {
-            set({ buttonLoading: true });
+            set({ skeletonLoading: true });
             while (1) {
                 const { data }: { data: checkBatchSubmissionType } = await axios.get(`/problem/check/${taskId}/${problemId}`);
                 set(state => ({
@@ -123,20 +123,24 @@ export const ProblemStore = create<ProblemStoreType>((set, get) => ({
                 if (data.status === "rejected" || data.status === "accepted") {
                     break;
                 }
-                await new Promise(resolve => setTimeout(resolve, 4000));
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
         } catch (error) {
             apiErrorHandler(error);
         } finally {
-            set({ buttonLoading: false });
+            set({ skeletonLoading: false });
         }
     },
 
     getProblemSubmissions: async problemId => {
         try {
             set({ skeletonLoading: true });
-            const { data } = await axios.get<ProblemType>(`/problem/submission/${problemId}`);
-            set(state => ({ onGoingProblems: [...state.onGoingProblems, data] }));
+            const { data } = await axios.get<submission[]>(`/problem/submission/${problemId}`);
+            set(state => ({
+                onGoingProblems: state.onGoingProblems.map(problem =>
+                    problem.id === problemId ? { ...problem, submissions: data } : problem,
+                ),
+            }));
         } catch (error) {
             apiErrorHandler(error);
         } finally {

@@ -23,9 +23,13 @@ export default function Problems() {
 
                 <div className="flex items-center justify-center">
                     <div className=" w-[1300px] min-w-[100px] flex">
-                        <div className="flex-1 p-4 flex flex-col items-center lg:items-start">
-                            <ProblemSetTable />
-                        </div>
+                        {problemStore.feedProblems.length > 0 && (
+                            <div className="flex-1 p-4 flex flex-col items-center lg:items-start">
+                                <ProblemSetTable />
+                            </div>
+                        )}
+
+                        {problemStore.feedProblems.length === 0 && <div>Loading...</div>}
 
                         <div className="sideBar lg:w-[350px] xl:w-[400px] hidden lg:block"></div>
                     </div>
