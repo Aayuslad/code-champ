@@ -257,49 +257,102 @@ const Result = ({ problem }: { problem: ProblemType }) => {
     }, [problem.result?.tasks?.length]);
 
     return (
-        <div ref={resultRef} className="flex flex-col overflow-scroll pt-2 overflow-y-auto overflow-x-hidden no-scrollbar h-full">
-            {problem.result &&
-                problem.result.tasks &&
-                problem.result.tasks.map((testCase, index) => {
-                    return (
-                        <details key={index} className="flex flex-col gap-2 rounded-md mb-3 mr-6 bg-light300 dark:bg-dark300">
-                            <summary
-                                className={`py-2 pl-3 pr-4 font-semibold cursor-pointer flex gap-3 justify-between items-center`}
+        <div className="flex flex-col pt-2 h-[92%] mt-0.5">
+            {problem.result && problem.result.tasks && (
+                <div ref={resultRef} className="flex-1 overflow-scroll overflow-y-auto overflow-x-hidden no-scrollbar">
+                    {problem.result.status === "compilation error" && (
+                        <div>
+                            <div className="text-red-600 text-center font-bold text-xl">Compilation Error</div>
+                            <pre className="pt-6 text-red-500">{problem.result?.compilationError}</pre>
+                        </div>
+                    )}
+
+                    {problem.result.status === "run time error" && (
+                        <div className="text-red-600 text-center  font-bold text-xl">Run Time Error</div>
+                    )}
+
+                    {problem.result.tasks.map((testCase, index) => {
+                        return (
+                            <details
+                                key={index}
+                                className="flex flex-col gap-2 rounded-md mb-3 mr-6 bg-light300 dark:bg-dark300 group"
                             >
-                                <div className="flex gap-3">
-                                    <span className="px-1 ">{testCase.id + 1}</span>
-                                    <span className={`px-1 ${testCase.accepted ? "text-green-500" : "text-red-500"}`}>
-                                        {testCase.accepted ? "Accepted" : "Rejected"}
-                                    </span>
+                                <summary
+                                    className={`py-2 pl-3 pr-4 font-semibold cursor-pointer flex gap-3 justify-between items-center`}
+                                >
+                                    <div className="flex gap-3">
+                                        <span className="px-1 ">{testCase.id + 1}</span>
+                                        <span className={`px-1 ${testCase.accepted ? "text-green-500" : "text-red-500"}`}>
+                                            {testCase.accepted ? "Accepted" : "Rejected"}
+                                        </span>
+                                    </div>
+                                    <IoIosArrowForward className="transition-transform group-open:rotate-90" />
+                                </summary>
+                                <div
+                                    className="px-4 py-2 border-t border-[#00000070] dark:border-[#ffffff70] mx-2 overflow-hidden"
+                                    style={{ transition: "max-height 0.3s ease-in-out" }}
+                                >
+                                    <div className="space-x-2 flex">
+                                        <span className="font-medium">Input: </span>
+                                        <span>
+                                            {testCase.inputs.map((input, index) => (
+                                                <div key={index}>
+                                                    <span>{input.name + " = "}</span>
+                                                    <span>{input.value}</span>
+                                                </div>
+                                            ))}
+                                        </span>
+                                    </div>
+                                    <div className="space-x-2">
+                                        <span className="font-medium">Output: </span>
+                                        <span>{testCase.output}</span>
+                                    </div>
+                                    <div>
+                                        <span className="font-medium">Expected Output: </span>
+                                        <span>{testCase.expectedOutput}</span>
+                                    </div>
                                 </div>
-                                <IoIosArrowForward />
-                            </summary>
-                            <div className="px-4 py-2 border-t mx-2">
-                                <div className="space-x-2 flex">
-                                    <span className="font-medium">Input: </span>
-                                    <span>
-                                        {testCase.inputs.map((input, index) => (
-                                            <div key={index}>
-                                                <span>{input.name + " = "}</span>
-                                                <span>{input.value}</span>
-                                            </div>
-                                        ))}
-                                    </span>
-                                </div>
-                                <div className="space-x-2">
-                                    <span className="font-medium">Output: </span>
-                                    <span>{testCase.output}</span>
-                                </div>
-                                <div>
-                                    <span className="font-medium">Expected Output: </span>
-                                    <span>{testCase.expectedOutput}</span>
-                                </div>
+                            </details>
+                        );
+                    })}
+                    {problemStore.skeletonLoading && problem.result && <div className="text-center">executing...</div>}
+                    {!problem.result && <div className="text-center">No Results</div>}
+                </div>
+            )}
+
+            <div className="h-[30px]">
+                {problem.result && (
+                    <div className="flex gap-4">
+                        <div className="py-2 font-semibold">
+                            Test Cases:{" "}
+                            <span className="font-normal">{`${problem.testCasesCount}/${problem.result?.tasks?.length || 0}`}</span>
+                        </div>
+
+                        {problem.result.status && (
+                            <div className="py-2 font-semibold">
+                                Status:{" "}
+                                <span
+                                    className={`${
+                                        problem.result.status === "accepted"
+                                            ? "text-green-500"
+                                            : problem.result.status === "rejected"
+                                              ? "text-red-500"
+                                              : problem.result.status === "pending"
+                                                ? "text-yellow-500"
+                                                : problem.result.status === "compilation error"
+                                                  ? "text-red-500"
+                                                  : problem.result.status === "run time error"
+                                                    ? "text-red-500"
+                                                    : "text-gray-500"
+                                    }`}
+                                >
+                                    {problem.result.status?.charAt(0).toUpperCase() + problem.result.status.slice(1)}
+                                </span>
                             </div>
-                        </details>
-                    );
-                })}
-            {problemStore.skeletonLoading && problem.result && <div>executing...</div>}
-            {!problem.result && <div>No Results</div>}
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

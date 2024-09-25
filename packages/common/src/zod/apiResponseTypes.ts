@@ -30,6 +30,7 @@ export type ProblemType = {
     constraints: string[];
     topicTags: string[];
     hints: string[];
+    testCasesCount: number;
     createdBy: {
         id: string;
         userName: string;
@@ -54,7 +55,8 @@ export type submission = {
 
 export type checkBatchSubmissionType = {
     problemId: string;
-    status?: "pending" | "executing" | "accepted" | "rejected" | "notFound";
+    status?: "pending" | "executing" | "accepted" | "notFound" | "rejected" | "run time error" | "compilation error";
+    compilationError?: string;
     tasks?: [
         {
             id: string;

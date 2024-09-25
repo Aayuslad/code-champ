@@ -13,7 +13,6 @@ const prisma = new PrismaClient();
 export async function contributeProblem(req: Request, res: Response) {
     try {
         const parsed = contributeProblemSchema.safeParse(req.body);
-        console.log(parsed.error);
         if (!parsed.success) return res.status(422).json({ message: "Invalid data" });
 
         const {
@@ -55,7 +54,7 @@ export async function contributeProblem(req: Request, res: Response) {
         const newProblem = await prisma.problem.create({
             data: {
                 title,
-                problemNumber: 1,
+                problemNumber: 2,
                 slug: slug,
                 description: description,
                 difficultyLevel: difficultyLevel,
@@ -153,6 +152,7 @@ export async function getProblem(req: Request, res: Response) {
                 topicTags: { select: { content: true } },
                 hints: { select: { content: true } },
                 boilerplateCode: true,
+                testCasesCount: true,
                 createdBy: {
                     select: {
                         id: true,
@@ -228,19 +228,6 @@ export async function submitSolution(req: Request, res: Response) {
             },
         });
 
-        console.log({
-            submissionId: submission.id,
-            callbackUrl: `https://code-champ-webhook-handler.vercel.app/submit-task-callback`,
-            languageId: languageId,
-            code: encodedFinalCode,
-            tasks: testCases.map((testCase, index) => ({
-                id: index,
-                stdin: stdinGenerator(functionStructure, testCase),
-                expectedOutput: testCase.output,
-                inputs: JSON.stringify(testCase.input),
-            })),
-        });
-
         const response = await axios.post("http://localhost:3000/submit-batch-task", {
             submissionId: submission.id,
             callbackUrl: `https://code-champ-webhook-handler.vercel.app/submit-task-callback`,
@@ -270,8 +257,6 @@ export async function checkBatchSubmission(req: Request, res: Response) {
     try {
         const { taskId, problemId } = req.params;
         const result = await axios.get(`http://localhost:3000/batch-task-status/${taskId}`);
-
-        console.log(result.data);
 
         const editedResult = {
             ...result.data,

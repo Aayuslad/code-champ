@@ -120,7 +120,7 @@ export const ProblemStore = create<ProblemStoreType>(set => ({
                         return problem;
                     }),
                 }));
-                if (data.status === "rejected" || data.status === "accepted") {
+                if (data.status !== "executing" && data.status !== "pending" && data.status !== "notFound") {
                     break;
                 }
                 await new Promise(resolve => setTimeout(resolve, 500));
@@ -128,10 +128,9 @@ export const ProblemStore = create<ProblemStoreType>(set => ({
         } catch (error) {
             apiErrorHandler(error);
         } finally {
-            set({ skeletonLoading: false });
+            setTimeout(() => set({ skeletonLoading: false }), 500);
         }
     },
-
     getProblemSubmissions: async problemId => {
         try {
             set({ skeletonLoading: true });
