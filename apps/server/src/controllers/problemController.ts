@@ -54,7 +54,7 @@ export async function contributeProblem(req: Request, res: Response) {
         const newProblem = await prisma.problem.create({
             data: {
                 title,
-                problemNumber: 2,
+                problemNumber: 1,
                 slug: slug,
                 description: description,
                 difficultyLevel: difficultyLevel,
@@ -194,6 +194,9 @@ export async function getProblem(req: Request, res: Response) {
 }
 
 export async function submitSolution(req: Request, res: Response) {
+    console.log(req.body);
+    
+
     try {
         const parsed = sumitSolutionSchema.safeParse(req.body);
         if (!parsed.success) return res.status(422).json({ message: "Invalid data" });
@@ -228,7 +231,7 @@ export async function submitSolution(req: Request, res: Response) {
             },
         });
 
-        const response = await axios.post("http://localhost:3000/submit-batch-task", {
+        const response = await axios.post("https://codesandbox.code-champ.xyz/submit-batch-task", {
             submissionId: submission.id,
             callbackUrl: `https://code-champ-webhook-handler.vercel.app/submit-task-callback`,
             languageId: languageId,
@@ -256,7 +259,9 @@ export async function submitSolution(req: Request, res: Response) {
 export async function checkBatchSubmission(req: Request, res: Response) {
     try {
         const { taskId, problemId } = req.params;
-        const result = await axios.get(`http://localhost:3000/batch-task-status/${taskId}`);
+        const result = await axios.get(`https://codesandbox.code-champ.xyz/batch-task-status/${taskId}`);
+
+        console.log(result.data);
 
         const editedResult = {
             ...result.data,
