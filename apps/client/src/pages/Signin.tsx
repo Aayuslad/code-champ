@@ -22,7 +22,7 @@ export default function Signin() {
 	});
 
 	return (
-		<div className="Signin w-screen h-screen flex justify-center items-center">
+		<div className="Signin flex flex-col min-h-screen">
 <AuthHeader />
 
 			<main className="flex-grow flex  bg-gradient-to-r from-amber-400 to-white  dark:bg-gradient-to-r  dark:from-dark300 dark:to-dark100">
@@ -73,14 +73,14 @@ export default function Signin() {
             />
 
             <Link
-              to="/forget-password"
+              to="/forgot-password"
               className="text-sm  text-black  dark:text-gray-500 hover:text-red-500 "
             >
               Forget Password ?
             </Link>
 
             <button className="w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 text-md mt-3"  disabled={authStore.buttonLoading}>
-			{authStore.buttonLoading ? "Signing in..." : "Sign in"} Sign In
+			{authStore.buttonLoading ? "Signing in..." : "Sign in"} 
             </button>
 
             <h4 className="text-gray-500 m-4 text-sm text-center dark:dark:text-white">

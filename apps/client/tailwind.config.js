@@ -29,6 +29,9 @@ export default {
 				darkText900: "#FFFFFF",
 				darkText800: "#FFFFFF90",
 			},
+			fontFamily: {
+				pacifico: ["Pacifico", "cursive"], // 'cursive' is the fallback font
+			  },
 		},
 	},
 	darkMode: "class",
