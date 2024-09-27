@@ -67,10 +67,12 @@ export default function Signin() {
 							{...formik.getFieldProps("password")}
 						/>
 
-						{/* Forget Password Link */}
-						<Link to="/forget-password" className="text-sm text-black dark:text-gray-500 hover:text-red-500">
-							Forget Password?
-						</Link>
+            <Link
+              to="/forgot-password"
+              className="text-sm  text-black  dark:text-gray-500 hover:text-red-500 "
+            >
+              Forget Password ?
+            </Link>
 
 						{/* Sign-in Button */}
 						<button
