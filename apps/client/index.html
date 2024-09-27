@@ -1,45 +1,77 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-		<!-- Title and Description for SEO -->
-		<title>CodeChamp - Master Coding Problems Online</title>
-		<meta name="description" content="CodeChamp is an online platform where you can enhance your coding skills with various problems, competitions, and tutorials.">
+        <!-- Title and Description for SEO -->
+        <title>CodeChamp - Master Coding Problems Online</title>
+        <meta
+            name="description"
+            content="CodeChamp is an online platform where you can enhance your coding skills with various problems, competitions, and tutorials."
+        />
 
-		<!-- Open Graph Tags for Social Sharing -->
-		<meta property="og:title" content="CodeChamp - Master Coding Problems Online" />
-		<meta property="og:description" content="Join CodeChamp to improve your coding skills with interactive problems and compete with others." />
-		<meta property="og:image" content="https://app.code-champ.xyz/social-image.png" />
-		<meta property="og:url" content="https://app.code-champ.xyz" />
-		<meta property="og:type" content="website" />
+        <!-- Open Graph Tags for Social Sharing -->
+        <meta property="og:title" content="CodeChamp - Master Coding Problems Online" />
+        <meta
+            property="og:description"
+            content="Join CodeChamp to improve your coding skills with interactive problems and compete with others."
+        />
+        <meta property="og:image" content="https://app.code-champ.xyz/social-image.png" />
+        <meta property="og:url" content="https://app.code-champ.xyz" />
+        <meta property="og:type" content="website" />
 
-		<!-- Twitter Card Tags for Social Sharing -->
-		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:title" content="CodeChamp - Master Coding Problems Online" />
-		<meta name="twitter:description" content="Enhance your coding skills with CodeChamp's interactive problems and tutorials." />
-		<meta name="twitter:image" content="https://app.code-champ.xyz/social-image.png" />
+        <!-- Twitter Card Tags for Social Sharing -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="CodeChamp - Master Coding Problems Online" />
+        <meta
+            name="twitter:description"
+            content="Enhance your coding skills with CodeChamp's interactive problems and tutorials."
+        />
+        <meta name="twitter:image" content="https://app.code-champ.xyz/social-image.png" />
 
-		<!-- Favicon -->
-		<link rel="icon" type="image/svg+xml" href="/vite.svg" />
-		<link rel="shortcut icon" href="favicon.svg" type="image/x-icon" />
+        <!-- Favicon -->
+        <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+        <link rel="shortcut icon" href="favicon.svg" type="image/x-icon" />
 
-		<!-- Keywords for SEO -->
-		<meta name="keywords" content="coding, programming, coding problems, code competition, learn coding, code champ" />
+        <!-- Keywords for SEO -->
+        <meta
+            name="keywords"
+            content="coding, programming, coding problems, competitive coding, coding competitions, algorithm challenges, data structures and algorithms, DSA, code challenges, learn to code, practice coding, coding contests, coding skills, problem-solving, online coding platform, Code Champ, coding tutorials, interview preparation, code reviews"
+        />
 
-		<!-- Author -->
-		<meta name="author" content="Code Champ Team" />
+        <!-- Author -->
+        <meta name="author" content="Aayush Lad" />
 
-		<!-- Canonical URL -->
-		<link rel="canonical" href="https://app.code-champ.xyz" />
-	</head>
-	<body>
-		<!-- Content for Accessibility and SEO -->
-		<noscript>
-			<p>CodeChamp is an interactive platform for enhancing your coding skills. Please enable JavaScript to use the site fully.</p>
-		</noscript>
-		<div id="root"></div>
-		<script type="module" src="/src/main.tsx"></script>
-	</body>
+        <!-- Canonical URL -->
+        <link rel="canonical" href="https://app.code-champ.xyz" />
+
+        <!-- Structured Data for SEO -->
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "name": "CodeChamp",
+                "url": "https://app.code-champ.xyz",
+                "description": "CodeChamp is an online platform where you can enhance your coding skills with various coding problems, competitions, and tutorials.",
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": "https://app.code-champ.xyz/search?q={search_term_string}",
+                    "query-input": "required name=search_term_string"
+                }
+            }
+        </script>
+    </head>
+
+    <body>
+        <!-- Content for Accessibility and SEO -->
+        <noscript>
+            <p>
+                CodeChamp is an interactive platform for enhancing your coding skills. Please enable JavaScript to use the site
+                fully.
+            </p>
+        </noscript>
+        <div id="root"></div>
+        <script type="module" src="/src/main.tsx"></script>
+    </body>
 </html>
