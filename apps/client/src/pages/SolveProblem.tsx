@@ -268,7 +268,11 @@ const Result = ({ problem }: { problem: ProblemType }) => {
                     )}
 
                     {problem.result.status === "run time error" && (
-                        <div className="text-red-600 text-center  font-bold text-xl">Run Time Error</div>
+                        <div className="text-red-600 text-center  font-bold text-xl mb-3">Run Time Error</div>
+                    )}
+
+                    {problem.result.status === "time limit exceeded" && (
+                        <div className="text-red-600 text-center  font-bold text-xl mb-3">Time Limit Exceeded</div>
                     )}
 
                     {problem.result.tasks.map((testCase, index) => {
@@ -343,7 +347,9 @@ const Result = ({ problem }: { problem: ProblemType }) => {
                                                   ? "text-red-500"
                                                   : problem.result.status === "run time error"
                                                     ? "text-red-500"
-                                                    : "text-gray-500"
+                                                    : problem.result.status === "time limit exceeded"
+                                                      ? "text-red-500"
+                                                      : "text-gray-500"
                                     }`}
                                 >
                                     {problem.result.status?.charAt(0).toUpperCase() + problem.result.status.slice(1)}

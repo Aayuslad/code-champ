@@ -55,7 +55,15 @@ export type submission = {
 
 export type checkBatchSubmissionType = {
     problemId: string;
-    status?: "pending" | "executing" | "accepted" | "notFound" | "rejected" | "run time error" | "compilation error";
+    status?:
+        | "pending"
+        | "executing"
+        | "accepted"
+        | "notFound"
+        | "rejected"
+        | "run time error"
+        | "compilation error"
+        | "time limit exceeded";
     compilationError?: string;
     tasks?: [
         {
