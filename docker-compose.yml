@@ -1,14 +1,40 @@
-version: '3.9'
+version: '3.8'
 
 services:
-  app:
+  common:
     build:
       context: .
-      dockerfile: Dockerfile
-    ports:
-      - '3000:3000'
-      - '5173:5173'
+      dockerfile: ./packages/common/Dockerfile
     volumes:
-      - .:/app
-      - /app/node_modules
-    command: npm run dev
+      - ./packages/common:/app/packages/common
+      - /app/packages/common/node_modules  # Prevents node_modules from being overwritten
+    environment:
+      - NODE_ENV=development
+
+  server:
+    build:
+      context: .
+      dockerfile: ./apps/server/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./apps/server:/app/apps/server
+      - /app/apps/server/node_modules  # Prevents node_modules from being overwritten
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - common
+
+  client:
+    build:
+      context: .
+      dockerfile: ./apps/client/Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./apps/client:/app/apps/client
+      - /app/apps/client/node_modules  # Prevents node_modules from being overwritten
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - server

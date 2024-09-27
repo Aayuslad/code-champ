@@ -5,6 +5,7 @@ import userRouter from "./routes/userRoutes";
 import problemRouter from "./routes/problemRouter";
 import cors from "cors";
 import session from "express-session";
+import morgan from "morgan";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.disable("x-powerd-by");
 app.use(express.urlencoded({ extended: true }));
+app.use(morgan("tiny"));
 app.use(
 	session({
 		secret: process.env.SESSION_SECRET as string,
@@ -34,7 +36,6 @@ app.use(
 		},
 	}),
 );
-
 
 app.get("/", (req, res) => {
 	res.send("Welcome, This is code champ server 🔥.");

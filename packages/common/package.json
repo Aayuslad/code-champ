@@ -1,6 +1,6 @@
 {
 	"name": "@repo/common",
-	"version": "1.0.0",
+	"version": "1.0.5",
 	"description": "",
 	"main": "dist/index.js",
 	"scripts": {
@@ -16,6 +16,8 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"tsup": "^8.2.4",
+		"typescript": "^5.5.4",
 		"zod": "^3.23.8"
 	}
 }

@@ -6,33 +6,37 @@ import { ProblemStore } from "../stores/problemStore";
 import { ProblemSetTable } from "../components/problemSetTable";
 
 export default function Problems() {
-	const problemStore = ProblemStore();
+    const problemStore = ProblemStore();
 
-	useEffect(() => {
-		if (problemStore.problems.length === 0) {
-			problemStore.getProblems();
-		}
-	}, []);
+    useEffect(() => {
+        if (problemStore.feedProblems.length === 0) {
+            problemStore.getFeedProblems();
+        }
+    }, []);
 
-	return (
-		<div className="Problems Page">
-			<SideNavbar />
+    return (
+        <div className="Problems Page">
+            <SideNavbar />
 
-			<MainWrapper>
-				<Header />
+            <MainWrapper>
+                <Header />
 
-				<div className="flex items-center justify-center">
-					<div className=" w-[1300px] min-w-[100px] flex">
-						<div className="flex-1 p-4 flex flex-col items-center lg:items-start">
-							<ProblemSetTable />
-						</div>
+                <div className="flex items-center justify-center">
+                    <div className=" w-[1300px] min-w-[100px] flex">
+                        {problemStore.feedProblems.length > 0 && (
+                            <div className="flex-1 p-4 flex flex-col items-center lg:items-start">
+                                <ProblemSetTable />
+                            </div>
+                        )}
 
-						<div className="sideBar lg:w-[350px] xl:w-[400px] hidden lg:block"></div>
-					</div>
-				</div>
-			</MainWrapper>
-		</div>
-	);
+                        {problemStore.feedProblems.length === 0 && <div>Loading...</div>}
+
+                        <div className="sideBar lg:w-[350px] xl:w-[400px] hidden lg:block"></div>
+                    </div>
+                </div>
+            </MainWrapper>
+        </div>
+    );
 }
 
 // TODO: add solved Q round graph

@@ -3,15 +3,10 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import apiErrorHandler from "../helper/apiCallErrorHandler";
 import navigateTo from "../helper/pageNavigator";
+import { UserType } from "@repo/common/zod";
 
 interface authStoreType {
-	userProfile:
-		| {
-				id: string;
-				email: string;
-				userName: string;
-		  }
-		| undefined;
+	userProfile: UserType | undefined;
 	buttonLoading: boolean;
 	skeletonLoading: boolean;
 
@@ -60,7 +55,7 @@ export const AuthStore = create<authStoreType>((set) => ({
 		try {
 			set({ skeletonLoading: true });
 			const result = await axios.get("/user/profile");
-			set({ userProfile: result.data });
+			set({ userProfile: result.data as UserType });
 		} catch (error) {
 			apiErrorHandler(error);
 		} finally {

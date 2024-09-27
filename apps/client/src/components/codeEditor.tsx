@@ -1,76 +1,122 @@
-import Editor from "@monaco-editor/react";
-import { useEffect, useState } from "react";
-import { boilerplateCode, ProblemStore } from "../stores/problemStore";
-import { UiStore } from "../stores/uiStore";
+import { Editor } from "@monaco-editor/react";
 import CustomDropdown2 from "./inputs/CustomDropDown2";
+import { ProblemStore } from "../stores/problemStore";
+import { useEffect, useState } from "react";
+import { idToLanguageMappings, languageToIdMppings } from "../config/languageIdMppings";
+import { BoilerPlateCode } from "@repo/common/zod";
+import { UiStore } from "../stores/uiStore";
 
-interface props {
-	problemId: string;
-	boilerplateCode: boilerplateCode;
-}
+export default function CodeEditor({ problemId, navToResult }: { problemId: string; navToResult: () => void }) {
+    const problemStore = ProblemStore();
+    const uiStore = UiStore();
+    const problem = problemStore.onGoingProblems.find(problem => problem.id === problemId);
+    const [language, setLanguage] = useState<string>();
 
-export default function CodeEditor({ problemId, boilerplateCode }: props) {
-	const uiStore = UiStore();
-	const problemStore = ProblemStore();
-	const [language, setLanguage] = useState<string>("cpp");
-	const languages = ["c", "ruby", "go", "csharp", "cpp", "java", "javascript", "python"];
+    useEffect(() => {
+        if (!problem) return;
+        if (problem?.solutions === undefined || problem.solutions.length === 0) {
+            const solution = {
+                languageId: languageToIdMppings["cpp"],
+                solutionCode: problem?.boilerplateCode["cpp"],
+            };
+            problemStore.addSolution(problemId, solution);
+            setLanguage("cpp");
+        } else {
+            const languageId = problem.solutions[problem.solutions.length - 1].languageId;
+            setLanguage(idToLanguageMappings[languageId]);
+        }
+    }, []);
 
-	// UseEffect to initialize the problem if it doesn't exist
-	useEffect(() => {
-		const existingProblem = problemStore.onGoingProblems[problemId]?.[language];
+    useEffect(() => {
+        if (language === undefined) return;
+        if (!problem) return;
+        if (problem?.solutions === undefined || problem.solutions.length === 0) return;
 
-		if (!existingProblem) {
-			problemStore.setOnGoingPrblem({
-				problemId,
-				language,
-				solutionCode: boilerplateCode[language as keyof typeof boilerplateCode],
-			});
-		}
-	}, [problemId, language, problemStore, boilerplateCode]);
-	
-	const solutionCode = problemStore.onGoingProblems[problemId]?.[language]?.solutionCode || "";
-	const theme = uiStore.theme === "dark" ? "vs-dark" : "hc-light";
+        const exist = problem.solutions?.find(solution => solution.languageId === languageToIdMppings[language as string]);
 
-	return (
-		<div className="h-[87%] mt-3">
-			<div className="h-[100%] rounded-lg overflow-hidden">
-				<Editor
-					height="100%"
-					language={language}
-					theme={theme}
-					value={solutionCode}
-					onChange={(code) => {
-						problemStore.setOnGoingPrblem({
-							problemId,
-							solutionCode: code || "",
-							language,
-						});
-					}}
-					options={{
-						padding: {
-							top: 8,
-							bottom: 8,
-						},
-						inlineSuggest: { enabled: true },
-						fontSize: 16,
-						formatOnType: true,
-						autoClosingBrackets: "always",
-						minimap: { enabled: false },
-						lineNumbersMinChars: 2,
-						glyphMargin: false,
-						overviewRulerLanes: 0,
-					}}
-				/>
-			</div>
+        if (!exist) {
+            const solution = {
+                languageId: languageToIdMppings[language as string],
+                solutionCode: problem?.boilerplateCode[language as keyof BoilerPlateCode],
+            };
+            problemStore.addSolution(problemId, solution);
+        } else {
+            problemStore.addSolution(problemId, exist);
+        }
+    }, [language]);
 
-			<div className="flex items-center justify-end">
-				<CustomDropdown2
-					minWidth={"100px"}
-					options={languages}
-					selectedOption={language}
-					setSelectedOption={setLanguage}
-				/>
-			</div>
-		</div>
-	);
+    const handleOnChange = (code: string | undefined) => {
+        if (!problem) return;
+        const solution = {
+            languageId: languageToIdMppings[language as string],
+            solutionCode: code as string,
+        };
+        problemStore.updateSolution(problemId, solution);
+    };
+
+    return (
+        <div className="h-[92%] mt-3">
+            {language && problem?.solutions && (
+                <>
+                    <div className="h-[100%] rounded-lg overflow-hidden">
+                        <Editor
+                            height="100%"
+                            theme={uiStore.theme === "dark" ? "vs-dark" : "hc-light"}
+                            language={language === "python3" ? "python" : language}
+                            value={
+                                problem?.solutions.find(
+                                    solution => solution.languageId === languageToIdMppings[language as string],
+                                )?.solutionCode
+                            }
+                            onChange={code => handleOnChange(code)}
+                            options={{
+                                padding: {
+                                    top: 8,
+                                    bottom: 8,
+                                },
+                                inlineSuggest: { enabled: true },
+                                fontSize: 16,
+                                formatOnType: true,
+                                autoClosingBrackets: "always",
+                                minimap: { enabled: false },
+                                lineNumbersMinChars: 2,
+                                glyphMargin: false,
+                                overviewRulerLanes: 0,
+                            }}
+                        />
+                    </div>
+
+                    <div className="flex items-end justify-between pt-2">
+                        <button
+                            type="button"
+                            className="bg-red-600 py-1 px-3 rounded-md text-white"
+                            disabled={
+                                !problem.solutions.find(
+                                    solution => solution.languageId === languageToIdMppings[language as string],
+                                )?.solutionCode || problemStore.skeletonLoading
+                            }
+                            onClick={async () => {
+                                const res = await problemStore.submitProblem({
+                                    problemId,
+                                    languageId: languageToIdMppings[language as string],
+                                    solutionCode: problem?.solutions?.find(
+                                        solution => solution.languageId === languageToIdMppings[language as string],
+                                    )?.solutionCode as string,
+                                });
+                                if (res === true) navToResult();
+                            }}
+                        >
+                            {problemStore.buttonLoading ? "Submiting..." : "Submit"}
+                        </button>
+                        <CustomDropdown2
+                            minWidth={"100px"}
+                            options={Object.keys(languageToIdMppings)}
+                            selectedOption={language}
+                            setSelectedOption={setLanguage}
+                        />
+                    </div>
+                </>
+            )}
+        </div>
+    );
 }

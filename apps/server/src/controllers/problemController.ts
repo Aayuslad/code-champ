@@ -1,187 +1,313 @@
-import { Request, Response } from "express";
-import { getObjectFromS3, uploadJsonToS3 } from "../services/awsS3";
-import { generateUniqueSlug } from "../helper/generateUniqueSlug";
-import { generateBoilerplate } from "../services/boilerplateGenerator/generateBoilerplate";
 import { PrismaClient } from "@prisma/client";
-import { problemSchema } from "@repo/common/zod";
+import { FunctionStructureType, contributeProblemSchema, sumitSolutionSchema, TestCaseType, ProblemType } from "@repo/common/zod";
+import { Request, Response } from "express";
+import { generateUniqueSlug } from "../helper/generateUniqueSlug";
+import { getObjectFromS3, uploadJsonToS3 } from "../services/awsS3";
+import { generateBoilerplate } from "../services/boilerplateGenerator/boilerplateGenerator";
+import { generateSubmissionCode } from "../services/boilerplateGenerator/submissionCodeGenerator";
+import axios from "axios";
+import { stdinGenerator } from "../services/stdinGenerator";
+import { idToLanguageMappings } from "../config/languageIdmappings";
 const prisma = new PrismaClient();
 
 export async function contributeProblem(req: Request, res: Response) {
-	const { title, problemStatement, structre, sampleTestCases, testCases, constraints, difficulty, topicTags, Hints } = req.body;
+    try {
+        const parsed = contributeProblemSchema.safeParse(req.body);
+        if (!parsed.success) return res.status(422).json({ message: "Invalid data" });
 
-	try {
-		const parsed = problemSchema.safeParse(req.body);
-		if (!parsed.success) return res.status(422).json({ message: "Invalid data" });
+        const {
+            title,
+            difficultyLevel,
+            description,
+            sampleTestCases,
+            testCases,
+            functionStructure,
+            topicTags,
+            hints,
+            constraints,
+        } = parsed.data;
 
-		// generate slug
-		const slug = await generateUniqueSlug(title);
+        const slug = await generateUniqueSlug(title);
 
-		// upload sample test cases .json to s3
-		await uploadJsonToS3(`problem-test-cases/${slug}/sampleTestCases.json`, sampleTestCases);
+        await Promise.all([
+            uploadJsonToS3(`problem-test-cases/${slug}/sampleTestCases.json`, sampleTestCases),
+            uploadJsonToS3(`problem-test-cases/${slug}/testCases.json`, testCases),
+        ]);
 
-		// upload test cases .json to s3
-		await uploadJsonToS3(`problem-test-cases/${slug}/testCases.json`, testCases);
+        const boilerplateCode = generateBoilerplate(functionStructure);
+        const submissionCode = generateSubmissionCode(functionStructure);
 
-		// generate boilerplate code for all languages
-		const boilerplateCode = generateBoilerplate(structre);
+        const topicTagIdsToAdd = await Promise.all(
+            topicTags
+                .filter(tag => tag.trim())
+                .map(async tag => {
+                    const existingTag = await prisma.topicTag.findFirst({ where: { content: tag } });
+                    if (existingTag) {
+                        return existingTag.id;
+                    } else {
+                        const newTag = await prisma.topicTag.create({ data: { content: tag } });
+                        return newTag.id;
+                    }
+                }),
+        );
 
-		// Prepare topic IDs to connect
-		let topicTagIdsToAdd: string[] = [];
-		if (topicTags && topicTags.length > 0) {
-			// Check if topics already exist in the database
-			for (const tag of topicTags) {
-				if (tag == "") continue;
+        const newProblem = await prisma.problem.create({
+            data: {
+                title,
+                problemNumber: 1,
+                slug: slug,
+                description: description,
+                difficultyLevel: difficultyLevel,
+                sampleTestCasesKey: `problem-test-cases/${slug}/sampleTestCases.json`,
+                testCasesKey: `problem-test-cases/${slug}/testCases.json`,
+                boilerplateCode: JSON.stringify(boilerplateCode),
+                submissionCode: JSON.stringify(submissionCode),
+                testCasesCount: testCases.length || 0,
+                functionStructure: JSON.stringify(functionStructure),
+                constraints: {
+                    create: constraints.map((constraint: string) => ({
+                        content: constraint,
+                    })),
+                },
+                topicTags: {
+                    connect: topicTagIdsToAdd.map(id => ({ id })),
+                },
+                hints: {
+                    create: hints.map((hint: string) => ({
+                        content: hint,
+                    })),
+                },
+                createdBy: {
+                    connect: {
+                        id: req.user?.id,
+                    },
+                },
+            },
+        });
 
-				const existingTopicTags = await prisma.topicTag.findFirst({
-					where: {
-						content: tag,
-					},
-				});
-
-				if (existingTopicTags) {
-					// If topic already exists, get its ID
-					topicTagIdsToAdd.push(existingTopicTags.id);
-				} else {
-					// If topic doesn't exist, create it and get its ID
-					const newTopic = await prisma.topicTag.create({
-						data: {
-							content: tag,
-						},
-					});
-					topicTagIdsToAdd.push(newTopic.id);
-				}
-			}
-		}
-
-		// update the db
-		const newProblem = await prisma.problem.create({
-			data: {
-				title,
-				problemNumber: 1,
-				slug,
-				problemStatement,
-				difficulty,
-				sampleTestCasesObjectkey: `problem-test-cases/${slug}/sampleTestCases.json`,
-				testCasesObjectKey: `problem-test-cases/${slug}/testCases.json`,
-				constraints: {
-					create: constraints.map((constraint: string) => ({
-						content: constraint,
-					})),
-				},
-				topicTags: {
-					connect: topicTagIdsToAdd.map((id) => ({ id })),
-				},
-				hints: {
-					create: Hints.map((hint: string) => ({
-						content: hint,
-					})),
-				},
-				boilerplateCode: JSON.stringify(boilerplateCode),
-				createdBy: {
-					connect: {
-						id: req.user?.id,
-					},
-				},
-			},
-		});
-
-		res.status(201).json({
-			message: "Problem created successfully",
-			problem: newProblem,
-		});
-	} catch (err) {
-		res.status(500).json({
-			message: "Internal Server Error",
-		});
-	}
+        res.status(201).json({
+            message: "Problem created successfully",
+            problem: newProblem,
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
 }
 
-export async function getProblems(req: Request, res: Response) {
-	try {
-		const problems = await prisma.problem.findMany({
-			take: 50,
-			orderBy: {
-				problemNumber: "asc",
-			},
-			select: {
-				id: true,
-				problemNumber: true,
-				title: true,
-				difficulty: true,
-				submissionCount: true,
-				acceptedSubmissions: true,
-			},
-		});
+export async function getFeedProblems(req: Request, res: Response) {
+    try {
+        const problems = await prisma.problem.findMany({
+            take: 50,
+            orderBy: {
+                problemNumber: "asc",
+            },
+            select: {
+                id: true,
+                problemNumber: true,
+                title: true,
+                difficultyLevel: true,
+                submissionCount: true,
+                acceptedSubmissions: true,
+            },
+        });
 
-		const editedProblems = problems.map((problem) => {
-			const acceptanceRate =
-				problem.submissionCount > 0 ? ((problem.acceptedSubmissions / problem.submissionCount) * 100).toFixed(2) : "0.00";
+        const editedProblems = problems.map(problem => {
+            const acceptanceRate =
+                problem.submissionCount > 0 ? ((problem.acceptedSubmissions / problem.submissionCount) * 100).toFixed(2) : "0.00";
 
-			return {
-				id: problem.id,
-				problemNumber: problem.problemNumber,
-				title: problem.title,
-				difficulty: problem.difficulty,
-				acceptanceRate: `${acceptanceRate}%`,
-			};
-		});
+            return {
+                id: problem.id,
+                problemNumber: problem.problemNumber,
+                title: problem.title,
+                difficulty: problem.difficultyLevel,
+                acceptanceRate: `${acceptanceRate}%`,
+            };
+        });
 
-		return res.status(200).json(editedProblems);
-	} catch (err) {
-		res.status(500).json({
-			message: "Internal Server Error",
-		});
-	}
+        return res.status(200).json(editedProblems);
+    } catch (err) {
+        res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
 }
 
 export async function getProblem(req: Request, res: Response) {
-	const { id } = req.params;
+    const { id } = req.params;
 
-	try {
-		const problem = await prisma.problem.findFirst({
-			where: { id },
-			select: {
-				id: true,
-				problemNumber: true,
-				title: true,
-				problemStatement: true,
-				difficulty: true,
-				sampleTestCasesObjectkey: true,
-				constraints: { select: { content: true } },
-				topicTags: { select: { content: true } },
-				hints: { select: { content: true } },
-				boilerplateCode: true,
-				createdBy: {
-					select: {
-						id: true,
-						userName: true,
-						profileImg: true,
-					},
-				},
-				submissionCount: true,
-				acceptedSubmissions: true,
-			},
-		});
+    try {
+        const problem = await prisma.problem.findFirst({
+            where: { id },
+            select: {
+                id: true,
+                problemNumber: true,
+                title: true,
+                description: true,
+                difficultyLevel: true,
+                sampleTestCasesKey: true,
+                constraints: { select: { content: true } },
+                topicTags: { select: { content: true } },
+                hints: { select: { content: true } },
+                boilerplateCode: true,
+                testCasesCount: true,
+                createdBy: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        profileImg: true,
+                    },
+                },
+                submissionCount: true,
+                acceptedSubmissions: true,
+            },
+        });
 
-		if (!problem) return;
+        if (!problem) {
+            return res.status(404).json({ message: "Problem not found" });
+        }
 
-		const sampleTestCasesJson = await getObjectFromS3(problem.sampleTestCasesObjectkey);
-		const parsedTestCases = JSON.parse(sampleTestCasesJson);
+        const sampleTestCasesJson = await getObjectFromS3(problem.sampleTestCasesKey);
+        const parsedTestCases: TestCaseType[] = JSON.parse(sampleTestCasesJson);
 
-		const acceptanceRate = problem.submissionCount > 0
-			? ((problem.acceptedSubmissions / problem.submissionCount) * 100).toFixed(2)
-			: "0.00";
+        const acceptanceRate =
+            problem.submissionCount > 0 ? ((problem.acceptedSubmissions / problem.submissionCount) * 100).toFixed(2) : "0.00";
 
-		const { sampleTestCasesObjectkey, ...editedProblem } = {
-			...problem,
-			exampleTestCases: parsedTestCases,
-			acceptanceRate,
-			boilerplateCode: JSON.parse(problem.boilerplateCode),
-		};
-		return res.status(200).json(editedProblem);
-	} catch (err) {
-		res.status(500).json({
-			message: "Internal Server Error",
-		});
-	}
+        const { sampleTestCasesKey, ...editedProblem } = {
+            ...problem,
+            exampleTestCases: parsedTestCases,
+            acceptanceRate,
+            constraints: problem.constraints.map(constraint => constraint.content),
+            hints: problem.hints.map(hint => hint.content),
+            topicTags: problem.topicTags.map(tag => tag.content),
+            boilerplateCode: JSON.parse(problem.boilerplateCode),
+        };
+
+        return res.status(200).json(editedProblem);
+    } catch (err) {
+        res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+}
+
+export async function submitSolution(req: Request, res: Response) {
+    console.log(req.body);
+    
+
+    try {
+        const parsed = sumitSolutionSchema.safeParse(req.body);
+        if (!parsed.success) return res.status(422).json({ message: "Invalid data" });
+        const { problemId, languageId, solutionCode } = parsed.data;
+
+        const problem = await prisma.problem.findFirst({
+            where: { id: problemId },
+            select: {
+                id: true,
+                testCasesKey: true,
+                functionStructure: true,
+                submissionCode: true,
+            },
+        });
+
+        if (!problem) return res.status(404).json({ message: "Problem not found" });
+
+        const testCases: TestCaseType[] = JSON.parse(await getObjectFromS3(problem.testCasesKey));
+        const functionStructure: FunctionStructureType = JSON.parse(problem.functionStructure);
+        const parcedSubmissionCode = JSON.parse(problem.submissionCode);
+        const solutionCodee = parcedSubmissionCode[idToLanguageMappings[languageId] as string];
+        const finalCode = solutionCodee.replace("{solution_code}", solutionCode);
+        const encodedFinalCode = Buffer.from(finalCode).toString("base64");
+
+        const submission = await prisma.submission.create({
+            data: {
+                problemId: problemId,
+                code: solutionCode,
+                languageId: languageId.toString(),
+                status: "Pending",
+                createdById: req.user?.id || "",
+            },
+        });
+
+        const response = await axios.post("https://codesandbox.code-champ.xyz/submit-batch-task", {
+            submissionId: submission.id,
+            callbackUrl: `https://code-champ-webhook-handler.vercel.app/submit-task-callback`,
+            languageId: languageId,
+            code: encodedFinalCode,
+            tasks: testCases.map((testCase, index) => ({
+                id: index,
+                stdin: stdinGenerator(functionStructure, testCase),
+                expectedOutput: testCase.output,
+                inputs: JSON.stringify(testCase.input),
+            })),
+        });
+
+        return res.status(200).json({
+            message: "Solution submitted successfully",
+            taskId: response.data.batchTaskId,
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+}
+
+export async function checkBatchSubmission(req: Request, res: Response) {
+    try {
+        const { taskId, problemId } = req.params;
+        const result = await axios.get(`https://codesandbox.code-champ.xyz/batch-task-status/${taskId}`);
+
+        console.log(result.data);
+
+        const editedResult = {
+            ...result.data,
+            problemId,
+            tasks:
+                result.data.tasks?.map((task: any) => ({
+                    ...task,
+                    expectedOutput: JSON.parse(task.expectedOutput),
+                    inputs: JSON.parse(task.inputs),
+                })) || [],
+        };
+        return res.json(editedResult);
+    } catch (err) {
+        console.log(err);
+
+        res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+}
+
+export async function getSubmissions(req: Request, res: Response) {
+    try {
+        const { problemId } = req.params;
+
+        const submission = await prisma.submission.findMany({
+            where: {
+                createdById: req.user?.id || "",
+                problemId: problemId,
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+            select: {
+                id: true,
+                code: true,
+                languageId: true,
+                status: true,
+                createdAt: true,
+            },
+        });
+
+        return res.status(200).json(submission);
+    } catch (err) {
+        res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
 }
