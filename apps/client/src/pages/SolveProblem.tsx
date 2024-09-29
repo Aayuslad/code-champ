@@ -1,4 +1,4 @@
-import { ProblemType, submission } from "@repo/common/zod";
+import { ProblemType, Submission } from "@repo/common/zod";
 import { useEffect, useRef, useState } from "react";
 import { IoIosArrowForward } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
@@ -11,9 +11,11 @@ import MainWrapper from "../components/wrappers/mainWrapper";
 import { idToLanguageMappings } from "../config/languageIdMppings";
 import { formatDate } from "../helper/formatDate";
 import { ProblemStore } from "../stores/problemStore";
+import { AuthStore } from "../stores/authStore";
 
 export default function SolveProblem() {
     const problemStore = ProblemStore();
+    const authStore = AuthStore();
     const navigate = useNavigate();
     const { id, nav1, nav2 } = useParams<{
         id: string;
@@ -35,7 +37,7 @@ export default function SolveProblem() {
     useEffect(() => {
         if (!id) return;
         (async () => {
-            await problemStore.getProblem(id);
+            await problemStore.getProblem(id, authStore.userProfile?.id || "");
         })();
     }, [id]);
 
@@ -76,7 +78,6 @@ export default function SolveProblem() {
     }, [nav2]);
 
     const problem = problemStore.onGoingProblems.find(problem => problem.id === id);
-    console.log(problem);
 
     return (
         <div className="SolveProblemPage">
@@ -111,7 +112,7 @@ export default function SolveProblem() {
                         {/* Right container */}
                         <div className="flex-1 w-[50%] pt-2.5 pb-1.5 px-6 flex flex-col" style={{ width: `${100 - leftWidth}%` }}>
                             <Navbar02
-                                navs={["Code", "Result"]}
+                                navs={["Code", ...(problem.result ? ["Result"] : [])]}
                                 currentNav={activeNav2}
                                 setCurrentNav={setActiveNav2}
                                 baseRoute={`solve-problem/${id}/${activeNav1}/nav`}
@@ -223,7 +224,7 @@ const Problem = ({ problem }: { problem: ProblemType }) => {
     );
 };
 
-const Submissions = ({ submissions }: { submissions?: submission[] }) => {
+const Submissions = ({ submissions }: { submissions?: Submission[] }) => {
     return (
         <div>
             {submissions &&
@@ -298,13 +299,34 @@ const Result = ({ problem }: { problem: ProblemType }) => {
                                 >
                                     <div className="space-x-2 flex">
                                         <span className="font-medium">Input: </span>
-                                        <span>
+                                        <span className="max-h-[400px] overflow-hidden relative">
                                             {testCase.inputs.map((input, index) => (
                                                 <div key={index}>
                                                     <span>{input.name + " = "}</span>
                                                     <span>{input.value}</span>
                                                 </div>
                                             ))}
+                                            {testCase.inputs.length > 0 && (
+                                                <div
+                                                    className="absolute bottom-0 right-0 bg-gradient-to-t from-light300 dark:from-dark300 to-transparent w-full h-20 flex items-end justify-end"
+                                                    style={{
+                                                        display: "none",
+                                                        opacity: 0,
+                                                        transition: "opacity 0.3s ease",
+                                                    }}
+                                                    ref={el => {
+                                                        if (el) {
+                                                            const parent = el.parentElement;
+                                                            if (parent && parent.scrollHeight > parent.clientHeight) {
+                                                                el.style.display = "flex";
+                                                                setTimeout(() => {
+                                                                    el.style.opacity = "1";
+                                                                }, 0);
+                                                            }
+                                                        }
+                                                    }}
+                                                ></div>
+                                            )}
                                         </span>
                                     </div>
                                     <div className="space-x-2">
@@ -329,7 +351,7 @@ const Result = ({ problem }: { problem: ProblemType }) => {
                     <div className="flex gap-4">
                         <div className="py-2 font-semibold">
                             Test Cases:{" "}
-                            <span className="font-normal">{`${problem.testCasesCount}/${problem.result?.tasks?.length || 0}`}</span>
+                            <span className="font-normal">{`${problem.testCasesCount}/${problem.result?.tasks?.filter(t => t.status === "success")?.length || 0}`}</span>
                         </div>
 
                         {problem.result.status && (

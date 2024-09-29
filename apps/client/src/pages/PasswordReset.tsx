@@ -1,11 +1,11 @@
 import { useFormik } from "formik";
-import { updatePasswordSchemaType } from "@repo/common/zod";
+import { UpdatePasswordSchemaType } from "@repo/common/zod";
 import { AuthStore } from "../stores/authStore";
 
 export default function PasswordReset() {
 	const authStore = AuthStore();
 
-	const formik = useFormik<updatePasswordSchemaType>({
+	const formik = useFormik<UpdatePasswordSchemaType>({
 		initialValues: {
 			password: "",
 			confirmPassword: "",

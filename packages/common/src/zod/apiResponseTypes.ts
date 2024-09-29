@@ -38,22 +38,22 @@ export type ProblemType = {
     };
     submissionCount: number;
     acceptedSubmissions: number;
-    submissions?: submission[];
+    submissions?: Submission[];
     solutions?: {
         languageId: number;
         solutionCode: string;
     }[];
-    result?: checkBatchSubmissionType;
+    result?: CheckBatchSubmissionType;
 };
 
-export type submission = {
+export type Submission = {
     status: SubmissionStatus;
     id: string;
     createdAt: Date;
     languageId: string;
 };
 
-export type checkBatchSubmissionType = {
+export type CheckBatchSubmissionType = {
     problemId: string;
     status?:
         | "pending"
@@ -78,6 +78,10 @@ export type checkBatchSubmissionType = {
             expectedOutput: string;
         },
     ];
+};
+
+export type OnGoingProblemType = {
+    solutions: string;
 };
 
 // enums

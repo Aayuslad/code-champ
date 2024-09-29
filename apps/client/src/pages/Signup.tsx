@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { signupUserSchemaType } from "@repo/common/zod";
+import { SignupUserSchemaType } from "@repo/common/zod";
 import { AuthStore } from "../stores/authStore";
 import { Link } from "react-router-dom";
 import AuthHeader from "../components/headers/AuthHeader";
@@ -8,7 +8,7 @@ import AuthFooter from "../components/footers/AuthFooter";
 export default function Signup() {
     const authStore = AuthStore();
 
-    const formik = useFormik<signupUserSchemaType>({
+    const formik = useFormik<SignupUserSchemaType>({
         initialValues: {
             email: "",
             userName: "",

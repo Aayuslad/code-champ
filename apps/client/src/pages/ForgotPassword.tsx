@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { sendPasswordResetOTPShemaType } from "@repo/common/zod";
+import { SendPasswordResetOTPShemaType } from "@repo/common/zod";
 import { AuthStore } from "../stores/authStore";
 import { Link } from "react-router-dom";
 import AuthHeader from "../components/headers/AuthHeader";
@@ -8,7 +8,7 @@ import AuthFooter from "../components/footers/AuthFooter";
 export default function Signin() {
     const authStore = AuthStore();
 
-    const formik = useFormik<sendPasswordResetOTPShemaType>({
+    const formik = useFormik<SendPasswordResetOTPShemaType>({
         initialValues: {
             email: "",
         },

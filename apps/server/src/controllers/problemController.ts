@@ -1,13 +1,19 @@
 import { PrismaClient } from "@prisma/client";
-import { FunctionStructureType, contributeProblemSchema, sumitSolutionSchema, TestCaseType, ProblemType } from "@repo/common/zod";
+import {
+    contributeProblemSchema,
+    FunctionStructureType,
+    putOngoingProblemSchma,
+    sumitSolutionSchema,
+    TestCaseType
+} from "@repo/common/zod";
+import axios from "axios";
 import { Request, Response } from "express";
+import { idToLanguageMappings } from "../config/languageIdmappings";
 import { generateUniqueSlug } from "../helper/generateUniqueSlug";
 import { getObjectFromS3, uploadJsonToS3 } from "../services/awsS3";
 import { generateBoilerplate } from "../services/boilerplateGenerator/boilerplateGenerator";
 import { generateSubmissionCode } from "../services/boilerplateGenerator/submissionCodeGenerator";
-import axios from "axios";
 import { stdinGenerator } from "../services/stdinGenerator";
-import { idToLanguageMappings } from "../config/languageIdmappings";
 const prisma = new PrismaClient();
 
 export async function contributeProblem(req: Request, res: Response) {
@@ -54,7 +60,7 @@ export async function contributeProblem(req: Request, res: Response) {
         const newProblem = await prisma.problem.create({
             data: {
                 title,
-                problemNumber: 1,
+                problemNumber: 2,
                 slug: slug,
                 description: description,
                 difficultyLevel: difficultyLevel,
@@ -137,6 +143,7 @@ export async function getFeedProblems(req: Request, res: Response) {
 
 export async function getProblem(req: Request, res: Response) {
     const { id } = req.params;
+    const { userId } = req.query as { userId: string };
 
     try {
         const problem = await prisma.problem.findFirst({
@@ -169,6 +176,24 @@ export async function getProblem(req: Request, res: Response) {
             return res.status(404).json({ message: "Problem not found" });
         }
 
+        let solutions = "";
+
+        if (userId) {
+            const ongoingProblem = await prisma.ongoingProblem.findFirst({
+                where: {
+                    userId: userId,
+                    problemId: id,
+                },
+                select: {
+                    solutions: true,
+                },
+            });
+
+            solutions = ongoingProblem?.solutions || "";
+        }
+
+        const parsedSolutions = JSON.parse(solutions || "[]");
+
         const sampleTestCasesJson = await getObjectFromS3(problem.sampleTestCasesKey);
         const parsedTestCases: TestCaseType[] = JSON.parse(sampleTestCasesJson);
 
@@ -183,6 +208,7 @@ export async function getProblem(req: Request, res: Response) {
             hints: problem.hints.map(hint => hint.content),
             topicTags: problem.topicTags.map(tag => tag.content),
             boilerplateCode: JSON.parse(problem.boilerplateCode),
+            solutions: parsedSolutions,
         };
 
         return res.status(200).json(editedProblem);
@@ -193,10 +219,62 @@ export async function getProblem(req: Request, res: Response) {
     }
 }
 
-export async function submitSolution(req: Request, res: Response) {
-    console.log(req.body);
-    
+export async function putOngoingProblem(req: Request, res: Response) {
+    try {
+        const parsed = putOngoingProblemSchma.safeParse(req.body);
+        if (!parsed.success) return res.status(422).json({ message: "Invalid data" });
 
+        const { problemId, solutions } = parsed.data;
+
+        const existingProblem = await prisma.ongoingProblem.findFirst({
+            where: { problemId, userId: req.user?.id },
+        });
+
+        if (!existingProblem) {
+            await prisma.ongoingProblem.create({
+                data: {
+                    problemId,
+                    userId: req.user?.id as string,
+                    solutions,
+                },
+            });
+        } else {
+            await prisma.ongoingProblem.update({
+                where: { id: existingProblem.id },
+                data: {
+                    solutions,
+                },
+            });
+        }
+
+        return res.sendStatus(200);
+    } catch (err) {
+        res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+}
+
+export async function getOngoingProblem(req: Request, res: Response) {
+    const { problemId } = req.params;
+
+    try {
+        const ongoingProblem = await prisma.ongoingProblem.findFirst({
+            where: { userId: req.user?.id, problemId },
+            select: {
+                solutions: true,
+            },
+        });
+
+        return res.status(200).json(ongoingProblem);
+    } catch (err) {
+        res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+}
+
+export async function submitSolution(req: Request, res: Response) {
     try {
         const parsed = sumitSolutionSchema.safeParse(req.body);
         if (!parsed.success) return res.status(422).json({ message: "Invalid data" });

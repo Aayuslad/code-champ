@@ -5,9 +5,14 @@ import { useEffect, useState } from "react";
 import { idToLanguageMappings, languageToIdMppings } from "../config/languageIdMppings";
 import { BoilerPlateCode } from "@repo/common/zod";
 import { UiStore } from "../stores/uiStore";
+import useDebounce from "../hooks/useDebounce";
+import { FaArrowRotateLeft } from "react-icons/fa6";
+import { AuthStore } from "../stores/authStore";
+import toast from "react-hot-toast";
 
 export default function CodeEditor({ problemId, navToResult }: { problemId: string; navToResult: () => void }) {
     const problemStore = ProblemStore();
+    const authStore = AuthStore();
     const uiStore = UiStore();
     const problem = problemStore.onGoingProblems.find(problem => problem.id === problemId);
     const [language, setLanguage] = useState<string>();
@@ -54,6 +59,13 @@ export default function CodeEditor({ problemId, navToResult }: { problemId: stri
         problemStore.updateSolution(problemId, solution);
     };
 
+    const debouncedValue = useDebounce(problem?.solutions, 2000);
+
+    useEffect(() => {
+        if (debouncedValue && authStore.userProfile)
+            problemStore.putOngoingProblem({ problemId: problem?.id as string, solutions: JSON.stringify(debouncedValue) });
+    }, [debouncedValue]);
+
     return (
         <div className="h-[92%] mt-3">
             {language && problem?.solutions && (
@@ -96,24 +108,42 @@ export default function CodeEditor({ problemId, navToResult }: { problemId: stri
                                 )?.solutionCode || problemStore.skeletonLoading
                             }
                             onClick={async () => {
-                                const res = await problemStore.submitProblem({
-                                    problemId,
-                                    languageId: languageToIdMppings[language as string],
-                                    solutionCode: problem?.solutions?.find(
-                                        solution => solution.languageId === languageToIdMppings[language as string],
-                                    )?.solutionCode as string,
-                                });
-                                if (res === true) navToResult();
+                                if (!authStore.isLoggedIn) toast.error("sing in to submit");
+                                else {
+                                    const res = await problemStore.submitProblem({
+                                        problemId,
+                                        languageId: languageToIdMppings[language as string],
+                                        solutionCode: problem?.solutions?.find(
+                                            solution => solution.languageId === languageToIdMppings[language as string],
+                                        )?.solutionCode as string,
+                                    });
+                                    if (res === true) navToResult();
+                                }
                             }}
                         >
                             {problemStore.buttonLoading ? "Submiting..." : "Submit"}
                         </button>
-                        <CustomDropdown2
-                            minWidth={"100px"}
-                            options={Object.keys(languageToIdMppings)}
-                            selectedOption={language}
-                            setSelectedOption={setLanguage}
-                        />
+
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                className="p-1"
+                                title="Reset Code"
+                                onClick={() => {
+                                    const flag = confirm("Are you sure you want to reset your code? will loose all your code");
+                                    flag && problemStore.resetCode(problem.id, language);
+                                }}
+                            >
+                                <FaArrowRotateLeft />
+                            </button>
+
+                            <CustomDropdown2
+                                minWidth={"100px"}
+                                options={Object.keys(languageToIdMppings)}
+                                selectedOption={language}
+                                setSelectedOption={setLanguage}
+                            />
+                        </div>
                     </div>
                 </>
             )}
