@@ -59,7 +59,7 @@ export const AuthStore = create<authStoreType>(set => ({
         try {
             set({ loading: true });
             const result = await axios.get("/user/profile");
-            set({ userProfile: result.data as UserType });
+            set({ userProfile: result.data as UserType, isLoggedIn: true });
         } catch (error) {
             // apiErrorHandler(error);
         } finally {

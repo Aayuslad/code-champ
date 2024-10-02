@@ -285,10 +285,13 @@ const Result = ({ problem }: { problem: ProblemType }) => {
                                 <summary
                                     className={`py-2 pl-3 pr-4 font-semibold cursor-pointer flex gap-3 justify-between items-center`}
                                 >
-                                    <div className="flex gap-3">
+                                    <div className="flex gap-3 w-full">
                                         <span className="px-1 ">{testCase.id + 1}</span>
                                         <span className={`px-1 ${testCase.accepted ? "text-green-500" : "text-red-500"}`}>
                                             {testCase.accepted ? "Accepted" : "Rejected"}
+                                        </span>
+                                        <span className="ml-auto w-[150px] font-normal text-gray-700 dark:text-gray-300">
+                                            Runtime: {testCase.executionTime} ms
                                         </span>
                                     </div>
                                     <IoIosArrowForward className="transition-transform group-open:rotate-90" />

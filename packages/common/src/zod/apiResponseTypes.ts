@@ -76,6 +76,7 @@ export type CheckBatchSubmissionType = {
                 value: string;
             }[];
             expectedOutput: string;
+            executionTime: number;
         },
     ];
 };
