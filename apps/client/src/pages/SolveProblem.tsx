@@ -12,6 +12,7 @@ import { idToLanguageMappings } from "../config/languageIdMppings";
 import { formatDate } from "../helper/formatDate";
 import { ProblemStore } from "../stores/problemStore";
 import { AuthStore } from "../stores/authStore";
+import { IoMdClose } from "react-icons/io";
 
 export default function SolveProblem() {
     const problemStore = ProblemStore();
@@ -25,6 +26,11 @@ export default function SolveProblem() {
     const [leftWidth, setLeftWidth] = useState(50);
     const [activeNav1, setActiveNav1] = useState<string>(nav1 || "Problem");
     const [activeNav2, setActiveNav2] = useState<string>(nav2 || "Code");
+
+    useEffect(() => {
+        if (nav2 === "Result") setActiveNav2("Code");
+        navigate(`/solve-problem/${id}/${activeNav1}/Code`);
+    }, []);
 
     useEffect(() => {
         setActiveNav1(nav1 || "Problem");
@@ -42,7 +48,7 @@ export default function SolveProblem() {
     }, [id]);
 
     useEffect(() => {
-        switch (activeNav1) {
+        switch (nav1) {
             case "Problem":
                 break;
             case "Solution":
@@ -50,11 +56,6 @@ export default function SolveProblem() {
             case "Discussion":
                 break;
             case "Submissions":
-                // (async () => {
-                //     const submissions = await problemStore.getSubmissions({ problemId: id as string });
-                //     console.log(submissions);
-                //     submissions && setSubmissions(submissions);
-                // })();
                 problemStore.getProblemSubmissions(id as string);
                 break;
             default:
@@ -87,7 +88,7 @@ export default function SolveProblem() {
                 <MainWrapper>
                     <PorblemPageHeader problemNumber={problem?.problemNumber} title={problem.title} />
 
-                    <div className="w-full h-[calc(100vh-3rem)] flex ">
+                    <div className="w-full h-[calc(100vh-50px)] flex">
                         {/* Left container */}
                         <div
                             className="w-[50%] pt-2.5 pb-1.5 px-6 flex flex-col gap-2 overflow-y-auto no-scrollbar"
@@ -110,7 +111,10 @@ export default function SolveProblem() {
                         <ContainerSplitter setLeftWidth={setLeftWidth} />
 
                         {/* Right container */}
-                        <div className="flex-1 w-[50%] pt-2.5 pb-1.5 px-6 flex flex-col" style={{ width: `${100 - leftWidth}%` }}>
+                        <div
+                            className="border-red-600 flex-1 w-[50%] pt-2.5 pb-1.5 px-6 flex flex-col"
+                            style={{ width: `${100 - leftWidth}%` }}
+                        >
                             <Navbar02
                                 navs={["Code", ...(problem.result ? ["Result"] : [])]}
                                 currentNav={activeNav2}
@@ -119,14 +123,14 @@ export default function SolveProblem() {
                             />
 
                             {activeNav2 === "Code" && (
-                                <div className="flex-1">
-                                    <CodeEditor
-                                        problemId={problem.id}
-                                        navToResult={() => {
-                                            navigate(`/solve-problem/${id}/${activeNav1}/Result`);
-                                        }}
-                                    />
-                                </div>
+                                // <div className="flex-1">
+                                <CodeEditor
+                                    problemId={problem.id}
+                                    navToResult={() => {
+                                        navigate(`/solve-problem/${id}/${activeNav1}/Result`);
+                                    }}
+                                />
+                                // </div>
                             )}
 
                             {activeNav2 === "Result" && <Result problem={problem} />}
@@ -187,7 +191,10 @@ const Problem = ({ problem }: { problem: ProblemType }) => {
             <ul className="flex gap-3 pb-5">
                 {problem.topicTags.map((tag, index) => {
                     return (
-                        <span key={index} className=" bg-lightTableRow1 text-sm backdrop:blur-md px-2.5 py-0.5 rounded-[100vh]">
+                        <span
+                            key={index}
+                            className=" bg-light300 dark:bg-dark300 text-sm backdrop:blur-md px-2.5 py-0.5 pb-1 rounded-[100vh]"
+                        >
                             {tag}
                         </span>
                     );
@@ -211,13 +218,16 @@ const Problem = ({ problem }: { problem: ProblemType }) => {
                 </span>
                 <span className="text-2xl text-lightText800 dark:text-darkText800 leading-[1px]">|</span>
                 <span className="text-lightText800 dark:text-darkText800 font-semibold">
-                    Submittions{" "}
+                    Submissions{" "}
                     <span className="text-lightText900 dark:text-darkText900 font-normal">{problem.submissionCount}</span>
                 </span>
                 <span className="text-2xl text-lightText800 dark:text-darkText800 leading-[1px]">|</span>
                 <span className="text-lightText800 dark:text-darkText800 font-semibold">
                     Acceptance Rate{" "}
-                    <span className="text-lightText900 dark:text-darkText900 font-normal">{problem.acceptanceRate}</span>
+                    <span className="text-lightText900 dark:text-darkText900 font-normal">
+                        {problem.acceptanceRate}
+                        {" %"}
+                    </span>
                 </span>
             </div>
         </div>
@@ -225,24 +235,118 @@ const Problem = ({ problem }: { problem: ProblemType }) => {
 };
 
 const Submissions = ({ submissions }: { submissions?: Submission[] }) => {
+    const problemStore = ProblemStore();
+    const [viewCode, setViewCode] = useState(false);
+    const [viewCodeIndex, setViewCodeIndex] = useState<number>();
+
     return (
-        <div>
-            {submissions &&
-                submissions.map(submission => {
-                    const date = new Date(submission.createdAt);
-                    const string = date.toISOString();
-                    return (
-                        <div className="  bg-light300 dark:bg-dark300 mb-2 px-4 py-6 rounded-md flex justify-between items-center cursor-pointer">
-                            <span
-                                className={`font-semibold ${submission.status === "Accepted" ? "text-green-500" : "text-red-600"}`}
-                            >
-                                {submission.status}
-                            </span>
-                            <span>{idToLanguageMappings[parseInt(submission.languageId)]}</span>
-                            <span>{formatDate(string)}</span>
+        <div className="h-full">
+            {submissions?.length === 0 ? (
+                <div className="flex items-center justify-center h-full">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                        <div className="text-lightText800 dark:text-darkText800 font-semibold text-lg">No Submissions</div>
+                        <div className="text-lightText800 dark:text-darkText800 font-semibold text-sm">
+                            You have not submitted any solutions yet.
                         </div>
-                    );
-                })}
+                    </div>
+                </div>
+            ) : null}
+
+            {!viewCode && submissions && (
+                <table className="w-full">
+                    <thead className="w-full border-b border-light300 dark:border-dark300">
+                        <tr className="">
+                            <th className="pb-2">Status</th>
+                            <th className="pb-2">Points</th>
+                            <th className="pb-2">Language</th>
+                            <th className="pb-2">Code</th>
+                            <th className="pb-2">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {submissions &&
+                            submissions.map((submission, index) => {
+                                const date = new Date(submission.createdAt);
+                                const string = date.toISOString();
+
+                                return (
+                                    <tr className="text-center opacity-80" key={index}>
+                                        <td
+                                            className={`pb-2 pt-3 font-semibold ${
+                                                submission.status === "Accepted"
+                                                    ? "text-green-500"
+                                                    : //@ts-ignore
+                                                      submission.status === "TimeLimitExceeded"
+                                                      ? "text-red-500"
+                                                      : //@ts-ignore
+                                                        submission.status === "CompilationError"
+                                                        ? "text-red-500"
+                                                        : //@ts-ignore
+                                                          submission.status === "RuntimeError"
+                                                          ? "text-red-500"
+                                                          : //@ts-ignore
+                                                            submission.status === "Rejected"
+                                                            ? "text-red-500"
+                                                            : //@ts-ignore
+                                                              submission.status === "Pending"
+                                                              ? "text-yellow-500"
+                                                              : ""
+                                            }`}
+                                        >
+                                            {submission.status === "Accepted"
+                                                ? "Accepted"
+                                                : //@ts-ignore
+                                                  submission.status === "TimeLimitExceeded"
+                                                  ? "Time Limit Exceeded"
+                                                  : //@ts-ignore
+                                                    submission.status === "CompilationError"
+                                                    ? "Compilation Error"
+                                                    : //@ts-ignore
+                                                      submission.status === "RuntimeError"
+                                                      ? "Runtime Error"
+                                                      : //@ts-ignore
+                                                        submission.status === "Rejected"
+                                                        ? "Rejected"
+                                                        : //@ts-ignore
+                                                          submission.status === "Pending"
+                                                          ? "Pending"
+                                                          : ""}
+                                        </td>
+                                        <td className="pb-2 pt-3">{0}</td>
+                                        <td className="pb-2 pt-3">{idToLanguageMappings[parseInt(submission.languageId)]}</td>
+                                        <td
+                                            className="pb-2 pt-3 cursor-pointer underline"
+                                            onClick={() => {
+                                                setViewCode(true);
+                                                setViewCodeIndex(index);
+                                            }}
+                                        >
+                                            view
+                                        </td>
+                                        <td className="pb-2 pt-3">{formatDate(string)}</td>
+                                    </tr>
+                                );
+                            })}{" "}
+                    </tbody>{" "}
+                </table>
+            )}
+
+            {submissions && viewCode && viewCodeIndex !== undefined && (
+                <div className="w-full h-full">
+                    <div className="flex items-center justify-between pb-6">
+                        <span>Submitted Code</span>
+
+                        <button type="button" className="text-3xl" onClick={() => setViewCode(false)}>
+                            <IoMdClose />
+                        </button>
+                    </div>
+                    <pre className="mx-4 h-[calc(100%-50px)] overflow-scroll no-scrollbar opacity-80">
+                        {submissions[viewCodeIndex].code}
+                    </pre>
+                </div>
+            )}
+
+            {problemStore.skeletonLoading && !submissions && <div className="text-center">Loading...</div>}
         </div>
     );
 };

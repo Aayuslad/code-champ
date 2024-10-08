@@ -43,7 +43,7 @@ function App() {
                     <Route path="/verify-signup-otp" element={<VerifySignupOtp />} />
 
                     <Route path="/problems" element={authStore.loading ? <LoadingPage /> : <Problems />} />
-                    <Route path="/contribute" element={authStore.loading ? <LoadingPage /> : <Contribute />} />
+                    <Route path="/contribute/:stage" element={authStore.loading ? <LoadingPage /> : <Contribute />} />
                     <Route path="/profile" element={authStore.loading ? <LoadingPage /> : <Profile />} />
                     <Route path="/blogs" element={authStore.loading ? <LoadingPage /> : <Blogs />} />
                     <Route path="/contest" element={authStore.loading ? <LoadingPage /> : <Contest />} />

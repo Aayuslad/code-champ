@@ -38,6 +38,7 @@ export const SideNavbar = () => {
                             </div>
                         </Link>
                     </li>
+
                     <li className="w-full">
                         <Link to="/profile" className="flex items-center gap-4 hover:underline">
                             <div className="text-2xl py-4">
@@ -50,6 +51,7 @@ export const SideNavbar = () => {
                             </div>
                         </Link>
                     </li>
+
                     <li className="w-full">
                         <Link to="/problems" className="flex items-center gap-4 hover:underline">
                             <div className="text-2xl py-4">
@@ -62,6 +64,7 @@ export const SideNavbar = () => {
                             </div>
                         </Link>
                     </li>
+
                     <li className="w-full">
                         <Link to="/contest" className="flex items-center gap-4 hover:underline">
                             <div className="text-2xl py-4">
@@ -74,8 +77,9 @@ export const SideNavbar = () => {
                             </div>
                         </Link>
                     </li>
+
                     <li className="w-full">
-                        <Link to="/contribute" className="flex items-center gap-4 hover:underline">
+                        <Link to="/contribute/contribute-type" className="flex items-center gap-4 hover:underline">
                             <div className="text-2xl py-4">
                                 <RiApps2AddLine />
                             </div>
@@ -86,6 +90,7 @@ export const SideNavbar = () => {
                             </div>
                         </Link>
                     </li>
+
                     <li className="w-full">
                         <Link to="/blogs" className="flex items-center gap-4 hover:underline">
                             <div className="text-2xl py-4">
@@ -98,6 +103,7 @@ export const SideNavbar = () => {
                             </div>
                         </Link>
                     </li>
+
                     {authStore.userProfile && (
                         <li className="mt-auto mb-4 text-red-600 w-full">
                             <button

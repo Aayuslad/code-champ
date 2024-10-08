@@ -18,7 +18,7 @@ type ProblemStoreType = {
     skeletonLoading: boolean;
     buttonLoading: boolean;
 
-    getFeedProblems: () => Promise<void>;
+    getFeedProblems: (userId?: string) => Promise<void>;
     getProblem: (problemId: string, userId: string) => Promise<void>;
     setOngoingProblem: (problem: ProblemType) => void;
     addSolution: (
@@ -49,10 +49,10 @@ export const ProblemStore = create<ProblemStoreType>(set => ({
     skeletonLoading: false,
     buttonLoading: false,
 
-    getFeedProblems: async () => {
+    getFeedProblems: async userId => {
         try {
             set({ skeletonLoading: true });
-            const { data } = await axios.get<FeedProblemsType[]>("/problem/bulk");
+            const { data } = await axios.get<FeedProblemsType[]>(`/problem/bulk/?userId=${userId}`);
             set({ feedProblems: data });
         } catch (error) {
             apiErrorHandler(error);

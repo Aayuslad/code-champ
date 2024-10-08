@@ -16,6 +16,8 @@ export type FeedProblemsType = {
     title: string;
     difficulty: DifficultyLevel;
     acceptanceRate: string;
+    topicTags: string[];
+    isSolved: boolean;
 };
 
 export type ProblemType = {
@@ -50,6 +52,7 @@ export type Submission = {
     status: SubmissionStatus;
     id: string;
     createdAt: Date;
+    code: string;
     languageId: string;
 };
 
@@ -97,4 +100,8 @@ export enum DifficultyLevel {
 export enum SubmissionStatus {
     Accepted = "Accepted",
     Rejeected = "Rejected",
+    Pending = "Pending",
+    CompilationError = "Compilation Error",
+    RunTimeError = "Run Time Error",
+    TimeLimitExceeded = "Time Limit Exceeded",
 }

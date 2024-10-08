@@ -4,13 +4,15 @@ import { SideNavbar } from "../components/navbars/sideNavbar";
 import MainWrapper from "../components/wrappers/mainWrapper";
 import { ProblemStore } from "../stores/problemStore";
 import { ProblemSetTable } from "../components/problemSetTable";
+import { AuthStore } from "../stores/authStore";
 
 export default function Problems() {
+    const authStore = AuthStore();
     const problemStore = ProblemStore();
 
     useEffect(() => {
         if (problemStore.feedProblems.length === 0) {
-            problemStore.getFeedProblems();
+            problemStore.getFeedProblems(authStore.userProfile?.id);
         }
     }, []);
 
@@ -21,7 +23,7 @@ export default function Problems() {
             <MainWrapper>
                 <Header />
 
-                <div className="flex items-center justify-center">
+                <div className="flex  justify-center">
                     <div className=" w-[1300px] min-w-[100px] flex">
                         {problemStore.feedProblems.length > 0 && (
                             <div className="flex-1 p-4 flex flex-col items-center lg:items-start">

@@ -14,16 +14,13 @@ datasource db {
 }
 
 model User {
-  id         String  @id @default(uuid())
-  userName   String  @unique
-  email      String  @unique
-  password   String
-  profileImg String?
-
-  Problem Problem[]
-
-  Submission Submission[]
-
+  id             String           @id @default(uuid())
+  userName       String           @unique
+  email          String           @unique
+  password       String
+  profileImg     String?
+  Problem        Problem[]
+  Submission     Submission[]
   OngoingProblem OngoingProblem[]
 }
 
@@ -99,7 +96,10 @@ enum difficultyLevel {
 }
 
 enum submissionStatus {
-  Accepted
-  Rejected
-  Pending
+  Accepted          @map("Accepted")
+  Rejected          @map("Rejected")
+  Pending           @map("Pending")
+  CompilationError  @map("Compilation Error")
+  RunTimeError      @map("Run Time Error")
+  TimeLimitExceeded @map("Time Limit Exceeded")
 }

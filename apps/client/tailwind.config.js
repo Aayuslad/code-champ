@@ -7,6 +7,7 @@ export default {
                 light100: "#fffff", // background
                 light200: "#FAFAFA", // lil darker background
                 light300: "#E5E7EB", // borders
+                light400: "#bebebe",
                 dark100: "#030712", // background
                 dark200: "#030712", // lil lighter background
                 dark300: "#1F2937", // borders

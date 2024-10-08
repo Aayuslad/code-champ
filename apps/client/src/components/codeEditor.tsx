@@ -67,10 +67,10 @@ export default function CodeEditor({ problemId, navToResult }: { problemId: stri
     }, [debouncedValue]);
 
     return (
-        <div className="h-[92%] mt-3">
+        <div className="flex-1 border-green-700 mt-1 flex flex-col">
             {language && problem?.solutions && (
                 <>
-                    <div className="h-[100%] rounded-lg overflow-hidden">
+                    <div className="flex-1 rounded-lg overflow-hidden">
                         <Editor
                             height="100%"
                             theme={uiStore.theme === "dark" ? "vs-dark" : "hc-light"}
@@ -98,14 +98,14 @@ export default function CodeEditor({ problemId, navToResult }: { problemId: stri
                         />
                     </div>
 
-                    <div className="flex items-end justify-between pt-2">
+                    <div className="flex items-end justify-between mt-1">
                         <button
                             type="button"
-                            className="bg-red-600 py-1 px-3 rounded-md text-white"
+                            className="border-[3px] rounded-xl border-light300 dark:border-dark300 py-0.5 px-3 font-semibold bg-light400 dark:bg-dark300"
                             disabled={
                                 !problem.solutions.find(
                                     solution => solution.languageId === languageToIdMppings[language as string],
-                                )?.solutionCode || problemStore.skeletonLoading
+                                )?.solutionCode || problemStore.buttonLoading
                             }
                             onClick={async () => {
                                 if (!authStore.isLoggedIn) toast.error("sing in to submit");
