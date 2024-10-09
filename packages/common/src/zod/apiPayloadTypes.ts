@@ -83,6 +83,8 @@ export const contributeProblemSchema = zod.object({
     difficultyLevel: zod.enum(["Basic", "Easy", "Medium", "Hard"]),
     topicTags: zod.array(zod.string()),
     hints: zod.array(zod.string()),
+    boilerplateCode: zod.string(),
+    submissionCode: zod.string(),
 });
 export type ContributeProblemSchemaType = zod.infer<typeof contributeProblemSchema>;
 

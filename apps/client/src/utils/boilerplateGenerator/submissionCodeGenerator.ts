@@ -14,8 +14,13 @@ export function generateSubmissionCode(structure: FunctionStructureType) {
 
 const generateCSubmissionCode = (structure: FunctionStructureType) => {
     let submissionCode = `
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdio.h>      // For input and output functions
+#include <stdlib.h>     // For memory allocation and other utility functions
+#include <string.h>     // For string manipulation functions
+#include <math.h>       // For mathematical functions (e.g., pow, sqrt)
+#include <limits.h>     // For constants like INT_MAX, INT_MIN
+#include <stdbool.h>    // For using boolean type (true/false)
+#include <ctype.h>      // For character type functions (e.g., isdigit, isalpha)
 
 {solution_code}
 
@@ -124,8 +129,16 @@ int main() {
 
 const generateCppSubmissionCode = (structure: FunctionStructureType) => {
     let submissionCode = `
-#include <iostream>
-#include <vector>
+#include <iostream>       // For basic I/O
+#include <vector>         // For using vectors
+#include <algorithm>      // For functions like min, max, sort, etc.
+#include <cmath>          // For mathematical operations
+#include <queue>          // For using priority queues, queues
+#include <stack>          // For using stacks
+#include <set>            // For ordered/unordered sets
+#include <map>            // For ordered/unordered maps
+#include <unordered_map>  // For using hashmaps
+#include <climits>        // For constant values like INT_MAX, INT_MIN
 using namespace std;
 
 {solution_code}
@@ -216,7 +229,13 @@ int main() {
 
 const generatePython3SubmissionCode = (structure: FunctionStructureType) => {
     let submissionCode = `
-from typing import List
+from typing import List, Tuple, Dict, Any  # For type hinting
+import sys  # For system-specific parameters and functions
+import math  # For mathematical functions
+from collections import defaultdict, deque  # For data structures
+import itertools  # For advanced iteration tools
+import heapq  # For priority queues
+import bisect  # For maintaining a list in sorted order
 
 {solution_code}
 
@@ -277,9 +296,10 @@ if __name__ == "__main__":
 
 const generateJavaSubmissionCode = (structure: FunctionStructureType) => {
     let submissionCode = `
-import java.util.*;
-import java.io.*;
-import java.math.*;
+import java.util.*;      // For data structures like ArrayList, HashMap, etc.
+import java.io.*;        // For input and output operations
+import java.math.*;      // For mathematical functions and constants
+import java.util.stream.*; // For Java Streams API (if needed for functional-style operations)
 
 public class Solution {
 	{solution_code}

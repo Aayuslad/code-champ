@@ -34,7 +34,11 @@ export const StageNav = ({ currentStage, setCurrentStage, constributionType, for
             }
 
             if (currentStage === "function-template" && newStage === "test-case-input") {
-                if (form.functionStructure.functionName === "" || form.functionStructure.parameters.length === 0) {
+                if (
+                    form.functionStructure.functionName === "" ||
+                    form.functionStructure.description === "" ||
+                    form.functionStructure.parameters.length === 0
+                ) {
                     toast("Please fill in all the required fields.");
                     return;
                 }
@@ -57,6 +61,8 @@ export const StageNav = ({ currentStage, setCurrentStage, constributionType, for
         }
     };
 
+    const currentStageIndex = stages.indexOf(currentStage);
+
     return (
         <div className="h-[80px] flex items-center justify-around mt-4">
             <button
@@ -68,7 +74,12 @@ export const StageNav = ({ currentStage, setCurrentStage, constributionType, for
                 <TbArrowBigLeftLineFilled />
             </button>
 
-            <div></div>
+            <div className="w-1/2 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                <div
+                    className="bg-blue-600 h-2.5 rounded-full"
+                    style={{ width: `${((currentStageIndex) / 4) * 100}%` }}
+                ></div>
+            </div>
 
             <button
                 type="button"

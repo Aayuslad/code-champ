@@ -11,8 +11,6 @@ import { Request, Response } from "express";
 import { idToLanguageMappings } from "../config/languageIdmappings";
 import { generateUniqueSlug } from "../helper/generateUniqueSlug";
 import { getObjectFromS3, uploadJsonToS3 } from "../services/awsS3";
-import { generateBoilerplate } from "../services/boilerplateGenerator/boilerplateGenerator";
-import { generateSubmissionCode } from "../services/boilerplateGenerator/submissionCodeGenerator";
 import { stdinGenerator } from "../services/stdinGenerator";
 const prisma = new PrismaClient();
 
@@ -31,6 +29,8 @@ export async function contributeProblem(req: Request, res: Response) {
             topicTags,
             hints,
             constraints,
+            boilerplateCode,
+            submissionCode,
         } = parsed.data;
 
         const slug = await generateUniqueSlug(title);
@@ -39,9 +39,6 @@ export async function contributeProblem(req: Request, res: Response) {
             uploadJsonToS3(`problem-test-cases/${slug}/sampleTestCases.json`, sampleTestCases),
             uploadJsonToS3(`problem-test-cases/${slug}/testCases.json`, testCases),
         ]);
-
-        const boilerplateCode = generateBoilerplate(functionStructure);
-        const submissionCode = generateSubmissionCode(functionStructure);
 
         const existingTags = await prisma.topicTag.findMany({
             where: {
@@ -57,17 +54,26 @@ export async function contributeProblem(req: Request, res: Response) {
             });
         }
 
+        const bigestProblemNum = await prisma.problem.findFirst({
+            select: {
+                problemNumber: true,
+            },
+            orderBy: {
+                problemNumber: "desc",
+            },
+        });
+
         const newProblem = await prisma.problem.create({
             data: {
                 title,
-                problemNumber: 3,
+                problemNumber: bigestProblemNum ? bigestProblemNum.problemNumber + 1 : 1,
                 slug: slug,
                 description: description,
                 difficultyLevel: difficultyLevel,
                 sampleTestCasesKey: `problem-test-cases/${slug}/sampleTestCases.json`,
                 testCasesKey: `problem-test-cases/${slug}/testCases.json`,
-                boilerplateCode: JSON.stringify(boilerplateCode),
-                submissionCode: JSON.stringify(submissionCode),
+                boilerplateCode: boilerplateCode,
+                submissionCode: submissionCode,
                 testCasesCount: testCases.length || 0,
                 functionStructure: JSON.stringify(functionStructure),
                 constraints: {
@@ -102,6 +108,7 @@ export async function contributeProblem(req: Request, res: Response) {
         });
     }
 }
+
 export async function getFeedProblems(req: Request, res: Response) {
     const { userId } = req.query;
 

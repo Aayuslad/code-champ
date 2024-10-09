@@ -8,9 +8,11 @@ import {
     Submission,
     PutOngoingProblemSchmaType,
     OnGoingProblemType,
+    ContributeProblemSchemaType,
 } from "@repo/common/zod";
 import axios from "axios";
 import { languageToIdMppings } from "../config/languageIdMppings";
+import toast from "react-hot-toast";
 
 type ProblemStoreType = {
     feedProblems: FeedProblemsType[];
@@ -41,6 +43,7 @@ type ProblemStoreType = {
     putOngoingProblem: (values: PutOngoingProblemSchmaType) => Promise<void>;
     getOngoingProblem: (problemId: string) => Promise<OnGoingProblemType | undefined>;
     resetCode: (problemId: string, language: string) => void;
+    contributeProblem: (values: ContributeProblemSchemaType) => Promise<void>;
 };
 
 export const ProblemStore = create<ProblemStoreType>(set => ({
@@ -203,5 +206,14 @@ export const ProblemStore = create<ProblemStoreType>(set => ({
                     : problem,
             ),
         }));
+    },
+
+    contributeProblem: async values => {
+        try {
+            await axios.post("/problem/contribute", values);
+            toast.success("Problem contributed");
+        } catch (error) {
+            apiErrorHandler(error);
+        }
     },
 }));

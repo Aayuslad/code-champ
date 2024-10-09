@@ -9,6 +9,7 @@ import { TestCaseInput } from "../components/contributePage/stages/testCaseInput
 import { Header } from "../components/headers/hader";
 import { SideNavbar } from "../components/navbars/sideNavbar";
 import MainWrapper from "../components/wrappers/mainWrapper";
+import { ProblemStore } from "../stores/problemStore";
 
 export const stages = ["contribute-type", "problem-detailes", "function-template", "test-case-input"] as const;
 export const baseTypes = ["int", "short", "long", "float", "double", "boolean"] as const;
@@ -21,6 +22,7 @@ type TypeModifier = (typeof typeModifier)[number];
 
 export default function Contribute() {
     const navigate = useNavigate();
+    const problemStore = ProblemStore();
     const { stage } = useParams<{ stage: Stage }>();
     const [constributionType, setContributionType] = useState<"Submit a Problem" | "Add a Test Case">("Submit a Problem");
     const [currentStage, setCurrentStage] = useState<Stage>(stage || "contribute-type");
@@ -40,6 +42,8 @@ export default function Contribute() {
                 description: "",
             },
         },
+        boilerplateCode: "",
+        submissionCode: "",
         testCases: [],
         sampleTestCases: [],
         difficultyLevel: "Basic",
@@ -59,6 +63,7 @@ export default function Contribute() {
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         console.log(form);
+        problemStore.contributeProblem(form);
     }
 
     return (
@@ -79,7 +84,12 @@ export default function Contribute() {
                     {currentStage === "test-case-input" && <TestCaseInput form={form} setForm={setForm} />}
                 </form>
 
-                <StageNav currentStage={currentStage} setCurrentStage={setCurrentStage} constributionType={constributionType} form={form} />
+                <StageNav
+                    currentStage={currentStage}
+                    setCurrentStage={setCurrentStage}
+                    constributionType={constributionType}
+                    form={form}
+                />
             </MainWrapper>
         </div>
     );
