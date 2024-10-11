@@ -60,7 +60,7 @@ export async function contributeProblem(req: Request, res: Response) {
             },
             orderBy: {
                 problemNumber: "desc",
-            },
+            },  
         });
 
         const newProblem = await prisma.problem.create({

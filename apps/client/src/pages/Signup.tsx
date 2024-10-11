@@ -1,9 +1,11 @@
-import { useFormik } from "formik";
 import { SignupUserSchemaType } from "@repo/common/zod";
-import { AuthStore } from "../stores/authStore";
+import { useFormik } from "formik";
 import { Link } from "react-router-dom";
-import AuthHeader from "../components/headers/AuthHeader";
 import AuthFooter from "../components/footers/AuthFooter";
+import AuthHeader from "../components/headers/AuthHeader";
+import { sinUpValidation } from "../helper/formValidator";
+import { AuthStore } from "../stores/authStore";
+import { ContinueWithGoogleButton } from "../components/buttons/continueWithGoogleButton";
 
 export default function Signup() {
     const authStore = AuthStore();
@@ -16,9 +18,14 @@ export default function Signup() {
         },
         validateOnBlur: false,
         validateOnChange: false,
+        validate: sinUpValidation,
         onSubmit: values => {
-            console.log(values);
-            authStore.signupUser(values);
+            const trimmedValues = {
+                email: values.email.trim(),
+                userName: values.userName.trim(),
+                password: values.password.trim(),
+            };
+            authStore.signupUser(trimmedValues);
         },
     });
 
@@ -97,6 +104,10 @@ export default function Signup() {
                                 Sign in
                             </Link>
                         </h4>
+
+                        <div className="text-center text-sm pb-3">OR</div>
+
+                        <ContinueWithGoogleButton />
                     </form>
                 </div>
             </main>

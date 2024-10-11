@@ -210,10 +210,13 @@ export const ProblemStore = create<ProblemStoreType>(set => ({
 
     contributeProblem: async values => {
         try {
+            set({ buttonLoading: true });
             await axios.post("/problem/contribute", values);
             toast.success("Problem contributed");
         } catch (error) {
             apiErrorHandler(error);
+        } finally {
+            set({ buttonLoading: false });
         }
     },
 }));

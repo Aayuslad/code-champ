@@ -4,6 +4,7 @@ import { AuthStore } from "../stores/authStore";
 import { Link } from "react-router-dom";
 import AuthHeader from "../components/headers/AuthHeader";
 import AuthFooter from "../components/footers/AuthFooter";
+import { forgotPasswordValidation } from "../helper/formValidator";
 
 export default function Signin() {
     const authStore = AuthStore();
@@ -14,9 +15,11 @@ export default function Signin() {
         },
         validateOnBlur: false,
         validateOnChange: false,
+        validate: forgotPasswordValidation,
         onSubmit: values => {
-            console.log(values);
-            authStore.sendPasswordResetOtp(values);
+            authStore.sendPasswordResetOtp({
+                email: values.email.trim()
+            });
         },
     });
 

@@ -27,7 +27,7 @@ export const SideNavbar = () => {
                     className={`h-full flex pl-[20px] pr-4 flex-col ${uiStore.sideBarToggle ? "items-start" : "items-start"} text-xl gap-1`}
                 >
                     <li className="w-full">
-                        <Link to="/home" className="flex items-center gap-4 hover:underline">
+                        <Link to="/home" className="flex items-center gap-4 hover:underline" title="Home">
                             <div className="text-2xl py-4">
                                 <HiOutlineHome />
                             </div>
@@ -40,7 +40,7 @@ export const SideNavbar = () => {
                     </li>
 
                     <li className="w-full">
-                        <Link to="/profile" className="flex items-center gap-4 hover:underline">
+                        <Link to="/profile" className="flex items-center gap-4 hover:underline" title="Profile">
                             <div className="text-2xl py-4">
                                 <FiUser />
                             </div>
@@ -53,7 +53,7 @@ export const SideNavbar = () => {
                     </li>
 
                     <li className="w-full">
-                        <Link to="/problems" className="flex items-center gap-4 hover:underline">
+                        <Link to="/problems" className="flex items-center gap-4 hover:underline" title="Problems">
                             <div className="text-2xl py-4">
                                 <LuCode2 />
                             </div>
@@ -66,7 +66,7 @@ export const SideNavbar = () => {
                     </li>
 
                     <li className="w-full">
-                        <Link to="/contest" className="flex items-center gap-4 hover:underline">
+                        <Link to="/contest" className="flex items-center gap-4 hover:underline" title="Contest">
                             <div className="text-2xl py-4">
                                 <GoTrophy />
                             </div>
@@ -79,7 +79,7 @@ export const SideNavbar = () => {
                     </li>
 
                     <li className="w-full">
-                        <Link to="/contribute/contribute-type" className="flex items-center gap-4 hover:underline">
+                        <Link to="/contribute/contribute-type" className="flex items-center gap-4 hover:underline" title="Contribute">
                             <div className="text-2xl py-4">
                                 <RiApps2AddLine />
                             </div>
@@ -92,7 +92,7 @@ export const SideNavbar = () => {
                     </li>
 
                     <li className="w-full">
-                        <Link to="/blogs" className="flex items-center gap-4 hover:underline">
+                        <Link to="/blogs" className="flex items-center gap-4 hover:underline" title="Blogs">
                             <div className="text-2xl py-4">
                                 <GoDiscussionClosed />
                             </div>
@@ -110,6 +110,7 @@ export const SideNavbar = () => {
                                 type="button"
                                 className="flex items-center gap-4 hover:underline"
                                 onClick={() => authStore.signoutUser()}
+                                title="Sign out"
                             >
                                 <div className="text-2xl py-4">
                                     <MdLogout />

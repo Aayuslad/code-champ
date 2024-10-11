@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { TestCasesNav } from "../testCasesNav";
 import { ContributeProblemSchemaType } from "@repo/common/zod";
+import { ProblemStore } from "../../../stores/problemStore";
 
 type Props = {
     form: ContributeProblemSchemaType;
@@ -8,6 +9,7 @@ type Props = {
 };
 
 export const TestCaseInput = ({ form, setForm }: Props) => {
+    const problemStore = ProblemStore();
     const [currentNavIndex, setCurrentNavIndex] = useState(0);
     const [currentSampleNavIndex, setCurrentSampleNavIndex] = useState(0);
     const currentTestCase = form.testCases[currentNavIndex];
@@ -114,8 +116,9 @@ export const TestCaseInput = ({ form, setForm }: Props) => {
                         <textarea
                             id={`${isTestCase ? "" : "sample-"}output`}
                             value={testCase?.output}
+                            placeholder="Instructions: Add elements of derived data type (e.g., array, linked list, queue) by separating them with commas. Example: 3,2,6,5,4,3"
                             onChange={e => handleOutputChange(isTestCase, e.target.value)}
-                            className="w-[400px] h-[400px] bg-transparent border-2 border-light300 dark:border-dark300 rounded-md px-3 py-2 outline-none resize-none"
+                            className="h-[100px] w-full bg-transparent border-2 border-light300 dark:border-dark300 rounded-md px-3 py-2 outline-none resize-none"
                         />
                         <span className="absolute bottom-2 right-2 text-sm text-gray-500">
                             Elements: {testCase?.output.split(",").length}
@@ -198,8 +201,12 @@ export const TestCaseInput = ({ form, setForm }: Props) => {
                         needed, and you can reach out to us anytime to check the status of your submission."
                     </p>
                 </div>
-                <button type="submit" className="py-2 px-4 rounded-xl font-semibold mt-2 ml-6 text-black dark:text-white bg-light400 dark:bg-dark300 ">
-                    Submit
+                <button
+                    type="submit"
+                    disabled={problemStore.buttonLoading}
+                    className="py-2 px-4 rounded-xl font-semibold mt-2 ml-6 text-black dark:text-white bg-light400 dark:bg-dark300 "
+                >
+                    {problemStore.buttonLoading ? "Submitting..." : "Submit"}
                 </button>
             </div>
         </>

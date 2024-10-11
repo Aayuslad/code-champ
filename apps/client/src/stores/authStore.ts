@@ -20,6 +20,7 @@ interface authStoreType {
     sendPasswordResetOtp: (values?: { email: string }) => Promise<void>;
     verifyPasswordResetOtp: (values: { otp: string }) => Promise<void>;
     updatePassword: (values: { password: string }) => Promise<void>;
+    handleGoogleOneTapResponse: (response: any) => Promise<void>;
 }
 
 export const AuthStore = create<authStoreType>(set => ({
@@ -131,5 +132,15 @@ export const AuthStore = create<authStoreType>(set => ({
         } finally {
             set({ buttonLoading: false });
         }
+    },
+
+    handleGoogleOneTapResponse: async function (response) {
+        try {
+            await axios.post("/user/auth/google-one-tap", {
+                token: response.credential,
+            });
+            const result = await axios.get("/user/profile");
+            set({ userProfile: result.data as UserType, isLoggedIn: true });
+        } catch (error) {}
     },
 }));

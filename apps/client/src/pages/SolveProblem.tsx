@@ -302,8 +302,8 @@ const Submissions = ({ submissions }: { submissions?: Submission[] }) => {
                                                     submission.status === "CompilationError"
                                                     ? "Compilation Error"
                                                     : //@ts-ignore
-                                                      submission.status === "RuntimeError"
-                                                      ? "Runtime Error"
+                                                      submission.status === "RunTimeError"
+                                                      ? "Run Time Error"
                                                       : //@ts-ignore
                                                         submission.status === "Rejected"
                                                         ? "Rejected"

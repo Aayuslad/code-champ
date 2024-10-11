@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { AuthStore } from "../stores/authStore";
 import AuthHeader from "../components/headers/AuthHeader";
 import AuthFooter from "../components/footers/AuthFooter";
+import { verifyOtpValidation } from "../helper/formValidator";
 
 export default function VerifyPasswordResetOtp() {
     const inputRef = useRef<(HTMLInputElement | null)[]>([]);
@@ -16,9 +17,9 @@ export default function VerifyPasswordResetOtp() {
         },
         validateOnBlur: false,
         validateOnChange: false,
+        validate: verifyOtpValidation,
         onSubmit: values => {
-            console.log(values);
-            authStore.verifyPasswordResetOtp({ otp: values.otp.join("") });
+            authStore.verifyPasswordResetOtp({ otp: values.otp.map(v => v.trim()).join("") });
         },
     });
 

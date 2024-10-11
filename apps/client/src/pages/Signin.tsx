@@ -4,6 +4,8 @@ import { AuthStore } from "../stores/authStore";
 import { Link } from "react-router-dom";
 import AuthHeader from "../components/headers/AuthHeader";
 import AuthFooter from "../components/footers/AuthFooter";
+import { sinInValidation } from "../helper/formValidator";
+import { ContinueWithGoogleButton } from "../components/buttons/continueWithGoogleButton";
 
 export default function Signin() {
     const authStore = AuthStore();
@@ -15,9 +17,13 @@ export default function Signin() {
         },
         validateOnBlur: false,
         validateOnChange: false,
+        validate: sinInValidation,
         onSubmit: values => {
-            console.log(values);
-            authStore.signinUser(values);
+            const trimmedValues = {
+                emailOrUsername: values.emailOrUsername.trim(),
+                password: values.password.trim(),
+            };
+            authStore.signinUser(trimmedValues);
         },
     });
 
@@ -85,6 +91,10 @@ export default function Signin() {
                                 Sign up
                             </Link>
                         </h4>
+
+                        <div className="text-center text-sm pb-3">OR</div>
+
+                        <ContinueWithGoogleButton />
                     </form>
                 </div>
             </main>

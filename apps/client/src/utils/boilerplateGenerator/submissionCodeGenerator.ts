@@ -73,7 +73,7 @@ int main() {
     // adding function call
     const retType =
         structure.returnType.category === "derived" && structure.returnType.derivedType
-            ? derivedTypes[structure.returnType.derivedType].c.replace("{baseType}", baseTypes[structure.returnType.baseType].c)
+            ? derivedTypes[structure.returnType.derivedType].c.replace("base_type", baseTypes[structure.returnType.baseType].c)
             : baseTypes[structure.returnType.baseType].c;
 
     const finalRetType = structure.returnType.typeModifier
@@ -191,7 +191,7 @@ int main() {
     const retType =
         structure.returnType.category === "derived" && structure.returnType.derivedType
             ? derivedTypes[structure.returnType.derivedType].cpp.replace(
-                  "{baseType}",
+                  "base_type",
                   baseTypes[structure.returnType.baseType].cpp,
               )
             : baseTypes[structure.returnType.baseType].cpp;
@@ -210,7 +210,7 @@ int main() {
 
         if (structure.returnType.derivedType == "Array") {
             printResult = `
-			for (int i = 0; i < sizeof(result) / sizeof(result[0]); i++) {
+			for (int i = 0; i < result.size(); i++) {
 				cout << result[i] << " ";
 			}
 			cout << endl;
@@ -321,6 +321,7 @@ public class Solution {
         .map(p => {
             let bType = baseTypes[p.baseType].java;
             if (p.category === "derived" && p.derivedType) {
+                
                 let dType = derivedTypes[p.derivedType].java;
                 if (p.typeModifier) {
                     const typeModifier = typeModifiers[p.typeModifier].java;
@@ -333,6 +334,9 @@ public class Solution {
                 }
                 let type = dType.replace("base_type", bType);
 
+                console.log(p.derivedType);
+                
+                
                 if (p.derivedType.includes("Array")) {
                     const sizeDecl = `int ${p.name}Size = scanner.nextInt();`;
                     const arrDecl = `${type} ${p.name} = new ${bType}[${p.name}Size];`;
@@ -344,8 +348,13 @@ public class Solution {
                             return `${sizeDecl}\n\t\t${arrDecl}\n\t\t${arrInit}`;
                         }
                         const arrInit = `for (int i = 0; i < ${p.name}Size; i++) { ${p.name}[i] = scanner.next${bType.charAt(0).toUpperCase() + bType.slice(1)}(); }`;
+                        console.log(`${sizeDecl}\n\t\t${arrDecl}\n\t\t${arrInit}`);
                         return `${sizeDecl}\n\t\t${arrDecl}\n\t\t${arrInit}`;
                     }
+
+                    const  arrInit = `for (int i = 0; i < ${p.name}Size; i++) { ${p.name}[i] = scanner.next${bType.charAt(0).toUpperCase() + bType.slice(1)}(); }`;
+
+                    return `${sizeDecl}\n\t\t${arrDecl}\n\t\t${arrInit}`;
                 } else {
                     if (p.typeModifier) {
                         const typeModifier = typeModifiers[p.typeModifier].java;
@@ -383,7 +392,7 @@ public class Solution {
     let retType =
         structure.returnType.category === "derived" && structure.returnType.derivedType
             ? derivedTypes[structure.returnType.derivedType].java.replace(
-                  "{baseType}",
+                  "base_type",
                   baseTypes[structure.returnType.baseType].java,
               )
             : baseTypes[structure.returnType.baseType].java;

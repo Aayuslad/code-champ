@@ -1,4 +1,4 @@
-import { BaseTypes, ContributeProblemSchemaType } from "@repo/common/zod";
+import { ContributeProblemSchemaType } from "@repo/common/zod";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { StageNav } from "../components/contributePage/stageNav";
@@ -16,9 +16,6 @@ export const baseTypes = ["int", "short", "long", "float", "double", "boolean"] 
 export const derivedTypes = ["Array", "LinkedList", "Set", "Map", "Queue", "Stack", "TreeNode", "GraphNode"] as const;
 export const typeModifier = ["no type modifier", "unsigned", "short", "long", "longLong", "const", "volatile"] as const;
 type Stage = (typeof stages)[number];
-type BaseType = (typeof baseTypes)[number];
-type DerivedType = (typeof derivedTypes)[number];
-type TypeModifier = (typeof typeModifier)[number];
 
 export default function Contribute() {
     const navigate = useNavigate();
@@ -72,7 +69,11 @@ export default function Contribute() {
 
             <MainWrapper>
                 <Header />
-                <form className="min-h-[calc(100vh-152px)] h-fit flex" onSubmit={handleSubmit}>
+                <form
+                    className="min-h-[calc(100vh-152px)] h-fit flex"
+                    onSubmit={handleSubmit}
+                    onKeyDown={e => e.key === "Enter" && e.preventDefault()}
+                >
                     {currentStage === "contribute-type" && (
                         <ContributionType constributionType={constributionType} setContributionType={setContributionType} />
                     )}

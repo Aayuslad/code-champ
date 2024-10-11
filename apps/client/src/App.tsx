@@ -18,6 +18,7 @@ import { UiStore } from "./stores/uiStore";
 import { useEffect } from "react";
 import { defineEditorThemes } from "./utils/editorThemes";
 import { AuthStore } from "./stores/authStore";
+import GoogleOneTapLogin from "./components/googleOneTapLogin";
 
 function App() {
     const uiStore = UiStore();
@@ -32,6 +33,8 @@ function App() {
     return (
         <Router>
             <div className="DefaultPage h-fit min-h-screen bg-light100 dark:bg-dark100 text-lightText900 dark:text-darkText900">
+                {!authStore.loading && !authStore.isLoggedIn && <GoogleOneTapLogin />}
+                
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/home" element={authStore.loading ? <LoadingPage /> : <Home />} />
