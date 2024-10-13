@@ -1,14 +1,12 @@
-import { Link } from "react-router-dom";
-import NavToggleButton from "../buttons/navToggleButton";
-import { UiStore } from "../../stores/uiStore";
-import { AuthStore } from "../../stores/authStore";
-import { GoDiscussionClosed } from "react-icons/go";
-import { RiApps2AddLine } from "react-icons/ri";
-import { LuCode2 } from "react-icons/lu";
 import { FiUser } from "react-icons/fi";
-import { HiOutlineHome } from "react-icons/hi2";
+import { GoDiscussionClosed, GoTrophy } from "react-icons/go";
+import { LuCode2 } from "react-icons/lu";
 import { MdLogout } from "react-icons/md";
-import { GoTrophy } from "react-icons/go";
+import { RiApps2AddLine } from "react-icons/ri";
+import { Link } from "react-router-dom";
+import { AuthStore } from "../../stores/authStore";
+import { UiStore } from "../../stores/uiStore";
+import NavToggleButton from "../buttons/navToggleButton";
 
 export const SideNavbar = () => {
     const uiStore = UiStore();
@@ -27,20 +25,11 @@ export const SideNavbar = () => {
                     className={`h-full flex pl-[20px] pr-4 flex-col ${uiStore.sideBarToggle ? "items-start" : "items-start"} text-xl gap-1`}
                 >
                     <li className="w-full">
-                        <Link to="/home" className="flex items-center gap-4 hover:underline" title="Home">
-                            <div className="text-2xl py-4">
-                                <HiOutlineHome />
-                            </div>
-                            <div
-                                className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0 hidden"}`}
-                            >
-                                Home
-                            </div>
-                        </Link>
-                    </li>
-
-                    <li className="w-full">
-                        <Link to="/profile" className="flex items-center gap-4 hover:underline" title="Profile">
+                        <Link
+                            to={`/profile/${authStore.userProfile?.id}`}
+                            className="flex items-center gap-4 hover:underline"
+                            title="Profile"
+                        >
                             <div className="text-2xl py-4">
                                 <FiUser />
                             </div>
@@ -79,7 +68,11 @@ export const SideNavbar = () => {
                     </li>
 
                     <li className="w-full">
-                        <Link to="/contribute/contribute-type" className="flex items-center gap-4 hover:underline" title="Contribute">
+                        <Link
+                            to="/contribute/contribute-type"
+                            className="flex items-center gap-4 hover:underline"
+                            title="Contribute"
+                        >
                             <div className="text-2xl py-4">
                                 <RiApps2AddLine />
                             </div>

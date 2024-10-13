@@ -3,12 +3,12 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import apiErrorHandler from "../helper/apiCallErrorHandler";
 import navigateTo from "../helper/pageNavigator";
-import { UserType } from "@repo/common/zod";
+import { UserProfile, WholeUserProfile } from "@repo/common/zod";
 
 interface authStoreType {
     loading: boolean;
     isLoggedIn: boolean;
-    userProfile: UserType | undefined;
+    userProfile: UserProfile | undefined;
     buttonLoading: boolean;
     skeletonLoading: boolean;
 
@@ -21,6 +21,7 @@ interface authStoreType {
     verifyPasswordResetOtp: (values: { otp: string }) => Promise<void>;
     updatePassword: (values: { password: string }) => Promise<void>;
     handleGoogleOneTapResponse: (response: any) => Promise<void>;
+    fetchWholeUserProfile: (userId: string) => Promise<WholeUserProfile | undefined>;
 }
 
 export const AuthStore = create<authStoreType>(set => ({
@@ -48,7 +49,7 @@ export const AuthStore = create<authStoreType>(set => ({
             set({ buttonLoading: true });
             const result = await axios.post("/user/signup/verify-otp", values);
             toast.success(result.data.message);
-            navigateTo("/home");
+            navigateTo("/problems");
         } catch (error) {
             apiErrorHandler(error);
         } finally {
@@ -60,7 +61,7 @@ export const AuthStore = create<authStoreType>(set => ({
         try {
             set({ loading: true });
             const result = await axios.get("/user/profile");
-            set({ userProfile: result.data as UserType, isLoggedIn: true });
+            set({ userProfile: result.data as UserProfile, isLoggedIn: true });
         } catch (error) {
             // apiErrorHandler(error);
         } finally {
@@ -73,7 +74,7 @@ export const AuthStore = create<authStoreType>(set => ({
             set({ buttonLoading: true });
             const result = await axios.post("/user/signin", values);
             toast.success(result.data.message);
-            navigateTo("/home");
+            navigateTo("/problems");
         } catch (error) {
             apiErrorHandler(error);
         } finally {
@@ -140,7 +141,19 @@ export const AuthStore = create<authStoreType>(set => ({
                 token: response.credential,
             });
             const result = await axios.get("/user/profile");
-            set({ userProfile: result.data as UserType, isLoggedIn: true });
+            set({ userProfile: result.data as UserProfile, isLoggedIn: true });
         } catch (error) {}
+    },
+
+    fetchWholeUserProfile: async function (userId) {
+        try {
+            set({ skeletonLoading: true });
+            const result = await axios.get(`/user/whole-profile/${userId}`);
+            return result.data as WholeUserProfile;
+        } catch (error) {
+            apiErrorHandler(error);
+        } finally {
+            set({ skeletonLoading: false });
+        }
     },
 }));

@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
 import ForgotPassword from "./pages/ForgotPassword";
 import LandingPage from "./pages/LandigPage";
 import PasswordReset from "./pages/PasswordReset";
@@ -37,7 +36,6 @@ function App() {
                 
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
-                    <Route path="/home" element={authStore.loading ? <LoadingPage /> : <Home />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/password-reset" element={<PasswordReset />} />
                     <Route path="/signin" element={<Signin />} />
@@ -47,7 +45,7 @@ function App() {
 
                     <Route path="/problems" element={authStore.loading ? <LoadingPage /> : <Problems />} />
                     <Route path="/contribute/:stage" element={authStore.loading ? <LoadingPage /> : <Contribute />} />
-                    <Route path="/profile" element={authStore.loading ? <LoadingPage /> : <Profile />} />
+                    <Route path="/profile/:userId" element={authStore.loading ? <LoadingPage /> : <Profile />} />
                     <Route path="/blogs" element={authStore.loading ? <LoadingPage /> : <Blogs />} />
                     <Route path="/contest" element={authStore.loading ? <LoadingPage /> : <Contest />} />
                     <Route

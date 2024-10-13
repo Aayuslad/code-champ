@@ -147,6 +147,8 @@ export async function fetchUserProfile(req: Request, res: Response) {
             id: user.id,
             email: user.email,
             userName: user.userName,
+            profileImg: user.profileImg,
+            avatar: user.avatar,
         });
     } catch (error) {
         res.status(500).json({
@@ -155,6 +157,102 @@ export async function fetchUserProfile(req: Request, res: Response) {
     }
 }
 
+export async function fetchWholeUserProfile(req: Request, res: Response) {
+    try {
+        const [user, platformData] = await Promise.all([
+            prisma.user.findUnique({
+                where: { id: req.params.id },
+                select: {
+                    id: true,
+                    email: true,
+                    userName: true,
+                    profileImg: true,
+                    avatar: true,
+                    Submission: {
+                        where: { status: "Accepted" },
+                        orderBy: { createdAt: "desc" },
+                        select: {
+                            languageId: true,
+                            problem: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                    difficultyLevel: true,
+                                    topicTags: { select: { content: true } },
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            prisma.$transaction([
+                prisma.problem.count(),
+                prisma.problem.count({ where: { difficultyLevel: "Basic" } }),
+                prisma.problem.count({ where: { difficultyLevel: "Easy" } }),
+                prisma.problem.count({ where: { difficultyLevel: "Medium" } }),
+                prisma.problem.count({ where: { difficultyLevel: "Hard" } }),
+            ]),
+        ]);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const [totalProblems, totalBasic, totalEasy, totalMedium, totalHard] = platformData;
+
+        const skillCounts = new Map();
+        const languageIdCounts = new Map();
+        const difficultyLevelCounts = { Basic: 0, Easy: 0, Medium: 0, Hard: 0 };
+        const solvedByDifficulty = { Basic: [], Easy: [], Medium: [], Hard: [] };
+
+        user.Submission.forEach(submission => {
+            const { problem, languageId } = submission;
+            const { difficultyLevel, topicTags } = problem;
+
+            // Count skills
+            topicTags.forEach(tag => {
+                skillCounts.set(tag.content, (skillCounts.get(tag.content) || 0) + 1);
+            });
+
+            // Count language IDs
+            languageIdCounts.set(languageId, (languageIdCounts.get(languageId) || 0) + 1);
+
+            // Count and collect problems by difficulty
+            difficultyLevelCounts[difficultyLevel as keyof typeof difficultyLevelCounts]++;
+            (solvedByDifficulty[difficultyLevel as keyof typeof solvedByDifficulty] as Array<{ id: string; title: string }>).push(
+                { id: problem.id, title: problem.title },
+            );
+        });
+
+        const data = {
+            id: user.id,
+            email: user.email,
+            userName: user.userName,
+            profileImg: user.profileImg,
+            avatar: user.avatar,
+            solved: user.Submission.length,
+            totalProblems,
+            totalBasic,
+            totalEasy,
+            totalMedium,
+            totalHard,
+            basicSolvedCount: difficultyLevelCounts.Basic,
+            easySolvedCount: difficultyLevelCounts.Easy,
+            mediumSolvedCount: difficultyLevelCounts.Medium,
+            hardSolvedCount: difficultyLevelCounts.Hard,
+            basicSolved: solvedByDifficulty.Basic,
+            easySolved: solvedByDifficulty.Easy,
+            mediumSolved: solvedByDifficulty.Medium,
+            hardSolved: solvedByDifficulty.Hard,
+            skillCounts: Array.from(skillCounts, ([skill, count]) => ({ skill, count })),
+            languageIdCounts: Array.from(languageIdCounts, ([languageId, count]) => ({ languageId, count })),
+        };
+        
+        return res.json(data);
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+}
 // Signs in the user
 export async function signinUser(req: Request, res: Response) {
     const { emailOrUsername, password } = req.body;
@@ -349,7 +447,7 @@ export async function googleOAuth20Controller(req: Request, res: Response) {
             maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
         });
 
-        const redirectUrl = "https://app.code-champ.xyz/home";
+        const redirectUrl = "https://app.code-champ.xyz/problems";
         res.redirect(redirectUrl);
     } catch (error) {
         res.status(500).json({ error: "Internal server error" });

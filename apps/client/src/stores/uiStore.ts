@@ -10,7 +10,7 @@ interface UiStoreType {
 
 export const UiStore = create<UiStoreType>((set) => ({
 	sideBarToggle: false,
-	theme: (localStorage.getItem("theme") as "light" | "dark") || "light",
+	theme: (localStorage.getItem("theme") as "light" | "dark") || "dark",
 
 	toggleSideBar: () => set((state) => ({ sideBarToggle: !state.sideBarToggle })),
 

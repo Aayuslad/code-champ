@@ -54,7 +54,10 @@ function DifficultyDropdown({ options, selectedOptions, setSelectedOptions }: pr
                 </span>
             </button>
             {isOpen && (
-                <ul className="absolute mt-2 w-full dark:bg-[#030712] bg-[#f6f6f6] rounded-xl overflow-scroll no-scrollbar border-2 border-light300 dark:border-dark300 z-10" style={{ zIndex: 10 }}>
+                <ul
+                    className="absolute mt-2 w-full dark:bg-[#030712] bg-[#f6f6f6] rounded-xl overflow-scroll no-scrollbar border-2 border-light300 dark:border-dark300 z-10"
+                    style={{ zIndex: 10 }}
+                >
                     {options.map((option, index) => (
                         <li
                             key={index}

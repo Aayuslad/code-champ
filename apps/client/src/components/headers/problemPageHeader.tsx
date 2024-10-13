@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { AuthStore } from "../../stores/authStore";
 import { ThemeChanger } from "../themeChanger";
+import { LuUser2 } from "react-icons/lu";
 
 type props = {
     problemNumber: number;
@@ -42,17 +43,22 @@ export const PorblemPageHeader = ({ problemNumber, title }: props) => {
                 <ThemeChanger />
             </div>
 
-            {/* // TODO: add logo Here
+            {authStore.isLoggedIn && (
+                <div
+                    className="Profile mr-4 ml-4 h-8 w-8 p-0 rounded-full aspect-square flex items-center justify-center overflow-hidden cursor-pointer border border-light300 dark:border-dark300 text-xl"
+                    onClick={() => navigate(`/profile/${authStore.userProfile?.id}`)}
+                >
+                    {!authStore.userProfile?.avatar && !authStore.userProfile?.profileImg && <LuUser2 />}
 
-			// TODO: crete serch component with icon ( left side ) and placeholder, keep corner rounded
-
-			// TODO: add daily stike count componet here with Rocket icon
-
-			// TODO: add profile icon with username here
-
-			// TODO: signin ( transparant, blue border)  and Signup ( blue ) buttons.
-
-			// NOTE: if user has not signed up only show logo and signin Signup buttons */}
+                    {(authStore.userProfile?.profileImg || authStore.userProfile?.avatar) && (
+                        <img
+                            src={authStore.userProfile?.profileImg || authStore.userProfile?.avatar}
+                            alt="profile image"
+                            className="w-full h-full object-cover aspect-square"
+                        />
+                    )}
+                </div>
+            )}
         </div>
     );
 };

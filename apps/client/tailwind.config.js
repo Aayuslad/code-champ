@@ -16,12 +16,12 @@ export default {
                 lightDropdown: "#00000009",
                 darkDropdownn: "#ffffff20",
 
-                lightTableRow1: "rgba(229, 231, 235, 0.5)", // lighter background for table rows with transparency
-                lightTableRow2: "rgba(245, 245, 245, 0.5)", // lighter background for table rows with transparency
-                lightTableRow3: "rgba(250, 250, 250, 0.5)", // lighter background for table rows with transparency
+                lightTableRow1: "rgba(193, 195, 199, 0.5)", // lighter background for table rows with transparency
+                lightTableRow2: "rgba(198, 200, 203, 0.5)", // lighter background for table rows with transparency
+                lightTableRow3: "rgba(210, 210, 210, 0.5)", // lighter background for table rows with transparency
                 darkTableRow1: "rgba(55, 65, 81, 0.5)", // darker background for table rows with transparency
                 darkTableRow2: "rgba(45, 55, 72, 0.5)", // darker background for table rows with transparency
-                darkTableRow3: "rgba(38, 50, 56, 0.5)", // darker background for table rows with transparency
+                darkTableRow3: "rgba(38, 50, 56, 0.5)", // darker background for table rows with transparency            \
             },
             boxShadow: {},
             textColor: {

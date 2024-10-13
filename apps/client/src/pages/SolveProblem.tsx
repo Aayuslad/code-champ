@@ -91,7 +91,7 @@ export default function SolveProblem() {
                     <div className="w-full h-[calc(100vh-50px)] flex">
                         {/* Left container */}
                         <div
-                            className="w-[50%] pt-2.5 pb-1.5 px-6 flex flex-col gap-2 overflow-y-auto no-scrollbar"
+                            className="w-[50%] pt-2 pb-1.5 px-6 flex flex-col gap-2 overflow-y-auto no-scrollbar"
                             style={{ width: `${leftWidth}%` }}
                         >
                             <Navbar02
@@ -112,7 +112,7 @@ export default function SolveProblem() {
 
                         {/* Right container */}
                         <div
-                            className="border-red-600 flex-1 w-[50%] pt-2.5 pb-1.5 px-6 flex flex-col"
+                            className="border-red-600 flex-1 w-[50%] pt-2 pb-1.5 px-6 flex flex-col"
                             style={{ width: `${100 - leftWidth}%` }}
                         >
                             <Navbar02
@@ -146,31 +146,32 @@ export default function SolveProblem() {
 
 const Problem = ({ problem }: { problem: ProblemType }) => {
     return (
-        <div>
-            <h2 className="text-lg font-semibold pt-1 pb-2 -ml-1">Problem Statement</h2>
-            <p className="text-justify pb-5">{problem.description}</p>
+        <div className="space-y-10 flex flex-col">
+            <div>
+                <h2 className="text-2xl font-semibold mb-4">Problem Statement</h2>
+                <p className="text-justify">{problem.description}</p>
+            </div>
+
             {problem.exampleTestCases.map((example, index) => {
                 return (
-                    <div key={index} className="pb-5">
-                        <h2 className="text-lg font-semibold pt-1 pb-2 -ml-1">Example {index + 1}</h2>
+                    <div key={index}>
+                        <h2 className="text-xl font-semibold mb-3">Example {index + 1}</h2>
 
-                        <div className="border-l-4 border-light300 dark:border-dark300 pl-4">
-                            <div className="space-x-2 flex">
-                                <span className="font-medium">Input: </span>
-                                <span>
-                                    {example.input.map((input, index) => (
-                                        <div key={index}>
-                                            <span>{input.name + " = "}</span>
-                                            <span>{input.value}</span>
-                                        </div>
-                                    ))}
-                                </span>
+                        <div className="border-l-4 border-light300 dark:border-dark300 pl-4 space-y-2">
+                            <div className="space-y-1">
+                                <span className="font-medium">Input:</span>
+                                {example.input.map((input, index) => (
+                                    <div key={index} className="ml-4">
+                                        <span>{input.name} = </span>
+                                        <span>{input.value}</span>
+                                    </div>
+                                ))}
                             </div>
-                            <div className="space-x-2">
+                            <div>
                                 <span className="font-medium">Output: </span>
                                 <span>{example.output}</span>
                             </div>
-                            <div className="space-x-2">
+                            <div>
                                 <span className="font-medium">Explanation: </span>
                                 <span>{example.explanation}</span>
                             </div>
@@ -179,55 +180,59 @@ const Problem = ({ problem }: { problem: ProblemType }) => {
                 );
             })}
 
-            <h2 className="text-lg font-semibold pt-1 pb-2 -ml-1">Constraints</h2>
-            <ul className="list-disc pl-5 pb-5">
-                {problem.constraints.map((constraint, index) => (
-                    <li key={index} className="text-justify pb-2">
-                        {constraint}
-                    </li>
-                ))}
-            </ul>
-            <h2 className="text-lg font-semibold pt-1 pb-2 -ml-1">Topic Tags</h2>
-            <ul className="flex gap-3 pb-5">
-                {problem.topicTags.map((tag, index) => {
-                    return (
-                        <span
-                            key={index}
-                            className=" bg-light300 dark:bg-dark300 text-sm backdrop:blur-md px-2.5 py-0.5 pb-1 rounded-[100vh]"
-                        >
-                            {tag}
-                        </span>
-                    );
-                })}
-            </ul>
-            <h2 className="text-lg font-semibold pt-1 pb-2 -ml-1">Hints</h2>
-            <ul className=" pb-5">
-                {problem.hints.map((hint, index) => (
-                    <li key={index} className="text-justify pb-2 cursor-pointer">
-                        <details>
-                            <summary>Hint {index + 1}</summary>
-                            <p className="py-0.5">{hint}</p>
-                        </details>
-                    </li>
-                ))}
-            </ul>
-            <div className="flex items-center justify-start gap-4 mt-1 mb-4">
-                <span className="text-lightText800 dark:text-darkText800 font-semibold">
-                    Accepted{" "}
-                    <span className="text-lightText900 dark:text-darkText900 font-normal">{problem.acceptedSubmissions}</span>
+            <div>
+                <h2 className="text-xl font-semibold mb-3">Constraints</h2>
+                <ul className="list-disc pl-5 space-y-2">
+                    {problem.constraints.map((constraint, index) => (
+                        <li key={index} className="text-justify">
+                            {constraint}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            <div>
+                <h2 className="text-xl font-semibold mb-3">Topic Tags</h2>
+                <ul className="flex flex-wrap gap-3">
+                    {problem.topicTags.map((tag, index) => {
+                        return (
+                            <span
+                                key={index}
+                                className="bg-light300 dark:bg-dark300 text-sm backdrop:blur-md px-3 py-1 rounded-full"
+                            >
+                                {tag}
+                            </span>
+                        );
+                    })}
+                </ul>
+            </div>
+
+            <div>
+                <h2 className="text-xl font-semibold mb-3">Hints</h2>
+                <ul className="space-y-3">
+                    {problem.hints.map((hint, index) => (
+                        <li key={index} className="text-justify cursor-pointer">
+                            <details>
+                                <summary className="font-medium">Hint {index + 1}</summary>
+                                <p className="mt-2 ml-4">{hint}</p>
+                            </details>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-6 mt-6">
+                <span className="text-lightText800 dark:text-darkText800">
+                    <span className="font-semibold">Accepted:</span>{" "}
+                    <span>{problem.acceptedSubmissions}</span>
                 </span>
-                <span className="text-2xl text-lightText800 dark:text-darkText800 leading-[1px]">|</span>
-                <span className="text-lightText800 dark:text-darkText800 font-semibold">
-                    Submissions{" "}
-                    <span className="text-lightText900 dark:text-darkText900 font-normal">{problem.submissionCount}</span>
+                <span className="text-lightText800 dark:text-darkText800">
+                    <span className="font-semibold">Submissions:</span>{" "}
+                    <span>{problem.submissionCount}</span>
                 </span>
-                <span className="text-2xl text-lightText800 dark:text-darkText800 leading-[1px]">|</span>
-                <span className="text-lightText800 dark:text-darkText800 font-semibold">
-                    Acceptance Rate{" "}
-                    <span className="text-lightText900 dark:text-darkText900 font-normal">
-                        {problem.acceptanceRate}
-                        {" %"}
-                    </span>
+                <span className="text-lightText800 dark:text-darkText800">
+                    <span className="font-semibold">Acceptance Rate:</span>{" "}
+                    <span>{problem.acceptanceRate}%</span>
                 </span>
             </div>
         </div>

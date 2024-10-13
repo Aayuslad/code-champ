@@ -2,10 +2,36 @@ import { BoilerPlateCode, TestCaseType } from "./subTypes";
 
 // ########## user contoller response types ##########
 
-export type UserType = {
+export type UserProfile = {
     id: string;
     email: string;
     userName: string;
+    profileImg: string;
+    avatar: string;
+};
+
+export type WholeUserProfile = {
+    id: string;
+    email: string;
+    userName: string;
+    profileImg: string;
+    avatar: string;
+    solved: number;
+    totalProblems: number;
+    totalBasic: number;
+    totalEasy: number;
+    totalMedium: number;
+    totalHard: number;
+    basicSolvedCount: number;
+    easySolvedCount: number;
+    mediumSolvedCount: number;
+    hardSolvedCount: number;
+    basicSolved: Array<{ id: string; title: string }>;
+    easySolved: Array<{ id: string; title: string }>;
+    mediumSolved: Array<{ id: string; title: string }>;
+    hardSolved: Array<{ id: string; title: string }>;
+    skillCounts: Array<{ skill: string; count: number }>;
+    languageIdCounts: Array<{ languageId: number; count: number }>;
 };
 
 // ########## problem contoller response types ##########

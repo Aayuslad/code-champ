@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { AuthStore } from "../../stores/authStore";
 import { ThemeChanger } from "../themeChanger";
+import { LuUser2 } from "react-icons/lu";
 
 export const Header = () => {
     const authStore = AuthStore();
@@ -41,6 +42,23 @@ export const Header = () => {
                     </>
                 )}
             </div>
+
+            {authStore.isLoggedIn && (
+                <div
+                    className="Profile mr-4 h-9 w-9 p-0 rounded-full aspect-square flex items-center justify-center overflow-hidden cursor-pointer border border-light300 dark:border-dark300 text-xl"
+                    onClick={() => navigate(`/profile/${authStore.userProfile?.id}`)}
+                >
+                    {!authStore.userProfile?.avatar && !authStore.userProfile?.profileImg && <LuUser2 />}
+
+                    {(authStore.userProfile?.profileImg || authStore.userProfile?.avatar) && (
+                        <img
+                            src={authStore.userProfile?.profileImg || authStore.userProfile?.avatar}
+                            alt="profile image"
+                            className="w-full h-full object-cover aspect-square"
+                        />
+                    )}
+                </div>
+            )}
         </div>
     );
 };
