@@ -1,6 +1,6 @@
 import { ProblemType, Submission } from "@repo/common/zod";
 import { useEffect, useRef, useState } from "react";
-import { IoIosArrowForward } from "react-icons/io";
+import { IoIosArrowForward, IoMdClose } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
 import CodeEditor from "../components/codeEditor";
 import { ContainerSplitter } from "../components/containerSplitter";
@@ -10,9 +10,8 @@ import { SideNavbar } from "../components/navbars/sideNavbar";
 import MainWrapper from "../components/wrappers/mainWrapper";
 import { idToLanguageMappings } from "../config/languageIdMppings";
 import { formatDate } from "../helper/formatDate";
-import { ProblemStore } from "../stores/problemStore";
 import { AuthStore } from "../stores/authStore";
-import { IoMdClose } from "react-icons/io";
+import { ProblemStore } from "../stores/problemStore";
 
 export default function SolveProblem() {
     const problemStore = ProblemStore();
@@ -148,7 +147,38 @@ const Problem = ({ problem }: { problem: ProblemType }) => {
     return (
         <div className="space-y-10 flex flex-col">
             <div>
-                <h2 className="text-2xl font-semibold mb-4">Problem Statement</h2>
+                <div className="text-normal mb-4 flex gap-6 justify-between items-center">
+                    <h2 className="text-xl font-semibold">Problem Statement</h2>
+                    <div className="space-x-4">
+                        <span
+                            className={`${
+                                problem.difficultyLevel === "Basic"
+                                    ? "text-green-500"
+                                    : problem.difficultyLevel === "Easy"
+                                      ? "text-blue-500"
+                                      : problem.difficultyLevel === "Medium"
+                                        ? "text-yellow-500"
+                                        : problem.difficultyLevel === "Hard"
+                                          ? "text-red-500"
+                                          : ""
+                            }`}
+                        >
+                            {problem.difficultyLevel}
+                        </span>{" "}
+                        <span>
+                            Points:{" "}
+                            {problem.difficultyLevel
+                                ? problem.difficultyLevel === "Basic"
+                                    ? 1
+                                    : problem.difficultyLevel === "Easy"
+                                      ? 2
+                                      : problem.difficultyLevel === "Medium"
+                                        ? 4
+                                        : 8
+                                : "-"}
+                        </span>
+                    </div>
+                </div>
                 <p className="text-justify">{problem.description}</p>
             </div>
 
@@ -221,18 +251,17 @@ const Problem = ({ problem }: { problem: ProblemType }) => {
                 </ul>
             </div>
 
-            <div className="flex flex-wrap items-center gap-6 mt-6">
+            <div className="flex flex-wrap items-center gap-6 mt-6 pb-4">
                 <span className="text-lightText800 dark:text-darkText800">
-                    <span className="font-semibold">Accepted:</span>{" "}
-                    <span>{problem.acceptedSubmissions}</span>
+                    <span className="font-semibold">Accepted:</span> <span>{problem.acceptedSubmissions}</span>
                 </span>
+                <span>|</span>
                 <span className="text-lightText800 dark:text-darkText800">
-                    <span className="font-semibold">Submissions:</span>{" "}
-                    <span>{problem.submissionCount}</span>
+                    <span className="font-semibold">Submissions:</span> <span>{problem.submissionCount}</span>
                 </span>
+                <span>|</span>
                 <span className="text-lightText800 dark:text-darkText800">
-                    <span className="font-semibold">Acceptance Rate:</span>{" "}
-                    <span>{problem.acceptanceRate}%</span>
+                    <span className="font-semibold">Acceptance Rate:</span> <span>{problem.acceptanceRate}%</span>
                 </span>
             </div>
         </div>
@@ -317,7 +346,7 @@ const Submissions = ({ submissions }: { submissions?: Submission[] }) => {
                                                           ? "Pending"
                                                           : ""}
                                         </td>
-                                        <td className="pb-2 pt-3">{0}</td>
+                                        <td className="pb-2 pt-3">{submission.points || 0}</td>
                                         <td className="pb-2 pt-3">{idToLanguageMappings[parseInt(submission.languageId)]}</td>
                                         <td
                                             className="pb-2 pt-3 cursor-pointer underline"

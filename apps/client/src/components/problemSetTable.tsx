@@ -8,8 +8,6 @@ import { IoMdClose } from "react-icons/io";
 import DifficultyDropdown from "./inputs/difficultyDropDwon";
 import { FaSort } from "react-icons/fa6";
 import { TOIPC_TAGS } from "../config/toipcTags";
-// import { FaSortDown } from "react-icons/fa6";
-// import { FaSortUp } from "react-icons/fa6";
 
 export function ProblemSetTable() {
     const problemStore = ProblemStore();
@@ -43,7 +41,7 @@ export function ProblemSetTable() {
                         className="w-fit inline-flex items-center justify-center border px-2.5 rounded-2xl mx-1 my-1 text-xs font-semibold cursor-pointer border-gray-400 dark:border-gray-600"
                     >
                         <span
-                            className={`pb-1 pt-0.5 ${diff === "Basic" ? "text-green-500" : diff === "Easy" ? "text-emerald-500" : diff === "Medium" ? "text-yellow-500" : "text-red-500"}`}
+                            className={`pb-1 pt-0.5 ${diff === "Basic" ? "text-green-500" : diff === "Easy" ? "text-blue-500" : diff === "Medium" ? "text-yellow-500" : "text-red-500"}`}
                         >
                             {diff}
                         </span>
@@ -115,7 +113,7 @@ export function ProblemSetTable() {
                                 <td>{problem.title}</td>
                                 <td className="text-center">{problem.acceptanceRate}</td>
                                 <td
-                                    className={`rounded-r-lg text-center ${problem.difficulty === "Basic" ? "text-green-500" : problem.difficulty === "Easy" ? "text-emerald-500" : problem.difficulty === "Medium" ? "text-yellow-500" : problem.difficulty === "Hard" ? "text-red-500" : ""}`}
+                                    className={`rounded-r-lg text-center ${problem.difficulty === "Basic" ? "text-green-500" : problem.difficulty === "Easy" ? "text-blue-500" : problem.difficulty === "Medium" ? "text-yellow-500" : problem.difficulty === "Hard" ? "text-red-500" : ""}`}
                                 >
                                     {problem.difficulty}
                                 </td>

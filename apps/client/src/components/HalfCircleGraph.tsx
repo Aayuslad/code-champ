@@ -31,7 +31,7 @@ export const HalfCircleGraph = ({ data, total, solved }: Props) => {
                                 strokeWidth={strokeWidth}
                                 strokeDasharray={`${fourtHhalfCircumference} ${circumference - fourtHhalfCircumference}`}
                                 strokeDashoffset="0"
-                                transform={`rotate(${index * 90}, 60, 60)`}
+                                transform={`rotate(${index * 90 - 90}, 60, 60)`}
                             />
                             <circle
                                 key={index}

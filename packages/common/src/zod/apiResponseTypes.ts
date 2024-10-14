@@ -17,6 +17,8 @@ export type WholeUserProfile = {
     profileImg: string;
     avatar: string;
     solved: number;
+    points: number;
+    rank: number;
     totalProblems: number;
     totalBasic: number;
     totalEasy: number;
@@ -80,6 +82,7 @@ export type Submission = {
     createdAt: Date;
     code: string;
     languageId: string;
+    points: number;
 };
 
 export type CheckBatchSubmissionType = {

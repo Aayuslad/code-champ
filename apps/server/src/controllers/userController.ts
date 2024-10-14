@@ -157,6 +157,7 @@ export async function fetchUserProfile(req: Request, res: Response) {
     }
 }
 
+
 export async function fetchWholeUserProfile(req: Request, res: Response) {
     try {
         const [user, platformData] = await Promise.all([
@@ -168,6 +169,8 @@ export async function fetchWholeUserProfile(req: Request, res: Response) {
                     userName: true,
                     profileImg: true,
                     avatar: true,
+                    points: true,
+                    rank: true,
                     Submission: {
                         where: { status: "Accepted" },
                         orderBy: { createdAt: "desc" },
@@ -203,7 +206,7 @@ export async function fetchWholeUserProfile(req: Request, res: Response) {
         const skillCounts = new Map();
         const languageIdCounts = new Map();
         const difficultyLevelCounts = { Basic: 0, Easy: 0, Medium: 0, Hard: 0 };
-        const solvedByDifficulty = { Basic: [], Easy: [], Medium: [], Hard: [] };
+        const solvedByDifficulty = { Basic: new Set(), Easy: new Set(), Medium: new Set(), Hard: new Set() };
 
         user.Submission.forEach(submission => {
             const { problem, languageId } = submission;
@@ -217,11 +220,19 @@ export async function fetchWholeUserProfile(req: Request, res: Response) {
             // Count language IDs
             languageIdCounts.set(languageId, (languageIdCounts.get(languageId) || 0) + 1);
 
-            // Count and collect problems by difficulty
+            // Count and collect unique problems by difficulty
             difficultyLevelCounts[difficultyLevel as keyof typeof difficultyLevelCounts]++;
-            (solvedByDifficulty[difficultyLevel as keyof typeof solvedByDifficulty] as Array<{ id: string; title: string }>).push(
+            (solvedByDifficulty[difficultyLevel as keyof typeof solvedByDifficulty] as Set<{ id: string; title: string }>).add(
                 { id: problem.id, title: problem.title },
             );
+        });
+
+        const userRank = await prisma.user.count({
+            where: {
+                points: {
+                    gt: user.points,
+                },
+            },
         });
 
         const data = {
@@ -231,6 +242,8 @@ export async function fetchWholeUserProfile(req: Request, res: Response) {
             profileImg: user.profileImg,
             avatar: user.avatar,
             solved: user.Submission.length,
+            points: user.points,
+            rank: userRank + 1,
             totalProblems,
             totalBasic,
             totalEasy,
@@ -240,19 +253,20 @@ export async function fetchWholeUserProfile(req: Request, res: Response) {
             easySolvedCount: difficultyLevelCounts.Easy,
             mediumSolvedCount: difficultyLevelCounts.Medium,
             hardSolvedCount: difficultyLevelCounts.Hard,
-            basicSolved: solvedByDifficulty.Basic,
-            easySolved: solvedByDifficulty.Easy,
-            mediumSolved: solvedByDifficulty.Medium,
-            hardSolved: solvedByDifficulty.Hard,
+            basicSolved: Array.from(solvedByDifficulty.Basic),
+            easySolved: Array.from(solvedByDifficulty.Easy),
+            mediumSolved: Array.from(solvedByDifficulty.Medium),
+            hardSolved: Array.from(solvedByDifficulty.Hard),
             skillCounts: Array.from(skillCounts, ([skill, count]) => ({ skill, count })),
             languageIdCounts: Array.from(languageIdCounts, ([languageId, count]) => ({ languageId, count })),
         };
-        
+
         return res.json(data);
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error" });
     }
 }
+
 // Signs in the user
 export async function signinUser(req: Request, res: Response) {
     const { emailOrUsername, password } = req.body;

@@ -62,7 +62,7 @@ function DifficultyDropdown({ options, selectedOptions, setSelectedOptions }: pr
                         <li
                             key={index}
                             onClick={() => handleOptionClick(option)}
-                            className={`px-3 pb-1 my-1 w-full text flex items-center justify-between cursor-pointer font-semibold border-gray-400 dark:border-gray-600 ${option === "Basic" ? "text-green-500" : option === "Easy" ? "text-emerald-500" : option === "Medium" ? "text-yellow-500" : "text-red-500"}`}
+                            className={`px-3 pb-1 my-1 w-full text flex items-center justify-between cursor-pointer font-semibold border-gray-400 dark:border-gray-600 ${option === "Basic" ? "text-green-500" : option === "Easy" ? "text-blue-500" : option === "Medium" ? "text-yellow-500" : "text-red-500"}`}
                         >
                             <span className="">{option}</span>
                             {selectedOptions.includes(option) && (

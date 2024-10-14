@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Header } from "../components/headers/hader";
 import { SideNavbar } from "../components/navbars/sideNavbar";
 import MainWrapper from "../components/wrappers/mainWrapper";
@@ -8,11 +8,14 @@ import { LuUser2 } from "react-icons/lu";
 import { WholeUserProfile } from "@repo/common/zod";
 import { HalfCircleGraph } from "../components/HalfCircleGraph";
 import { idToLanguageMappings } from "../config/languageIdMppings";
+import { Navbar02 } from "../components/navbars/navbar02";
 
 export default function Profile() {
     const { userId } = useParams<{ userId: string }>();
     const [userProfile, setUserProfile] = useState<WholeUserProfile | undefined>(undefined);
+    const [difficultyNav, setDifficultyNav] = useState<string>("Basic");
     const authStore = AuthStore();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!userId) return;
@@ -24,12 +27,10 @@ export default function Profile() {
 
     const sampleData = [
         { value: userProfile?.basicSolvedCount || 0, color: "#22c55e", total: userProfile?.totalBasic || 100 }, // Gold
-        { value: userProfile?.easySolvedCount || 0, color: "#10b981", total: userProfile?.totalEasy || 100 }, // Green Yellow
+        { value: userProfile?.easySolvedCount || 0, color: "#3b82f6", total: userProfile?.totalEasy || 100 }, // Green Yellow
         { value: userProfile?.mediumSolvedCount || 0, color: "#eab308", total: userProfile?.totalMedium || 100 }, // Deep Sky Blue
         { value: userProfile?.hardSolvedCount || 0, color: "#ef4444", total: userProfile?.totalHard || 100 }, // Orange Red
     ];
-
-    console.log(sampleData);
 
     return (
         <div className="Home Page">
@@ -65,11 +66,11 @@ export default function Profile() {
                                         <div className="flex space-x-8">
                                             <div>
                                                 <p className="text-2xl font-semibold text-gray-800 dark:text-gray-200">Points</p>
-                                                <p className="text-3xl font-bold">100</p>
+                                                <p className="text-3xl font-bold">{userProfile.points}</p>
                                             </div>
                                             <div>
                                                 <p className="text-2xl font-semibold text-gray-800 dark:text-gray-200">Rank</p>
-                                                <p className="text-3xl font-bold">80</p>
+                                                <p className="text-3xl font-bold">{userProfile.rank}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -93,7 +94,7 @@ export default function Profile() {
                                                 </div>
                                             </div>
                                             <div className="py-1.5 w-[100px] font-semibold text-center rounded-lg bg-lightTableRow1 dark:bg-darkTableRow1">
-                                                <div className="text-emerald-500">Easy</div>
+                                                <div className="text-blue-500">Easy</div>
                                                 <div className="text-sm">
                                                     {userProfile.easySolvedCount}/{userProfile.totalEasy}
                                                 </div>
@@ -163,7 +164,89 @@ export default function Profile() {
                                 <div className="col2 basis-[75%]  m-6 mt-0 ml-3 flex flex-col">
                                     <div className="subRow1 rounded-xl h-[200px] mb-6 bg-lightTableRow1 dark:bg-darkTableRow2"></div>
 
-                                    <div className="subRow2 rounded-xl h-[500px] bg-lightTableRow1 dark:bg-darkTableRow2"></div>
+                                    <div className="subRow2 rounded-xl min-h-[300px] h-fit flex flex-col bg-lightTableRow1 dark:bg-darkTableRow2">
+                                        <div className="px-6 py-4">
+                                            <Navbar02
+                                                navs={["Basic", "Easy", "Medium", "Hard"]}
+                                                currentNav={difficultyNav}
+                                                setCurrentNav={setDifficultyNav}
+                                            />
+                                        </div>
+
+                                        <div className="px-10 grid grid-cols-2 gap-4">
+                                            {difficultyNav === "Basic" &&
+                                                userProfile.basicSolved.length > 0 &&
+                                                userProfile.basicSolved.map((problem, index) => (
+                                                    <li
+                                                        key={index}
+                                                        className={`${index % 2 === 0 ? "col-start-1" : "col-start-2"} cursor-pointer`}
+                                                        onClick={() => navigate(`/solve-problem/${problem.id}/Problem/Code`)}
+                                                    >
+                                                        {problem.title}
+                                                    </li>
+                                                ))}
+
+                                            {difficultyNav === "Basic" && userProfile.basicSolved.length === 0 && (
+                                                <div className="col-span-2 text-center h-[200px] flex items-center justify-center text-gray-700 dark:text-gray-300">
+                                                    No problems solved yet. Our server is feeling a bit unloved
+                                                </div>
+                                            )}
+
+                                            {difficultyNav === "Easy" &&
+                                                userProfile.easySolved.length > 0 &&
+                                                userProfile.easySolved.map((problem, index) => (
+                                                    <li
+                                                        key={index}
+                                                        className={`${index % 2 === 0 ? "col-start-1" : "col-start-2"} cursor-pointer`}
+                                                        onClick={() => navigate(`/solve-problem/${problem.id}/Problem/Code`)}
+                                                    >
+                                                        {problem.title}
+                                                    </li>
+                                                ))}
+
+                                            {difficultyNav === "Easy" && userProfile.easySolved.length === 0 && (
+                                                <div className="col-span-2 text-center h-[200px] flex items-center justify-center text-gray-700 dark:text-gray-300">
+                                                    No problems solved yet. Our server is feeling a bit unloved
+                                                </div>
+                                            )}
+
+                                            {difficultyNav === "Medium" &&
+                                                userProfile.mediumSolved.length > 0 &&
+                                                userProfile.mediumSolved.map((problem, index) => (
+                                                    <li
+                                                        key={index}
+                                                        className={`${index % 2 === 0 ? "col-start-1" : "col-start-2"} cursor-pointer`}
+                                                        onClick={() => navigate(`/solve-problem/${problem.id}/Problem/Code`)}
+                                                    >
+                                                        {problem.title}
+                                                    </li>
+                                                ))}
+
+                                            {difficultyNav === "Medium" && userProfile.mediumSolved.length === 0 && (
+                                                <div className="col-span-2 text-center h-[200px] flex items-center justify-center text-gray-700 dark:text-gray-300">
+                                                    No problems solved yet. Our server is feeling a bit unloved
+                                                </div>
+                                            )}
+
+                                            {difficultyNav === "Hard" &&
+                                                userProfile.hardSolved.length > 0 &&
+                                                userProfile.hardSolved.map((problem, index) => (
+                                                    <li
+                                                        key={index}
+                                                        className={`${index % 2 === 0 ? "col-start-1" : "col-start-2"} cursor-pointer`}
+                                                        onClick={() => navigate(`/solve-problem/${problem.id}/Problem/Code`)}
+                                                    >
+                                                        {problem.title}
+                                                    </li>
+                                                ))}
+
+                                            {difficultyNav === "Hard" && userProfile.hardSolved.length === 0 && (
+                                                <div className="col-span-2 text-center h-[200px] flex items-center justify-center text-gray-700 dark:text-gray-300">
+                                                    No problems solved yet. Our server is feeling a bit unloved
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
