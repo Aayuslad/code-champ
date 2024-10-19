@@ -2,7 +2,7 @@
 
 CodeChamp is a competitive coding platform that allows users to practice coding problems, participate in coding contests, and improve their programming skills. Our mission is to provide an interactive and engaging environment for coders of all levels to challenge themselves and learn from others.
 
-## Architecture behind code submission
+## Architecture behind code submission - System Design
 ![image](https://github.com/user-attachments/assets/a1543f27-b2d6-419b-8a11-9cd85eabc1c2)
 
 
