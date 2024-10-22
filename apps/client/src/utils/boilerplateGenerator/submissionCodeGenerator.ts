@@ -13,8 +13,7 @@ export function generateSubmissionCode(structure: FunctionStructureType) {
 }
 
 const generateCSubmissionCode = (structure: FunctionStructureType) => {
-    let submissionCode = `
-#include <stdio.h>      // For input and output functions
+    let submissionCode = `#include <stdio.h>      // For input and output functions
 #include <stdlib.h>     // For memory allocation and other utility functions
 #include <string.h>     // For string manipulation functions
 #include <math.h>       // For mathematical functions (e.g., pow, sqrt)
@@ -49,10 +48,27 @@ int main() {
                         bType = `${typeModifiers[p.typeModifier].c} ${bType}`;
                         type = dType.replace("base_type", bType);
                     }
-                    const arrDecl = `${type} ${p.name} = malloc(${p.name}_size * sizeof(${bType}));`;
-                    const arrInit = `for (int i = 0; i < ${p.name}_size; i++) { scanf("${cFormatSpecifiers[bType]}", &${p.name}[i]); }`;
 
-                    return `${sizeDecl}\n\t${sizeInit}\n\t${arrDecl}\n\t${arrInit}`;
+                    if (p.baseType === "String") {
+                        const arrDecl = `char** ${p.name} = malloc(${p.name}_size * sizeof(char*));`;
+                        const arrInit = `
+    for (int i = 0; i < ${p.name}_size; i++) {
+        ${p.name}[i] = NULL;
+        size_t len = 0;
+        ssize_t read;
+        read = getline(&${p.name}[i], &len, stdin);
+        if (read != -1) {
+            if (${p.name}[i][read - 1] == '\\n') {
+                ${p.name}[i][read - 1] = '\\0';
+            }
+        }
+    }`;
+                        return `${sizeDecl}\n\t${sizeInit}\n\t${arrDecl}\n\t${arrInit}`;
+                    } else {
+                        const arrDecl = `${type} ${p.name} = malloc(${p.name}_size * sizeof(${bType}));`;
+                        const arrInit = `for (int i = 0; i < ${p.name}_size; i++) {\n\t\tscanf("${cFormatSpecifiers[bType]}", &${p.name}[i]);\n\t}`;
+                        return `${sizeDecl}\n\t${sizeInit}\n\t${arrDecl}\n\t${arrInit}`;
+                    }
                 } else {
                     if (p.typeModifier) {
                         bType = `${typeModifiers[p.typeModifier].c} ${bType}`;
@@ -63,14 +79,39 @@ int main() {
                 if (p.typeModifier) {
                     bType = `${typeModifiers[p.typeModifier].c} ${bType}`;
                 }
-                return `${bType} ${p.name};\nscanf("${cFormatSpecifiers[bType]}", &${p.name});`;
+
+                if (p.baseType === "String") {
+                    return `char *${p.name} = NULL;
+    size_t ${p.name}_size = 0;
+    int ${p.name}_ch;
+    while ((${p.name}_ch = getchar()) != '\\n' && ${p.name}_ch != EOF) {
+        ${p.name} = realloc(${p.name}, ${p.name}_size + 2);
+        if (${p.name} == NULL) {
+            perror("Unable to allocate memory");
+            exit(EXIT_FAILURE);
+        }
+        ${p.name}[${p.name}_size++] = ${p.name}_ch;
+    }
+    ${p.name}[${p.name}_size] = '\\0';`;
+                }
+
+                if (p.baseType === "boolean") {
+                    return `bool ${p.name};\n\tscanf("%d", &${p.name});`;
+                }
+
+                return `${bType} ${p.name};\n\tscanf("${cFormatSpecifiers[bType]}", &${p.name});`;
             }
         })
-        .join("\n\t");
+        .join("\n\n\t");
 
     submissionCode = submissionCode.replace("{decl_init}", declInit);
 
     // adding function call
+    const returnStrArraySize =
+        structure.returnType.baseType === "String" && structure.returnType.derivedType === "Array"
+            ? "int return_array_size;\n\t"
+            : "";
+
     const retType =
         structure.returnType.category === "derived" && structure.returnType.derivedType
             ? derivedTypes[structure.returnType.derivedType].c.replace("base_type", baseTypes[structure.returnType.baseType].c)
@@ -80,19 +121,38 @@ int main() {
         ? `${typeModifiers[structure.returnType.typeModifier].c} ${retType}`
         : retType;
 
-    submissionCode = submissionCode.replace("{ret_type}", finalRetType);
+    if (structure.returnType.baseType === "void") {
+        submissionCode = submissionCode.replace("{ret_type} result = ", "");
+    } else {
+        submissionCode = submissionCode.replace("{ret_type}", `${returnStrArraySize}${finalRetType}`);
+    }
+
     submissionCode = submissionCode.replace("{func_name}", structure.functionName);
-    submissionCode = submissionCode.replace(
-        "{args}",
-        structure.parameters
-            .map(p => {
-                if (p.derivedType === "Array") {
-                    return `${p.name}, ${p.name}_size`;
-                }
-                return p.name;
-            })
-            .join(", "),
-    );
+    if (structure.returnType.baseType === "String" && structure.returnType.derivedType === "Array") {
+        submissionCode = submissionCode.replace(
+            "{args}",
+            `${structure.parameters
+                .map(p => {
+                    if (p.derivedType === "Array") {
+                        return `${p.name}, ${p.name}_size`;
+                    }
+                    return p.name;
+                })
+                .join(", ")}, &return_array_size`,
+        );
+    } else {
+        submissionCode = submissionCode.replace(
+            "{args}",
+            structure.parameters
+                .map(p => {
+                    if (p.derivedType === "Array") {
+                        return `${p.name}, ${p.name}_size`;
+                    }
+                    return p.name;
+                })
+                .join(", "),
+        );
+    }
 
     // printing result
     if (structure.returnType.category === "base" && structure.returnType.baseType) {
@@ -100,7 +160,16 @@ int main() {
         if (structure.returnType.typeModifier) {
             bType = `${typeModifiers[structure.returnType.typeModifier].c} ${bType}`;
         }
-        submissionCode = submissionCode.replace("{print_result}", `printf("${cFormatSpecifiers[bType]}", result);`);
+
+        if (structure.returnType.baseType === "String") {
+            submissionCode = submissionCode.replace("{print_result}", `printf("%s", result);`);
+        } else if (structure.returnType.baseType === "boolean") {
+            submissionCode = submissionCode.replace("{print_result}", `printf("%d", result);`);
+        } else if (structure.returnType.baseType === "void") {
+            submissionCode = submissionCode.replace("{print_result}", ``);
+        } else {
+            submissionCode = submissionCode.replace("{print_result}", `printf("${cFormatSpecifiers[bType]}", result);`);
+        }
     } else {
         let printResult = "";
 
@@ -109,12 +178,12 @@ int main() {
             if (structure.returnType.typeModifier) {
                 bType = `${typeModifiers[structure.returnType.typeModifier].c} ${bType}`;
             }
-            printResult = `
-			for (int i = 0; i < sizeof(result) / sizeof(result[0]); i++) {
-				printf("${cFormatSpecifiers[bType]} ", result[i]);
-			}
-			printf("\\n");
-			`;
+
+            if (structure.returnType.baseType === "String") {
+                printResult = `for (int i = 0; i < return_array_size; i++) {\n\t\tprintf("%s ", result[i]);\n\t}`;
+            } else {
+                printResult = `for (int i = 0; i < sizeof(result) / sizeof(result[0]); i++) {\n\t\tprintf("${cFormatSpecifiers[bType]} ", result[i]);\n\t}\n\tprintf("\\n");`;
+            }
         } else {
             printResult = `
 			printf("%d\\n", result);
@@ -128,8 +197,7 @@ int main() {
 };
 
 const generateCppSubmissionCode = (structure: FunctionStructureType) => {
-    let submissionCode = `
-#include <iostream>       // For basic I/O
+    let submissionCode = `#include <iostream>       // For basic I/O
 #include <vector>         // For using vectors
 #include <algorithm>      // For functions like min, max, sort, etc.
 #include <cmath>          // For mathematical operations
@@ -168,14 +236,14 @@ int main() {
                         type = `${typeModifiers[p.typeModifier].cpp} ${bType}`;
                     }
                     const arrDecl = `${type} ${p.name}(${p.name}_size);`;
-                    const arrInit = `for (int i = 0; i < ${p.name}_size; i++) { cin >> ${p.name}[i]; }`;
+                    const arrInit = `for (int i = 0; i < ${p.name}_size; i++) {\n\t\tcin >> ${p.name}[i];\n\t}`;
 
                     return `${sizeDecl}\n\t${sizeInit}\n\t${arrDecl}\n\t${arrInit}`;
                 } else {
                     if (p.typeModifier) {
                         bType = `${typeModifiers[p.typeModifier].cpp} ${bType}`;
                     }
-                    return `${type} ${p.name};\ncin >> ${p.name};`;
+                    return `${type} ${p.name};\n\tcin >> ${p.name};`;
                 }
             } else {
                 if (p.typeModifier) {
@@ -184,10 +252,11 @@ int main() {
                 return `${bType} ${p.name};\n\tcin >> ${p.name};`;
             }
         })
-        .join("\n\t");
+        .join("\n\n\t");
 
     submissionCode = submissionCode.replace("{decl_init}", declInit);
 
+    // function call
     const retType =
         structure.returnType.category === "derived" && structure.returnType.derivedType
             ? derivedTypes[structure.returnType.derivedType].cpp.replace(
@@ -200,25 +269,27 @@ int main() {
         ? `${typeModifiers[structure.returnType.typeModifier].cpp} ${retType}`
         : retType;
 
-    submissionCode = submissionCode.replace("{ret_type}", finalRetType);
+    if (structure.returnType.baseType === "void") {
+        submissionCode = submissionCode.replace("{ret_type} result = ", "");
+    } else {
+        submissionCode = submissionCode.replace("{ret_type}", finalRetType);
+    }
     submissionCode = submissionCode.replace("{func_name}", structure.functionName);
     submissionCode = submissionCode.replace("{args}", structure.parameters.map(p => p.name).join(", "));
+
+    // printing result
     if (structure.returnType.category === "base" && structure.returnType.baseType) {
+        if (structure.returnType.baseType === "void") {
+            submissionCode = submissionCode.replace("{print_result}", "");
+        }
         submissionCode = submissionCode.replace("{print_result}", "cout << result;");
     } else {
         let printResult = "";
 
         if (structure.returnType.derivedType == "Array") {
-            printResult = `
-			for (int i = 0; i < result.size(); i++) {
-				cout << result[i] << " ";
-			}
-			cout << endl;
-			`;
+            printResult = `for (int i = 0; i < result.size(); i++) {\n\t\tcout << result[i] << " ";\n\t}\n\tcout << endl;`;
         } else {
-            printResult = `
-			cout << result << endl;
-			`;
+            printResult = `cout << result << endl;`;
         }
 
         submissionCode = submissionCode.replace("{print_result}", printResult);
@@ -228,8 +299,7 @@ int main() {
 };
 
 const generatePython3SubmissionCode = (structure: FunctionStructureType) => {
-    let submissionCode = `
-from typing import List, Tuple, Dict, Any  # For type hinting
+    let submissionCode = `from typing import List, Tuple, Dict, Any  # For type hinting
 import sys  # For system-specific parameters and functions
 import math  # For mathematical functions
 from collections import defaultdict, deque  # For data structures
@@ -256,36 +326,43 @@ if __name__ == "__main__":
                 const type = dType.replace("base_type", bType);
 
                 if (p.derivedType.includes("Array")) {
-                    return `
-    ${p.name}_size = int(input())
-    ${p.name} = []
-    for _ in range(${p.name}_size):
-        ${p.name}.append(int(input()))`;
+                    return `${p.name}_size = int(input())\n\t${p.name} = []\n\tfor _ in range(${p.name}_size):\n\t\t${p.name}.append(int(input()))`;
                 } else {
                     return `${p.name} = ${type}(input())`;
                 }
             } else {
+                if (p.baseType == "boolean") {
+                    return `${p.name} = bool(int(input().strip()))`;
+                }
+
                 return `${p.name} = ${bType}(input())`;
             }
         })
-        .join("\n    ");
+        .join("\n\n\t");
 
     submissionCode = submissionCode.replace("{decl_init}", declInit);
+
+    if (structure.returnType.baseType === "void") {
+        submissionCode = submissionCode.replace("result = ", "");
+    }
+
     submissionCode = submissionCode.replace("{func_name}", structure.functionName);
     submissionCode = submissionCode.replace("{args}", structure.parameters.map(p => p.name).join(", "));
     if (structure.returnType.category === "base" && structure.returnType.baseType) {
-        submissionCode = submissionCode.replace("{print_result}", `print(result, end="")`);
+        if (structure.returnType.baseType == "boolean") {
+            submissionCode = submissionCode.replace("{print_result}", `print(int(result), end="")`);
+        } else if (structure.returnType.baseType == "void") {
+            submissionCode = submissionCode.replace("{print_result}", "");
+        } else {
+            submissionCode = submissionCode.replace("{print_result}", `print(result, end="")`);
+        }
     } else {
         let printResult = "";
 
         if (structure.returnType.derivedType == "Array") {
-            printResult = `
-	print(' '.join(map(str, result)))
-			`;
+            printResult = `print(' '.join(map(str, result)))`;
         } else {
-            printResult = `
-	print(result)
-			`;
+            printResult = `print(result)`;
         }
 
         submissionCode = submissionCode.replace("{print_result}", printResult);
@@ -295,8 +372,7 @@ if __name__ == "__main__":
 };
 
 const generateJavaSubmissionCode = (structure: FunctionStructureType) => {
-    let submissionCode = `
-import java.util.*;      // For data structures like ArrayList, HashMap, etc.
+    let submissionCode = `import java.util.*;      // For data structures like ArrayList, HashMap, etc.
 import java.io.*;        // For input and output operations
 import java.math.*;      // For mathematical functions and constants
 import java.util.stream.*; // For Java Streams API (if needed for functional-style operations)
@@ -321,7 +397,6 @@ public class Solution {
         .map(p => {
             let bType = baseTypes[p.baseType].java;
             if (p.category === "derived" && p.derivedType) {
-                
                 let dType = derivedTypes[p.derivedType].java;
                 if (p.typeModifier) {
                     const typeModifier = typeModifiers[p.typeModifier].java;
@@ -334,11 +409,13 @@ public class Solution {
                 }
                 let type = dType.replace("base_type", bType);
 
-                console.log(p.derivedType);
-                
-                
                 if (p.derivedType.includes("Array")) {
-                    const sizeDecl = `int ${p.name}Size = scanner.nextInt();`;
+                    let sizeDecl = "";
+                    if (p.baseType === "String") {
+                        sizeDecl = `int ${p.name}Size = scanner.nextInt();\n\t\tscanner.nextLine();\n`;
+                    } else {
+                        sizeDecl = `int ${p.name}Size = scanner.nextInt();`;
+                    }
                     const arrDecl = `${type} ${p.name} = new ${bType}[${p.name}Size];`;
                     if (p.typeModifier) {
                         const typeModifier = typeModifiers[p.typeModifier].java;
@@ -347,12 +424,17 @@ public class Solution {
                             const arrInit = `for (int i = 0; i < ${p.name}Size; i++) { ${p.name}[i] = new BigInteger(scanner.next()); }`;
                             return `${sizeDecl}\n\t\t${arrDecl}\n\t\t${arrInit}`;
                         }
-                        const arrInit = `for (int i = 0; i < ${p.name}Size; i++) { ${p.name}[i] = scanner.next${bType.charAt(0).toUpperCase() + bType.slice(1)}(); }`;
+                        const arrInit = `for (int i = 0; i < ${p.name}Size; i++) {\n\t\t\t${p.name}[i] = scanner.next${bType.charAt(0).toUpperCase() + bType.slice(1)}();\n\t\t}`;
                         console.log(`${sizeDecl}\n\t\t${arrDecl}\n\t\t${arrInit}`);
                         return `${sizeDecl}\n\t\t${arrDecl}\n\t\t${arrInit}`;
                     }
 
-                    const  arrInit = `for (int i = 0; i < ${p.name}Size; i++) { ${p.name}[i] = scanner.next${bType.charAt(0).toUpperCase() + bType.slice(1)}(); }`;
+                    let arrInit = "";
+                    if (p.baseType === "String") {
+                        arrInit = `for (int i = 0; i < ${p.name}Size; i++) {\n\t\t\t${p.name}[i] = scanner.nextLine();\n\t\t}`;
+                    } else {
+                        arrInit = `for (int i = 0; i < ${p.name}Size; i++) {\n\t\t\t${p.name}[i] = scanner.next${bType.charAt(0).toUpperCase() + bType.slice(1)}();\n\t\t}`;
+                    }
 
                     return `${sizeDecl}\n\t\t${arrDecl}\n\t\t${arrInit}`;
                 } else {
@@ -369,6 +451,10 @@ public class Solution {
                         }
                     }
 
+                    if (p.baseType === "String") {
+                        return `${type} ${p.name} = scanner.nextLine();`;
+                    }
+
                     return `${type} ${p.name} = scanner.next${bType.charAt(0).toUpperCase() + bType.slice(1)}();`;
                 }
             } else {
@@ -382,13 +468,23 @@ public class Solution {
                         bType = typeModifier;
                     }
                 }
+
+                if (p.baseType === "String") {
+                    return `${bType} ${p.name} = scanner.nextLine();`;
+                }
+
+                if (p.baseType === "char") {
+                    return `${bType} ${p.name} = scanner.next().charAt(0);`;
+                }
+
                 return `${bType} ${p.name} = scanner.next${bType.charAt(0).toUpperCase() + bType.slice(1)}();`;
             }
         })
-        .join("\n\t\t");
+        .join("\n\n\t\t");
 
     submissionCode = submissionCode.replace("{decl_init}", declInit);
 
+    // function call
     let retType =
         structure.returnType.category === "derived" && structure.returnType.derivedType
             ? derivedTypes[structure.returnType.derivedType].java.replace(
@@ -402,21 +498,27 @@ public class Solution {
         retType = ["short", "BigInteger", "long"].includes(typeModifier) ? typeModifier : `${typeModifier} ${retType}`;
     }
 
-    submissionCode = submissionCode.replace("{ret_type}", retType);
+    if (structure.returnType.baseType === "void") {
+        submissionCode = submissionCode.replace("{ret_type} result = ", "");
+    } else {
+        submissionCode = submissionCode.replace("{ret_type}", retType);
+    }
+
     submissionCode = submissionCode.replace("{func_name}", structure.functionName);
     submissionCode = submissionCode.replace("{args}", structure.parameters.map(p => p.name).join(", "));
+
+    // print result
     if (structure.returnType.category === "base" && structure.returnType.baseType) {
-        submissionCode = submissionCode.replace("{print_result}", "System.out.print(result);");
+        if (structure.returnType.baseType === "void") {
+            submissionCode = submissionCode.replace("{print_result}", "");
+        } else {
+            submissionCode = submissionCode.replace("{print_result}", "System.out.print(result);");
+        }
     } else {
         let printResult = "";
 
         if (structure.returnType.derivedType == "Array") {
-            printResult = `
-			for (int i = 0; i < result.length; i++) {   
-				System.out.print(result[i] + " ");
-			}
-			System.out.println();
-			`;
+            printResult = `for (int i = 0; i < result.length; i++) {\n\t\t\tSystem.out.print(result[i] + " ");\n\t\t}\n\t\tSystem.out.println();`;
         } else {
             printResult = `
 			System.out.print(result);

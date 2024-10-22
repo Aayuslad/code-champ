@@ -48,7 +48,7 @@ export default function Profile() {
                                 <div className="col1 h-[250px] m-6 mr-3 w-full rounded-xl shadow-lg flex items-center justify-around bg-lightTableRow1 dark:bg-darkTableRow2">
                                     <div></div>
 
-                                    <div className="img border-4 border-gray-300 dark:border-gray-400 aspect-square h-[180px] w-[180px] rounded-full flex items-center justify-center text-[120px] text-gray-400 dark:text-gray-500">
+                                    <div className="img border-4 border-gray-300 dark:border-gray-400 aspect-square h-[170px] w-[170px] rounded-full flex items-center justify-center text-[120px] text-gray-400 dark:text-gray-500">
                                         {!userProfile.profileImg && !userProfile.avatar && <LuUser2 />}
 
                                         {(userProfile.profileImg || userProfile.avatar) && (
@@ -60,10 +60,17 @@ export default function Profile() {
                                         )}
                                     </div>
 
-                                    <div className="details space-y-4 text-black dark:text-white">
-                                        <h2 className="text-4xl font-bold">{userProfile.userName}</h2>
-                                        <p className="text-lg opacity-80">{userProfile.email}</p>
-                                        <div className="flex space-x-8">
+                                    <div className="details space-y-3 text-black dark:text-white">
+                                        <h2 className="text-3xl font-bold">{userProfile.name}</h2>
+                                        <p className="text-base opacity-80 flex items-center">
+                                            <span className="mr-2">@</span>
+                                            {userProfile.userName}
+                                        </p>
+                                        <p className="text-base opacity-80 flex items-center">
+                                            <span className="mr-2">📧</span>
+                                            {userProfile.email}
+                                        </p>
+                                        <div className="flex space-x-10">
                                             <div>
                                                 <p className="text-2xl font-semibold text-gray-800 dark:text-gray-200">Points</p>
                                                 <p className="text-3xl font-bold">{userProfile.points}</p>

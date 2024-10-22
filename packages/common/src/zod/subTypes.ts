@@ -1,20 +1,7 @@
 import zod from "zod";
 
-// export type BaseType = "int" | "short" | "long" | "float" | "double" | "boolean";
-// export type DerivedType = "String" | "Array" | "LinkedList" | "Set" | "Map" | "Queue" | "Stack" | "TreeNode" | "GraphNode";
-
-export const baseTypesChama = zod.enum(["int", "short", "long", "float", "double", "boolean"]);
-export const derivedTypesChama = zod.enum([
-    "String",
-    "Array",
-    "LinkedList",
-    "Set",
-    "Map",
-    "Queue",
-    "Stack",
-    "TreeNode",
-    "GraphNode",
-]);
+export const baseTypesChama = zod.enum(["int", "short", "long", "float", "double", "boolean", "char", "String", "void"]);
+export const derivedTypesChama = zod.enum(["Array", "LinkedList", "Set", "Map", "Queue", "Stack", "TreeNode", "GraphNode"]);
 export const typeModifiersSchema = zod.enum(["unsigned", "short", "long", "longLong", "const", "volatile"]);
 export type BaseTypes = zod.infer<typeof baseTypesChama>;
 export type DerivedTypes = zod.infer<typeof derivedTypesChama>;

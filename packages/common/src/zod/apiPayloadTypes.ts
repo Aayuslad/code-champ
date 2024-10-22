@@ -16,6 +16,7 @@ export const signupUserSchema = zod.object({
             },
             { message: "Nice try 😏, but that email is a no-go here 🚫. Try something real!" },
         ),
+    name: zod.string().refine(value => value.trim() === value),
     userName: zod.string().refine(value => value.trim() === value),
     password: zod
         .string()

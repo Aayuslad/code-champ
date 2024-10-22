@@ -13,6 +13,7 @@ export type UserProfile = {
 export type WholeUserProfile = {
     id: string;
     email: string;
+    name: string;
     userName: string;
     profileImg: string;
     avatar: string;

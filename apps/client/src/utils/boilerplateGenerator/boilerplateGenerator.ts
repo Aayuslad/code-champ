@@ -20,20 +20,38 @@ const generateCBoilerplate = (structure: FunctionStructureType): string => {
     boilerplate = boilerplate.replace("{function_name}", structure.functionName);
 
     // Attach input parameters
-    const params = structure.parameters
-        .map(param => {
-            const base = baseTypes[param.baseType].c;
-            let type = param.derivedType ? derivedTypes[param.derivedType].c.replace("base_type", base) : base;
-            if (param.typeModifier) {
-                type = `${typeModifiers[param.typeModifier].cpp} ${type}`;
-            }
-            if (param.derivedType === "Array") {
-                return [`${type} ${param.name}`, `int ${param.name}_size`];
-            }
-            return `${type} ${param.name}`;
-        })
-        .flat()
-        .join(", ");
+    let params = "";
+    if (structure.returnType.baseType === "String" && structure.returnType.derivedType === "Array") {
+        params = `${structure.parameters
+            .map(param => {
+                const base = baseTypes[param.baseType].c;
+                let type = param.derivedType ? derivedTypes[param.derivedType].c.replace("base_type", base) : base;
+                if (param.typeModifier) {
+                    type = `${typeModifiers[param.typeModifier].cpp} ${type}`;
+                }
+                if (param.derivedType === "Array") {
+                    return [`${type} ${param.name}`, `int ${param.name}_size`];
+                }
+                return `${type} ${param.name}`;
+            })
+            .flat()
+            .join(", ")}, int *return_array_size`;
+    } else {
+        params = structure.parameters
+            .map(param => {
+                const base = baseTypes[param.baseType].c;
+                let type = param.derivedType ? derivedTypes[param.derivedType].c.replace("base_type", base) : base;
+                if (param.typeModifier) {
+                    type = `${typeModifiers[param.typeModifier].cpp} ${type}`;
+                }
+                if (param.derivedType === "Array") {
+                    return [`${type} ${param.name}`, `int ${param.name}_size`];
+                }
+                return `${type} ${param.name}`;
+            })
+            .flat()
+            .join(", ");
+    }
     boilerplate = boilerplate.replace("{params}", params);
 
     // Attach return type

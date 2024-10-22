@@ -60,6 +60,26 @@ export const TestCaseInput = ({ form, setForm }: Props) => {
         });
     };
 
+    const handleExplanationChange = (isTestCase: boolean, value: string) => {
+        setForm(prev => ({
+            ...prev,
+            [isTestCase ? "testCases" : "sampleTestCases"]: prev[isTestCase ? "testCases" : "sampleTestCases"].map(
+                (testCase, i) =>
+                    i === (isTestCase ? currentNavIndex : currentSampleNavIndex) ? { ...testCase, explanation: value } : testCase,
+            ),
+        }));
+    };
+
+    const handleDeleteTestCase = (isTestCase: boolean, index: number) => {
+        setForm(prev => {
+            const testCaseType = isTestCase ? "testCases" : "sampleTestCases";
+            return {
+                ...prev,
+                [testCaseType]: prev[testCaseType].filter((_, i) => i !== index),
+            };
+        });
+    };
+
     const renderInputFields = (testCase: typeof currentTestCase | typeof currentSampleTestCase, isTestCase: boolean) => (
         <>
             {testCase?.input.map((input, index) => (
@@ -85,7 +105,7 @@ export const TestCaseInput = ({ form, setForm }: Props) => {
                             <textarea
                                 id={`${isTestCase ? "" : "sample-"}input-${index}`}
                                 value={input.value}
-                                placeholder="Instructions: Add elements of derived data type (e.g., array, linked list, queue) by separating them with commas. Example: 3,2,6,5,4,3"
+                                placeholder="Instructions: Add elements of derived data type (e.g., array, linked list, queue) by separating them with commas. Example: 3, 2, 6, 5, 4, 3"
                                 onChange={e => handleInputChange(isTestCase, index, e.target.value)}
                                 className="h-[100px] w-full bg-transparent border-2 border-light300 dark:border-dark300 rounded-md px-3 py-2 outline-none resize-none"
                             />
@@ -116,7 +136,7 @@ export const TestCaseInput = ({ form, setForm }: Props) => {
                         <textarea
                             id={`${isTestCase ? "" : "sample-"}output`}
                             value={testCase?.output}
-                            placeholder="Instructions: Add elements of derived data type (e.g., array, linked list, queue) by separating them with commas. Example: 3,2,6,5,4,3"
+                            placeholder="Instructions: Add elements of derived data type (e.g., array, linked list, queue) by separating them with commas. Example: 3, 2, 6, 5, 4, 3"
                             onChange={e => handleOutputChange(isTestCase, e.target.value)}
                             className="h-[100px] w-full bg-transparent border-2 border-light300 dark:border-dark300 rounded-md px-3 py-2 outline-none resize-none"
                         />
@@ -126,6 +146,22 @@ export const TestCaseInput = ({ form, setForm }: Props) => {
                     </div>
                 )}
             </div>
+            <div className="flex flex-col gap-2">
+                <label htmlFor="explanation" className="font-semibold text-darkText900">
+                    Explanation
+                </label>
+                <input
+                    type="text"
+                    id="explanation"
+                    value={testCase?.explanation}
+                    onChange={e => handleExplanationChange(isTestCase, e.target.value)}
+                    className="w-[400px] bg-transparent border-2 border-light300 dark:border-dark300 rounded-md px-3 py-2 outline-none"
+                />
+            </div>
+
+            <button type="button" onClick={() => handleDeleteTestCase(isTestCase, isTestCase ? currentNavIndex : currentSampleNavIndex)}>
+                delete
+            </button>
         </>
     );
 

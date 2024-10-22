@@ -1,10 +1,4 @@
 export const derivedTypes = {
-	String: {
-		python3: "str",
-		java: "String",
-		cpp: "string",
-		c: "char*",
-	},
 	Array: {
 		python3: "List[base_type]",
 		java: "base_type[]",

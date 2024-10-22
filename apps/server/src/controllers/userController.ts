@@ -19,10 +19,10 @@ const PEPPER = process.env.BCRYPT_PEPPER;
 
 // Handles user signup and sends a verification email
 export async function signupUser(req: Request, res: Response) {
-    const { email, userName, password } = req.body;
+    const { email, name, userName, password } = req.body;
 
     try {
-        if (req.session.signupEmail && !email && !userName && !password) {
+        if (req.session.signupEmail && !email && !name && !userName && !password) {
             const otp = parseInt(
                 Math.floor(100000 + Math.random() * 900000)
                     .toString()
@@ -39,6 +39,7 @@ export async function signupUser(req: Request, res: Response) {
         }
 
         const parsed = signupUserSchema.safeParse({
+            name,
             email,
             userName,
             password,
@@ -66,6 +67,7 @@ export async function signupUser(req: Request, res: Response) {
 
         req.session.signupOTP = otp;
         req.session.signupEmail = email;
+        req.session.name = name;
         req.session.userName = userName;
         req.session.password = password;
 
@@ -101,6 +103,7 @@ export async function verifySignupOTP(req: Request, res: Response) {
         const user = await prisma.user.create({
             data: {
                 email: req.session.signupEmail as string,
+                name: req.session.name as string,
                 userName: req.session.userName as string,
                 password: hashedPassword,
             },
@@ -117,6 +120,7 @@ export async function verifySignupOTP(req: Request, res: Response) {
 
         req.session.signupOTP = undefined;
         req.session.signupEmail = undefined;
+        req.session.name = undefined;
         req.session.userName = undefined;
         req.session.password = undefined;
 
@@ -157,7 +161,6 @@ export async function fetchUserProfile(req: Request, res: Response) {
     }
 }
 
-
 export async function fetchWholeUserProfile(req: Request, res: Response) {
     try {
         const [user, platformData] = await Promise.all([
@@ -166,13 +169,15 @@ export async function fetchWholeUserProfile(req: Request, res: Response) {
                 select: {
                     id: true,
                     email: true,
+                    name: true,
                     userName: true,
                     profileImg: true,
                     avatar: true,
                     points: true,
                     rank: true,
                     Submission: {
-                        where: { status: "Accepted" },
+                        where: { status: "Accepted", points: { not: 0 } },
+                        distinct: ["problemId"],
                         orderBy: { createdAt: "desc" },
                         select: {
                             languageId: true,
@@ -206,7 +211,6 @@ export async function fetchWholeUserProfile(req: Request, res: Response) {
         const skillCounts = new Map();
         const languageIdCounts = new Map();
         const difficultyLevelCounts = { Basic: 0, Easy: 0, Medium: 0, Hard: 0 };
-        const solvedByDifficulty = { Basic: new Set(), Easy: new Set(), Medium: new Set(), Hard: new Set() };
 
         user.Submission.forEach(submission => {
             const { problem, languageId } = submission;
@@ -220,11 +224,8 @@ export async function fetchWholeUserProfile(req: Request, res: Response) {
             // Count language IDs
             languageIdCounts.set(languageId, (languageIdCounts.get(languageId) || 0) + 1);
 
-            // Count and collect unique problems by difficulty
+            // Count problems by difficulty
             difficultyLevelCounts[difficultyLevel as keyof typeof difficultyLevelCounts]++;
-            (solvedByDifficulty[difficultyLevel as keyof typeof solvedByDifficulty] as Set<{ id: string; title: string }>).add(
-                { id: problem.id, title: problem.title },
-            );
         });
 
         const userRank = await prisma.user.count({
@@ -235,13 +236,17 @@ export async function fetchWholeUserProfile(req: Request, res: Response) {
             },
         });
 
+        const solved =
+            difficultyLevelCounts.Basic + difficultyLevelCounts.Easy + difficultyLevelCounts.Medium + difficultyLevelCounts.Hard;
+
         const data = {
             id: user.id,
             email: user.email,
+            name: user.name,
             userName: user.userName,
             profileImg: user.profileImg,
             avatar: user.avatar,
-            solved: user.Submission.length,
+            solved: solved,
             points: user.points,
             rank: userRank + 1,
             totalProblems,
@@ -253,10 +258,22 @@ export async function fetchWholeUserProfile(req: Request, res: Response) {
             easySolvedCount: difficultyLevelCounts.Easy,
             mediumSolvedCount: difficultyLevelCounts.Medium,
             hardSolvedCount: difficultyLevelCounts.Hard,
-            basicSolved: Array.from(solvedByDifficulty.Basic),
-            easySolved: Array.from(solvedByDifficulty.Easy),
-            mediumSolved: Array.from(solvedByDifficulty.Medium),
-            hardSolved: Array.from(solvedByDifficulty.Hard),
+            basicSolved: user.Submission.filter(s => s.problem.difficultyLevel === "Basic").map(s => ({
+                id: s.problem.id,
+                title: s.problem.title,
+            })),
+            easySolved: user.Submission.filter(s => s.problem.difficultyLevel === "Easy").map(s => ({
+                id: s.problem.id,
+                title: s.problem.title,
+            })),
+            mediumSolved: user.Submission.filter(s => s.problem.difficultyLevel === "Medium").map(s => ({
+                id: s.problem.id,
+                title: s.problem.title,
+            })),
+            hardSolved: user.Submission.filter(s => s.problem.difficultyLevel === "Hard").map(s => ({
+                id: s.problem.id,
+                title: s.problem.title,
+            })),
             skillCounts: Array.from(skillCounts, ([skill, count]) => ({ skill, count })),
             languageIdCounts: Array.from(languageIdCounts, ([languageId, count]) => ({ languageId, count })),
         };
@@ -481,7 +498,8 @@ export async function googleOneTapController(req: Request, res: Response) {
         const googleId = payload?.sub;
         const email = payload?.email;
         const name = payload?.name;
-        const picture = payload?.picture;
+        const userName = payload.email.split("@")[0] as string;
+        const avatar = payload?.picture;
 
         // Check if user already exists
         let user = await prisma.user.findUnique({
@@ -498,16 +516,17 @@ export async function googleOneTapController(req: Request, res: Response) {
                 // If user exists but no googleId, associate Google account
                 user = await prisma.user.update({
                     where: { email: email },
-                    data: { googleId: googleId, avatar: picture },
+                    data: { googleId: googleId, avatar },
                 });
             } else {
                 // Create new user if no existing one
                 user = await prisma.user.create({
                     data: {
-                        email: email,
-                        userName: name,
-                        googleId: googleId,
-                        avatar: picture,
+                        email,
+                        name,
+                        userName,
+                        googleId,
+                        avatar,
                     },
                 });
             }

@@ -53,7 +53,7 @@ export const cFormatSpecifiers: { [key: string]: string } = {
     "unsigned short int": "%hu",
     "unsigned int (hexadecimal)": "%x",
     "unsigned int (octal)": "%o",
-    "string (char array)": "%s",
+    "String": "%s",
     "scientific notation (float)": "%e",
     "float (automatic selection)": "%g",
     "int (similar to %d)": "%i",

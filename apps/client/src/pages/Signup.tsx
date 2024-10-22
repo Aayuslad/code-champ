@@ -6,13 +6,16 @@ import AuthHeader from "../components/headers/AuthHeader";
 import { sinUpValidation } from "../helper/formValidator";
 import { AuthStore } from "../stores/authStore";
 import { ContinueWithGoogleButton } from "../components/buttons/continueWithGoogleButton";
+import { useState } from "react";
 
 export default function Signup() {
     const authStore = AuthStore();
+    const [name, setName] = useState({ firstName: "", lastName: "" });
 
     const formik = useFormik<SignupUserSchemaType>({
         initialValues: {
             email: "",
+            name: `${name.firstName.trim()} ${name.lastName.trim()}`,
             userName: "",
             password: "",
         },
@@ -22,6 +25,7 @@ export default function Signup() {
         onSubmit: values => {
             const trimmedValues = {
                 email: values.email.trim(),
+                name: values.email,
                 userName: values.userName.trim(),
                 password: values.password.trim(),
             };
@@ -55,11 +59,42 @@ export default function Signup() {
                             </h2>
                         </div>
 
+                        {/* Name */}
+                        <div className="flex items-center justify-between gap-3 mb-1">
+                            <div className="flex flex-col">
+                                <label htmlFor="firstName" className="text-[18px] text-black p-2 dark:text-white pl-0">
+                                    First Name
+                                </label>
+                                <input
+                                    id="firstName"
+                                    type="text"
+                                    required
+                                    className="w-[160px] mb-1 p-1 px-3 border border-gray-300 rounded-lg text-[17px] dark:bg-transparent dark:text-gray-400 dark:border-slate-700 outline-none focus:ring-2 ring-offset-2 ring-zinc-300 dark:ring-zinc-800"
+                                    value={name.firstName}
+                                    onChange={e => setName(prevState => ({ ...prevState, firstName: e.target.value }))}
+                                />
+                            </div>
+                            <div className="flex flex-col">
+                                <label htmlFor="lastName" className="text-[18px] text-black p-2 dark:text-white pl-0">
+                                    Last Name
+                                </label>
+                                <input
+                                    id="lastName"
+                                    type="text"
+                                    required
+                                    className="w-[160px] mb-1 p-1 px-3 border border-gray-300 rounded-lg text-[17px] dark:bg-transparent dark:text-gray-400 dark:border-slate-700 outline-none focus:ring-2 ring-offset-2 ring-zinc-300 dark:ring-zinc-800"
+                                    value={name.lastName}
+                                    onChange={e => setName(prevState => ({ ...prevState, lastName: e.target.value }))}
+                                />
+                            </div>
+                        </div>
+
                         {/* Username */}
                         <label htmlFor="username" className="text-[18px] text-black p-2 dark:text-white pl-0">
                             Username
                         </label>
                         <input
+                            id="userName"
                             type="text"
                             required
                             className="w-full mb-1 p-1 px-3 border border-gray-300 rounded-lg text-[17px] dark:bg-transparent dark:text-gray-400 dark:border-slate-700 outline-none focus:ring-2 ring-offset-2 ring-zinc-300 dark:ring-zinc-800"
