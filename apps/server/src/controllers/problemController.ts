@@ -10,7 +10,7 @@ import axios from "axios";
 import { Request, Response } from "express";
 import { idToLanguageMappings } from "../config/languageIdmappings";
 import { generateUniqueSlug } from "../helper/generateUniqueSlug";
-import { getObjectFromS3, uploadJsonToS3 } from "../services/awsS3";
+import { getObjectFromS3, getSignedS3URL, uploadJsonToS3 } from "../services/awsS3";
 import { stdinGenerator } from "../services/stdinGenerator";
 const prisma = new PrismaClient();
 
@@ -305,6 +305,54 @@ export async function getOngoingProblem(req: Request, res: Response) {
     }
 }
 
+export async function testSolution(req: Request, res: Response) {
+    try {
+        const parsed = sumitSolutionSchema.safeParse(req.body);
+        if (!parsed.success) return res.status(422).json({ message: "Invalid data" });
+        const { problemId, languageId, solutionCode } = parsed.data;
+
+        const problem = await prisma.problem.findFirst({
+            where: { id: problemId },
+            select: {
+                id: true,
+                sampleTestCasesKey: true,
+                functionStructure: true,
+                submissionCode: true,
+                difficultyLevel: true,
+            },
+        });
+
+        if (!problem) return res.status(404).json({ message: "Problem not found" });
+
+        const parcedSubmissionCode = JSON.parse(problem.submissionCode);
+        const solutionCodee = parcedSubmissionCode[idToLanguageMappings[languageId] as string];
+        const finalCode = solutionCodee.replace("{solution_code}", solutionCode);
+        const encodedFinalCode = Buffer.from(finalCode).toString("base64");
+
+        const id = Math.random().toString(36).substring(7);
+
+        const response = await axios.post("https://codesandbox.code-champ.xyz/submit-batch-task", {
+            submissionId: id,
+            languageId: languageId,
+            code: encodedFinalCode,
+            functionStructure: problem.functionStructure,
+            testCaseURL: await getSignedS3URL(problem.sampleTestCasesKey),
+        });
+
+        res.status(200).json({
+            message: "Solution submitted successfully",
+            taskId: response.data.batchTaskId,
+        });
+
+        return;
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+}
+
 export async function submitSolution(req: Request, res: Response) {
     try {
         const parsed = sumitSolutionSchema.safeParse(req.body);
@@ -324,8 +372,6 @@ export async function submitSolution(req: Request, res: Response) {
 
         if (!problem) return res.status(404).json({ message: "Problem not found" });
 
-        const testCases: TestCaseType[] = JSON.parse(await getObjectFromS3(problem.testCasesKey));
-        const functionStructure: FunctionStructureType = JSON.parse(problem.functionStructure);
         const parcedSubmissionCode = JSON.parse(problem.submissionCode);
         const solutionCodee = parcedSubmissionCode[idToLanguageMappings[languageId] as string];
         const finalCode = solutionCodee.replace("{solution_code}", solutionCode);
@@ -344,15 +390,11 @@ export async function submitSolution(req: Request, res: Response) {
 
         const response = await axios.post("https://codesandbox.code-champ.xyz/submit-batch-task", {
             submissionId: submission.id,
-            callbackUrl: `https://code-champ-webhook-handler.vercel.app/submit-task-callback`,
             languageId: languageId,
             code: encodedFinalCode,
-            tasks: testCases.map((testCase, index) => ({
-                id: index,
-                stdin: stdinGenerator(functionStructure, testCase),
-                expectedOutput: testCase.output,
-                inputs: JSON.stringify(testCase.input),
-            })),
+            callbackUrl: `https://code-champ-webhook-handler.vercel.app/submit-task-callback`,
+            functionStructure: problem.functionStructure,
+            testCaseURL: await getSignedS3URL(problem.testCasesKey),
         });
 
         res.status(200).json({

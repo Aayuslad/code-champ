@@ -41,7 +41,7 @@ export function ProblemSetTable() {
                         className="w-fit inline-flex items-center justify-center border px-2.5 rounded-2xl mx-1 my-1 text-xs font-semibold cursor-pointer border-gray-400 dark:border-gray-600"
                     >
                         <span
-                            className={`pb-1 pt-0.5 ${diff === "Basic" ? "text-green-500" : diff === "Easy" ? "text-blue-500" : diff === "Medium" ? "text-yellow-500" : "text-red-500"}`}
+                            className={`pb-1 py-1 ${diff === "Basic" ? "text-green-500" : diff === "Easy" ? "text-blue-500" : diff === "Medium" ? "text-yellow-500" : "text-red-500"}`}
                         >
                             {diff}
                         </span>
@@ -59,7 +59,7 @@ export function ProblemSetTable() {
                         }}
                         className="w-fit inline-flex items-center justify-center border-[1.5px] px-2.5 rounded-2xl mx-1 my-1 text-xs cursor-pointer border-gray-400 dark:border-gray-600"
                     >
-                        <span className="pb-1 pt-0.5">{topic}</span>
+                        <span className="pb-1 py-1">{topic}</span>
                         <div className="flex items-center justify-center text-sm ml-1">
                             <IoMdClose />
                         </div>

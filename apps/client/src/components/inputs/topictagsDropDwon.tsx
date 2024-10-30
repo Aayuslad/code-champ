@@ -63,7 +63,7 @@ function TopicTagsDropDwon({ options, selectedOptions, setSelectedOptions }: pro
                         <li
                             key={index}
                             onClick={() => handleOptionClick(option)}
-                            className={`inline-block border px-2.5 pb-1 rounded-2xl mx-1 my-1 text-sm cursor-pointer border-gray-400 dark:border-gray-600 ${
+                            className={`inline-block border px-2.5 py-0.5 rounded-2xl mx-1 my-1 text-sm cursor-pointer border-gray-400 dark:border-gray-600 ${
                                 selectedOptions.includes(option) ? "bg-zinc-300 dark:bg-darkTableRow1" : ""
                             }`}
                         >

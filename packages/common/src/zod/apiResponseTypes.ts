@@ -74,7 +74,8 @@ export type ProblemType = {
         languageId: number;
         solutionCode: string;
     }[];
-    result?: CheckBatchSubmissionType;
+    submissionResult?: CheckBatchSubmissionType;
+    testResult?: CheckBatchSubmissionType;
 };
 
 export type Submission = {

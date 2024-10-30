@@ -19,6 +19,8 @@ type ProblemStoreType = {
     onGoingProblems: ProblemType[];
     skeletonLoading: boolean;
     buttonLoading: boolean;
+    testButtonLoading: boolean;
+    submitButtonLoading: boolean;
 
     getFeedProblems: (userId?: string) => Promise<void>;
     getProblem: (problemId: string, userId: string) => Promise<void>;
@@ -38,12 +40,16 @@ type ProblemStoreType = {
         },
     ) => void;
     submitProblem: (values: SumitSolutionSchemaType) => Promise<boolean>;
-    checkBatchSubmission: (taskId: string, problemId: string) => Promise<void>;
+    testProblem: (values: SumitSolutionSchemaType) => Promise<boolean>;
+    checkTestResult: (taskId: string, problemId: string) => Promise<void>;
+    checkSubmissionResult: (taskId: string, problemId: string) => Promise<void>;
     getProblemSubmissions: (problemId: string) => Promise<void>;
     putOngoingProblem: (values: PutOngoingProblemSchmaType) => Promise<void>;
     getOngoingProblem: (problemId: string) => Promise<OnGoingProblemType | undefined>;
     resetCode: (problemId: string, language: string) => void;
     contributeProblem: (values: ContributeProblemSchemaType) => Promise<void>;
+    clearSubmissionResult: (problemId: string) => void;
+    clearTestResult: (problemId: string) => void;
 };
 
 export const ProblemStore = create<ProblemStoreType>(set => ({
@@ -51,6 +57,8 @@ export const ProblemStore = create<ProblemStoreType>(set => ({
     onGoingProblems: [],
     skeletonLoading: false,
     buttonLoading: false,
+    testButtonLoading: false,
+    submitButtonLoading: false,
 
     getFeedProblems: async userId => {
         try {
@@ -111,23 +119,39 @@ export const ProblemStore = create<ProblemStoreType>(set => ({
         }));
     },
 
-    submitProblem: async values => {
+    testProblem: async values => {
         const state = ProblemStore.getState();
         let flag = true;
         try {
-            set({ buttonLoading: true });
-            const { data } = await axios.post("/problem/submit", values);
-            state.checkBatchSubmission(data.taskId, values.problemId);
+            set({ testButtonLoading: true });
+            const { data } = await axios.post("/problem/test", values);
+            state.checkTestResult(data.taskId, values.problemId);
         } catch (error) {
             apiErrorHandler(error);
             flag = false;
         } finally {
-            set({ buttonLoading: false });
+            set({ testButtonLoading: false });
             return flag;
         }
     },
 
-    checkBatchSubmission: async (taskId, problemId) => {
+    submitProblem: async values => {
+        const state = ProblemStore.getState();
+        let flag = true;
+        try {
+            set({ submitButtonLoading: true });
+            const { data } = await axios.post("/problem/submit", values);
+            state.checkSubmissionResult(data.taskId, values.problemId);
+        } catch (error) {
+            apiErrorHandler(error);
+            flag = false;
+        } finally {
+            set({ submitButtonLoading: false });
+            return flag;
+        }
+    },
+
+    checkTestResult: async (taskId, problemId) => {
         try {
             set({ skeletonLoading: true });
             while (1) {
@@ -137,7 +161,7 @@ export const ProblemStore = create<ProblemStoreType>(set => ({
                         if (problem.id === problemId) {
                             return {
                                 ...problem,
-                                result: data,
+                                testResult: data,
                             };
                         }
                         return problem;
@@ -146,7 +170,35 @@ export const ProblemStore = create<ProblemStoreType>(set => ({
                 if (data.status !== "executing" && data.status !== "pending" && data.status !== "notFound") {
                     break;
                 }
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+        } catch (error) {
+            apiErrorHandler(error);
+        } finally {
+            setTimeout(() => set({ skeletonLoading: false }), 500);
+        }
+    },
+
+    checkSubmissionResult: async (taskId, problemId) => {
+        try {
+            set({ skeletonLoading: true });
+            while (1) {
+                const { data }: { data: CheckBatchSubmissionType } = await axios.get(`/problem/check/${taskId}/${problemId}`);
+                set(state => ({
+                    onGoingProblems: state.onGoingProblems.map(problem => {
+                        if (problem.id === problemId) {
+                            return {
+                                ...problem,
+                                submissionResult: data,
+                            };
+                        }
+                        return problem;
+                    }),
+                }));
+                if (data.status !== "executing" && data.status !== "pending" && data.status !== "notFound") {
+                    break;
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
         } catch (error) {
             apiErrorHandler(error);
@@ -219,4 +271,34 @@ export const ProblemStore = create<ProblemStoreType>(set => ({
             set({ buttonLoading: false });
         }
     },
+
+    clearSubmissionResult: async problemId => {
+        set(state => ({
+            ...state,
+            onGoingProblems: state.onGoingProblems.map(problem => {
+                if (problem.id === problemId) {
+                    return {
+                        ...problem,
+                        submissionResult: undefined,
+                    };
+                }
+                return problem;
+            }),
+        }));
+    },
+
+    clearTestResult: async problemId => {
+        set(state => ({
+            ...state,
+            onGoingProblems: state.onGoingProblems.map(problem => {
+                if (problem.id === problemId) {
+                    return {
+                        ...problem,
+                        testResult: undefined,
+                    };
+                }
+                return problem;
+            }),
+        }));
+    }
 }));

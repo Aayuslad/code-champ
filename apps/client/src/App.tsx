@@ -31,9 +31,9 @@ function App() {
 
     return (
         <Router>
-            <div className="DefaultPage h-fit min-h-screen bg-light100 dark:bg-dark100 text-lightText900 dark:text-darkText900">
+            <div className="DefaultPage h-fit min-h-screen bg-light100 dark:bg-dark100 text-gray-700 dark:text-gray-200 font-poppins text-[0.9rem]">
                 {!authStore.loading && !authStore.isLoggedIn && <GoogleOneTapLogin />}
-                
+
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />

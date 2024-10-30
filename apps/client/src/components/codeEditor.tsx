@@ -10,7 +10,13 @@ import { FaArrowRotateLeft } from "react-icons/fa6";
 import { AuthStore } from "../stores/authStore";
 import toast from "react-hot-toast";
 
-export default function CodeEditor({ problemId, navToResult }: { problemId: string; navToResult: () => void }) {
+type Prop = {
+    problemId: string;
+    navToSubmissionResult: () => void;
+    navToTestResult: () => void;
+};
+
+export default function CodeEditor({ problemId, navToTestResult, navToSubmissionResult }: Prop) {
     const problemStore = ProblemStore();
     const authStore = AuthStore();
     const uiStore = UiStore();
@@ -99,30 +105,57 @@ export default function CodeEditor({ problemId, navToResult }: { problemId: stri
                     </div>
 
                     <div className="flex items-end justify-between mt-1">
-                        <button
-                            type="button"
-                            className="border-[3px] rounded-xl border-light300 dark:border-dark300 py-0.5 px-3 font-semibold bg-light400 dark:bg-dark300"
-                            disabled={
-                                !problem.solutions.find(
-                                    solution => solution.languageId === languageToIdMppings[language as string],
-                                )?.solutionCode || problemStore.buttonLoading
-                            }
-                            onClick={async () => {
-                                if (!authStore.isLoggedIn) toast.error("sing in to submit");
-                                else {
-                                    const res = await problemStore.submitProblem({
+                        <div className="space-x-3">
+                            <button
+                                type="button"
+                                className="border-[3px] rounded-xl border-light300 dark:border-dark300 py-0.5 px-3 font-semibold bg-light400 dark:bg-dark300"
+                                disabled={
+                                    !problem.solutions.find(
+                                        solution => solution.languageId === languageToIdMppings[language as string],
+                                    )?.solutionCode ||
+                                    problemStore.testButtonLoading ||
+                                    problemStore.submitButtonLoading
+                                }
+                                onClick={async () => {
+                                    const res = await problemStore.testProblem({
                                         problemId,
                                         languageId: languageToIdMppings[language as string],
                                         solutionCode: problem?.solutions?.find(
                                             solution => solution.languageId === languageToIdMppings[language as string],
                                         )?.solutionCode as string,
                                     });
-                                    if (res === true) navToResult();
+                                    if (res === true) navToTestResult();
+                                }}
+                            >
+                                {problemStore.testButtonLoading ? "Testing..." : "Test"}
+                            </button>
+                            <button
+                                type="button"
+                                className="border-[3px] rounded-xl border-light300 dark:border-dark300 py-0.5 px-3 font-semibold bg-light400 dark:bg-dark300"
+                                disabled={
+                                    !problem.solutions.find(
+                                        solution => solution.languageId === languageToIdMppings[language as string],
+                                    )?.solutionCode ||
+                                    problemStore.testButtonLoading ||
+                                    problemStore.submitButtonLoading
                                 }
-                            }}
-                        >
-                            {problemStore.buttonLoading ? "Submiting..." : "Submit"}
-                        </button>
+                                onClick={async () => {
+                                    if (!authStore.isLoggedIn) toast.error("sing in to submit");
+                                    else {
+                                        const res = await problemStore.submitProblem({
+                                            problemId,
+                                            languageId: languageToIdMppings[language as string],
+                                            solutionCode: problem?.solutions?.find(
+                                                solution => solution.languageId === languageToIdMppings[language as string],
+                                            )?.solutionCode as string,
+                                        });
+                                        if (res === true) navToSubmissionResult();
+                                    }
+                                }}
+                            >
+                                {problemStore.submitButtonLoading ? "Submiting..." : "Submit"}
+                            </button>
+                        </div>
 
                         <div className="flex items-center gap-3">
                             <button

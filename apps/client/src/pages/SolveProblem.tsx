@@ -115,24 +115,32 @@ export default function SolveProblem() {
                             style={{ width: `${100 - leftWidth}%` }}
                         >
                             <Navbar02
-                                navs={["Code", ...(problem.result ? ["Result"] : [])]}
+                                navs={[
+                                    "Code",
+                                    ...(problem.submissionResult ? ["Submission Result"] : []),
+                                    ...(problem.testResult ? ["Test Result"] : []),
+                                ]}
                                 currentNav={activeNav2}
                                 setCurrentNav={setActiveNav2}
                                 baseRoute={`solve-problem/${id}/${activeNav1}/nav`}
                             />
 
                             {activeNav2 === "Code" && (
-                                // <div className="flex-1">
                                 <CodeEditor
                                     problemId={problem.id}
-                                    navToResult={() => {
-                                        navigate(`/solve-problem/${id}/${activeNav1}/Result`);
+                                    navToSubmissionResult={() => {
+                                        problemStore.clearSubmissionResult(problem.id);
+                                        setTimeout(() => navigate(`/solve-problem/${id}/${activeNav1}/Submission Result`), 1000);
+                                    }}
+                                    navToTestResult={() => {
+                                        problemStore.clearTestResult(problem.id);
+                                        setTimeout(() => navigate(`/solve-problem/${id}/${activeNav1}/Test Result`), 1000);
                                     }}
                                 />
-                                // </div>
                             )}
 
-                            {activeNav2 === "Result" && <Result problem={problem} />}
+                            {activeNav2 === "Submission Result" && <SubmissionResult problem={problem} />}
+                            {activeNav2 === "Test Result" && <TestResult problem={problem} />}
                         </div>
                     </div>
                 </MainWrapper>
@@ -179,7 +187,7 @@ const Problem = ({ problem }: { problem: ProblemType }) => {
                         </span>
                     </div>
                 </div>
-                <p className="text-justify">{problem.description}</p>
+                <p className="text-justify font-poppins">{problem.description}</p>
             </div>
 
             {problem.exampleTestCases.map((example, index) => {
@@ -385,7 +393,7 @@ const Submissions = ({ submissions }: { submissions?: Submission[] }) => {
     );
 };
 
-const Result = ({ problem }: { problem: ProblemType }) => {
+const TestResult = ({ problem }: { problem: ProblemType }) => {
     const problemStore = ProblemStore();
     const resultRef = useRef<HTMLDivElement>(null);
 
@@ -393,28 +401,28 @@ const Result = ({ problem }: { problem: ProblemType }) => {
         if (resultRef.current && problemStore.skeletonLoading) {
             resultRef.current.scrollTop = resultRef.current.scrollHeight;
         }
-    }, [problem.result?.tasks?.length]);
+    }, [problem.testResult?.tasks?.length]);
 
     return (
         <div className="flex flex-col pt-2 h-[92%] mt-0.5">
-            {problem.result && problem.result.tasks && (
+            {problem.testResult && problem.testResult.tasks && (
                 <div ref={resultRef} className="flex-1 overflow-scroll overflow-y-auto overflow-x-hidden no-scrollbar">
-                    {problem.result.status === "compilation error" && (
+                    {problem.testResult.status === "compilation error" && (
                         <div>
                             <div className="text-red-600 text-center font-bold text-xl">Compilation Error</div>
-                            <pre className="pt-6 text-red-500">{problem.result?.compilationError}</pre>
+                            <pre className="pt-6 text-red-500">{problem.testResult?.compilationError}</pre>
                         </div>
                     )}
 
-                    {problem.result.status === "run time error" && (
+                    {problem.testResult.status === "run time error" && (
                         <div className="text-red-600 text-center  font-bold text-xl mb-3">Run Time Error</div>
                     )}
 
-                    {problem.result.status === "time limit exceeded" && (
+                    {problem.testResult.status === "time limit exceeded" && (
                         <div className="text-red-600 text-center  font-bold text-xl mb-3">Time Limit Exceeded</div>
                     )}
 
-                    {problem.result.tasks.map((testCase, index) => {
+                    {problem.testResult.tasks.map((testCase, index) => {
                         return (
                             <details
                                 key={index}
@@ -482,40 +490,182 @@ const Result = ({ problem }: { problem: ProblemType }) => {
                             </details>
                         );
                     })}
-                    {problemStore.skeletonLoading && problem.result && <div className="text-center">executing...</div>}
-                    {!problem.result && <div className="text-center">No Results</div>}
+                    {problemStore.skeletonLoading && problem.testResult && <div className="text-center">executing...</div>}
+                    {!problem.testResult && <div className="text-center">No Results</div>}
                 </div>
             )}
 
             <div className="h-[30px]">
-                {problem.result && (
+                {problem.testResult && (
                     <div className="flex gap-4">
                         <div className="py-2 font-semibold">
                             Test Cases:{" "}
-                            <span className="font-normal">{`${problem.testCasesCount}/${problem.result?.tasks?.filter(t => t.status === "success")?.length || 0}`}</span>
+                            <span className="font-normal">{`${problem.exampleTestCases.length}/${problem.testResult?.tasks?.filter(t => t.status === "success")?.length || 0}`}</span>
                         </div>
 
-                        {problem.result.status && (
+                        {problem.testResult.status && (
                             <div className="py-2 font-semibold">
                                 Status:{" "}
                                 <span
                                     className={`${
-                                        problem.result.status === "accepted"
+                                        problem.testResult.status === "accepted"
                                             ? "text-green-500"
-                                            : problem.result.status === "rejected"
+                                            : problem.testResult.status === "rejected"
                                               ? "text-red-500"
-                                              : problem.result.status === "pending"
+                                              : problem.testResult.status === "pending"
                                                 ? "text-yellow-500"
-                                                : problem.result.status === "compilation error"
+                                                : problem.testResult.status === "compilation error"
                                                   ? "text-red-500"
-                                                  : problem.result.status === "run time error"
+                                                  : problem.testResult.status === "run time error"
                                                     ? "text-red-500"
-                                                    : problem.result.status === "time limit exceeded"
+                                                    : problem.testResult.status === "time limit exceeded"
                                                       ? "text-red-500"
                                                       : "text-gray-500"
                                     }`}
                                 >
-                                    {problem.result.status?.charAt(0).toUpperCase() + problem.result.status.slice(1)}
+                                    {problem.testResult.status?.charAt(0).toUpperCase() + problem.testResult.status.slice(1)}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+const SubmissionResult = ({ problem }: { problem: ProblemType }) => {
+    const problemStore = ProblemStore();
+    const resultRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (resultRef.current && problemStore.skeletonLoading) {
+            resultRef.current.scrollTop = resultRef.current.scrollHeight;
+        }
+    }, [problem.submissionResult?.tasks?.length]);
+
+    return (
+        <div className="flex flex-col pt-2 h-[92%] mt-0.5">
+            {problem.submissionResult && problem.submissionResult.tasks && (
+                <div ref={resultRef} className="flex-1 overflow-scroll overflow-y-auto overflow-x-hidden no-scrollbar">
+                    {problem.submissionResult.status === "compilation error" && (
+                        <div>
+                            <div className="text-red-600 text-center font-bold text-xl">Compilation Error</div>
+                            <pre className="pt-6 text-red-500">{problem.submissionResult?.compilationError}</pre>
+                        </div>
+                    )}
+
+                    {problem.submissionResult.status === "run time error" && (
+                        <div className="text-red-600 text-center  font-bold text-xl mb-3">Run Time Error</div>
+                    )}
+
+                    {problem.submissionResult.status === "time limit exceeded" && (
+                        <div className="text-red-600 text-center  font-bold text-xl mb-3">Time Limit Exceeded</div>
+                    )}
+
+                    {problem.submissionResult.tasks.map((testCase, index) => {
+                        return (
+                            <details
+                                key={index}
+                                className="flex flex-col gap-2 rounded-md mb-3 mr-6 bg-light300 dark:bg-dark300 group"
+                            >
+                                <summary
+                                    className={`py-2 pl-3 pr-4 font-semibold cursor-pointer flex gap-3 justify-between items-center`}
+                                >
+                                    <div className="flex gap-3 w-full">
+                                        <span className="px-1 ">{testCase.id + 1}</span>
+                                        <span className={`px-1 ${testCase.accepted ? "text-green-500" : "text-red-500"}`}>
+                                            {testCase.accepted ? "Accepted" : "Rejected"}
+                                        </span>
+                                        <span className="ml-auto w-[150px] font-normal text-gray-700 dark:text-gray-300">
+                                            Runtime: {testCase.executionTime} ms
+                                        </span>
+                                    </div>
+                                    <IoIosArrowForward className="transition-transform group-open:rotate-90" />
+                                </summary>
+                                <div
+                                    className="px-4 py-2 border-t border-[#00000070] dark:border-[#ffffff70] mx-2 overflow-hidden"
+                                    style={{ transition: "max-height 0.3s ease-in-out" }}
+                                >
+                                    <div className="space-x-2 flex">
+                                        <span className="font-medium">Input: </span>
+                                        <span className="max-h-[400px] overflow-hidden relative">
+                                            {testCase.inputs.map((input, index) => (
+                                                <div key={index}>
+                                                    <span>{input.name + " = "}</span>
+                                                    <span>{input.value}</span>
+                                                </div>
+                                            ))}
+                                            {testCase.inputs.length > 0 && (
+                                                <div
+                                                    className="absolute bottom-0 right-0 bg-gradient-to-t from-light300 dark:from-dark300 to-transparent w-full h-20 flex items-end justify-end"
+                                                    style={{
+                                                        display: "none",
+                                                        opacity: 0,
+                                                        transition: "opacity 0.3s ease",
+                                                    }}
+                                                    ref={el => {
+                                                        if (el) {
+                                                            const parent = el.parentElement;
+                                                            if (parent && parent.scrollHeight > parent.clientHeight) {
+                                                                el.style.display = "flex";
+                                                                setTimeout(() => {
+                                                                    el.style.opacity = "1";
+                                                                }, 0);
+                                                            }
+                                                        }
+                                                    }}
+                                                ></div>
+                                            )}
+                                        </span>
+                                    </div>
+                                    <div className="space-x-2">
+                                        <span className="font-medium">Output: </span>
+                                        <span>{testCase.output}</span>
+                                    </div>
+                                    <div>
+                                        <span className="font-medium">Expected Output: </span>
+                                        <span>{testCase.expectedOutput}</span>
+                                    </div>
+                                </div>
+                            </details>
+                        );
+                    })}
+                    {problemStore.skeletonLoading && problem.submissionResult && <div className="text-center">executing...</div>}
+                    {!problem.submissionResult && <div className="text-center">No Results</div>}
+                </div>
+            )}
+
+            <div className="h-[30px]">
+                {problem.submissionResult && (
+                    <div className="flex gap-4">
+                        <div className="py-2 font-semibold">
+                            Test Cases:{" "}
+                            <span className="font-normal">{`${problem.testCasesCount}/${problem.submissionResult?.tasks?.filter(t => t.status === "success")?.length || 0}`}</span>
+                        </div>
+
+                        {problem.submissionResult.status && (
+                            <div className="py-2 font-semibold">
+                                Status:{" "}
+                                <span
+                                    className={`${
+                                        problem.submissionResult.status === "accepted"
+                                            ? "text-green-500"
+                                            : problem.submissionResult.status === "rejected"
+                                              ? "text-red-500"
+                                              : problem.submissionResult.status === "pending"
+                                                ? "text-yellow-500"
+                                                : problem.submissionResult.status === "compilation error"
+                                                  ? "text-red-500"
+                                                  : problem.submissionResult.status === "run time error"
+                                                    ? "text-red-500"
+                                                    : problem.submissionResult.status === "time limit exceeded"
+                                                      ? "text-red-500"
+                                                      : "text-gray-500"
+                                    }`}
+                                >
+                                    {problem.submissionResult.status?.charAt(0).toUpperCase() +
+                                        problem.submissionResult.status.slice(1)}
                                 </span>
                             </div>
                         )}
