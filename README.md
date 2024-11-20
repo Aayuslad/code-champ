@@ -13,7 +13,7 @@ CodeChamp is a competitive coding platform that allows users to practice coding 
 - 📚 **Practice Problems:** Access a library of coding problems across various difficulty levels, after submitting result, inputs, output and expacted outputs are shown for each test cases.
 - 🏆 **Coding Contests:** Arrage your contest with your unpublished problems and platform problems.
 - 📈 **Leaderboards:** Track your progress and see how you rank against other users.
-- 📝 **Smooth Contributionn:** user can contribute problem just by filling a form, automation of code generation makes it faster.
+- 📝 **Smooth Contribution:** user can contribute problem just by filling a form, automation of code generation makes it faster.
 - 👥 **Community:** Engage with the coding community, discuss problems, and share insights.
 
 ## Challenges:
