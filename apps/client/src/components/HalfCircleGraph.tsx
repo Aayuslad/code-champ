@@ -52,7 +52,7 @@ export const HalfCircleGraph = ({ data, total, solved }: Props) => {
 
             {/* Center Text */}
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                <p className="text-3xl font-bold text-black dark:text-white">
+                <p className="text-3xl font-bold text-inherit dark:text-inherit">
                     <span>{solved}</span>/<span className="text-2xl">{total}</span>
                 </p>
                 <p className="text-lg text-gray-700 dark:text-gray-300 font-semibold">Solved</p>

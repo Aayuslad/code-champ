@@ -11,7 +11,7 @@ export const Header = () => {
         <div className="Header w-full h-14 px-5 border-b-2 flex items-center bg-light200 dark:bg-dark200 border-light300 dark:border-dark300">
             {/* Logo */}
             <div className="flex items-center gap-4">
-                <div className="text-2xl font-bold text-black dark:text-white">
+                <div className="text-2xl font-bold text-inerit dark:text-white">
                     <a href="/" className="font-pacifico">
                         Code Champ
                     </a>

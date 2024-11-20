@@ -68,7 +68,7 @@ export default function CodeEditor({ problemId, navToTestResult, navToSubmission
     const debouncedValue = useDebounce(problem?.solutions, 2000);
 
     useEffect(() => {
-        if (debouncedValue && authStore.userProfile)
+        if (debouncedValue && authStore.userProfile && problem?.solutions !== debouncedValue)
             problemStore.putOngoingProblem({ problemId: problem?.id as string, solutions: JSON.stringify(debouncedValue) });
     }, [debouncedValue]);
 

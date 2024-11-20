@@ -111,11 +111,11 @@ export default function VerifyPasswordResetOtp() {
                             {authStore.buttonLoading ? "Verifying OTP..." : "Verify OTP"}
                         </button>
 
-                        <h4 className="m-4 p-4 text-black dark:text-zinc-300">
+                        <h4 className="m-4 p-4 text-inerit dark:text-zinc-300">
                             {isResendEnabled ? (
                                 <>
                                     Didn't Get OTP?{" "}
-                                    <a href="#" onClick={handleResendOtp} className="text-black dark:text-zinc-300 underline">
+                                    <a href="#" onClick={handleResendOtp} className="text-inerit dark:text-zinc-300 underline">
                                         Resend
                                     </a>
                                 </>

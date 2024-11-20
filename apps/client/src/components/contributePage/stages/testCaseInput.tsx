@@ -240,7 +240,7 @@ export const TestCaseInput = ({ form, setForm }: Props) => {
                 <button
                     type="submit"
                     disabled={problemStore.buttonLoading}
-                    className="py-2 px-4 rounded-xl font-semibold mt-2 ml-6 text-black dark:text-white bg-light400 dark:bg-dark300 "
+                    className="py-2 px-4 rounded-xl font-semibold mt-2 ml-6 text-inerit dark:text-white bg-light400 dark:bg-dark300 "
                 >
                     {problemStore.buttonLoading ? "Submitting..." : "Submit"}
                 </button>

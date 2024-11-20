@@ -1,17 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 import {
     contributeProblemSchema,
-    FunctionStructureType,
     putOngoingProblemSchma,
     sumitSolutionSchema,
-    TestCaseType,
+    TestCaseType
 } from "@repo/common/zod";
 import axios from "axios";
 import { Request, Response } from "express";
 import { idToLanguageMappings } from "../config/languageIdmappings";
 import { generateUniqueSlug } from "../helper/generateUniqueSlug";
 import { getObjectFromS3, getSignedS3URL, uploadJsonToS3 } from "../services/awsS3";
-import { stdinGenerator } from "../services/stdinGenerator";
 const prisma = new PrismaClient();
 
 export async function contributeProblem(req: Request, res: Response) {
@@ -101,6 +99,16 @@ export async function contributeProblem(req: Request, res: Response) {
             message: "Problem created successfully",
             problem: newProblem,
         });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+}
+
+export async function contrubuteTestCases(req: Request, res: Response) {
+    try {
     } catch (err) {
         console.log(err);
         res.status(500).json({
@@ -431,7 +439,7 @@ export async function checkBatchSubmission(req: Request, res: Response) {
             tasks:
                 result.data.tasks?.map((task: any) => ({
                     ...task,
-                    expectedOutput: JSON.parse(task.expectedOutput),
+                    expectedOutput: task.expectedOutput,
                     inputs: JSON.parse(task.inputs),
                 })) || [],
         };

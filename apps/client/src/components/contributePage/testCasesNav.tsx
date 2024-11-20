@@ -86,7 +86,7 @@ export const TestCasesNav = ({ form, currentNavIndex, setCurrentNavIndex, addTes
             {!isAtStart && (
                 <button
                     type="button"
-                    className="absolute left-0 py-1.5 pr-[50px] top-1/2 -translate-y-1/2 transition duration-300 bg-gradient-to-r from-white to-[#ffffff85] dark:from-dark100 dark:to-[#0307125a] text-black dark:text-white"
+                    className="absolute left-0 py-1.5 pr-[50px] top-1/2 -translate-y-1/2 transition duration-300 bg-gradient-to-r from-white to-[#ffffff85] dark:from-dark100 dark:to-[#0307125a] text-inerit dark:text-white"
                     onClick={() => {
                         if (navRef.current) {
                             navRef.current.scrollLeft -= 100;
@@ -100,7 +100,7 @@ export const TestCasesNav = ({ form, currentNavIndex, setCurrentNavIndex, addTes
             {!isAtEnd && isScrollable && (
                 <button
                     type="button"
-                    className="absolute right-0 py-1.5 pl-[50px] top-1/2 -translate-y-1/2 transition duration-300 bg-gradient-to-l from-white to-[#ffffff85] dark:from-dark100 dark:to-[#0307125a] text-black dark:text-white"
+                    className="absolute right-0 py-1.5 pl-[50px] top-1/2 -translate-y-1/2 transition duration-300 bg-gradient-to-l from-white to-[#ffffff85] dark:from-dark100 dark:to-[#0307125a] text-inerit dark:text-white"
                     onClick={() => {
                         if (navRef.current) {
                             navRef.current.scrollLeft += 100;

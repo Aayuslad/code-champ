@@ -7,7 +7,7 @@ export default function NavToggleButton() {
 
 	return (
 		<button
-			className="text-3xl text-black dark:text-white w-full h-full pr-1 flex items-center justify-end"
+			className="text-3xl text-inerit dark:text-white w-full h-full pr-1 flex items-center justify-end"
 			onClick={() => uiStore.toggleSideBar()}
 		>
 			<span className={` inset-0 transition-opacity duration-300 ${!uiStore.sideBarToggle ? "opacity-100" : "opacity-0 hidden"}`}>

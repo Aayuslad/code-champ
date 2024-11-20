@@ -66,7 +66,7 @@ function DifficultyDropdown({ options, selectedOptions, setSelectedOptions }: pr
                         >
                             <span className="">{option}</span>
                             {selectedOptions.includes(option) && (
-                                <span className="text-black dark:text-white text-xs">
+                                <span className="text-inerit dark:text-white text-xs">
                                     <GiCheckMark />
                                 </span>
                             )}

@@ -62,7 +62,7 @@ export default function Signup() {
                         {/* Name */}
                         <div className="flex items-center justify-between gap-3 mb-1">
                             <div className="flex flex-col">
-                                <label htmlFor="firstName" className="text-[18px] text-black p-2 dark:text-white pl-0">
+                                <label htmlFor="firstName" className="text-[18px] text-inerit p-2 dark:text-white pl-0">
                                     First Name
                                 </label>
                                 <input
@@ -75,7 +75,7 @@ export default function Signup() {
                                 />
                             </div>
                             <div className="flex flex-col">
-                                <label htmlFor="lastName" className="text-[18px] text-black p-2 dark:text-white pl-0">
+                                <label htmlFor="lastName" className="text-[18px] text-inerit p-2 dark:text-white pl-0">
                                     Last Name
                                 </label>
                                 <input
@@ -90,7 +90,7 @@ export default function Signup() {
                         </div>
 
                         {/* Username */}
-                        <label htmlFor="username" className="text-[18px] text-black p-2 dark:text-white pl-0">
+                        <label htmlFor="username" className="text-[18px] text-inerit p-2 dark:text-white pl-0">
                             Username
                         </label>
                         <input
@@ -102,7 +102,7 @@ export default function Signup() {
                         />
 
                         {/* Email */}
-                        <label htmlFor="email" className="text-[18px] text-black p-2 dark:text-white pl-0">
+                        <label htmlFor="email" className="text-[18px] text-inerit p-2 dark:text-white pl-0">
                             Email
                         </label>
                         <input
@@ -113,7 +113,7 @@ export default function Signup() {
                         />
 
                         {/* Password */}
-                        <label htmlFor="password" className="text-[18px] text-black p-2 dark:text-white pl-0">
+                        <label htmlFor="password" className="text-[18px] text-inerit p-2 dark:text-white pl-0">
                             Password
                         </label>
                         <input
@@ -135,7 +135,7 @@ export default function Signup() {
                         {/* Sign In Link */}
                         <h4 className="text-gray-500 m-4 text-sm text-center dark:text-white">
                             Already have an account?{" "}
-                            <Link to="/signin" className="text-black underline dark:text-gray-500">
+                            <Link to="/signin" className="text-inerit underline dark:text-gray-500">
                                 Sign in
                             </Link>
                         </h4>

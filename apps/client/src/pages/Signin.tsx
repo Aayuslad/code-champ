@@ -50,7 +50,7 @@ export default function Signin() {
                         </div>
 
                         {/* Email/Username Input */}
-                        <label htmlFor="email" className="text-[18px] text-black dark:text-white p-2 pl-0">
+                        <label htmlFor="email" className="text-[18px] text-inerit dark:text-white p-2 pl-0">
                             Username or Email
                         </label>
                         <input
@@ -61,7 +61,7 @@ export default function Signin() {
                         />
 
                         {/* Password Input */}
-                        <label htmlFor="password" className="text-[18px] text-black p-2 dark:text-white pl-0">
+                        <label htmlFor="password" className="text-[18px] text-inerit p-2 dark:text-white pl-0">
                             Password
                         </label>
                         <input
@@ -71,7 +71,7 @@ export default function Signin() {
                             {...formik.getFieldProps("password")}
                         />
 
-                        <Link to="/forgot-password" className="text-sm  text-black  dark:text-gray-200 hover:text-red-500 ">
+                        <Link to="/forgot-password" className="text-sm  text-inerit  dark:text-gray-200 hover:text-red-500 ">
                             Forget Password ?
                         </Link>
 
@@ -87,7 +87,7 @@ export default function Signin() {
                         {/* Sign-up Link */}
                         <h4 className="text-gray-500 m-4 text-sm text-center dark:text-white">
                             Don't have an account? {""}
-                            <Link to="/signup" className="text-black underline dark:text-gray-500">
+                            <Link to="/signup" className="text-inerit underline dark:text-gray-500">
                                 Sign up
                             </Link>
                         </h4>

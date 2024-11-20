@@ -64,7 +64,7 @@ export default function Signin() {
 
                         <h4 className="text-gray-500 m-4 text-sm text-center dark:text-white">
                             Return to{" "}
-                            <Link to="/signin" className="text-black underline dark:text-gray-500">
+                            <Link to="/signin" className="text-inerit underline dark:text-gray-500">
                                 Sign in
                             </Link>
                         </h4>

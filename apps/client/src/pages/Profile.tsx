@@ -60,7 +60,7 @@ export default function Profile() {
                                         )}
                                     </div>
 
-                                    <div className="details space-y-3 text-black dark:text-white">
+                                    <div className="details space-y-3 text-inerit dark:text-white">
                                         <h2 className="text-3xl font-bold">{userProfile.name}</h2>
                                         <p className="text-base opacity-80 flex items-center">
                                             <span className="mr-2">@</span>

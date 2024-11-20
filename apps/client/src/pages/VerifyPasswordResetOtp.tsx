@@ -81,7 +81,7 @@ export default function VerifyPasswordResetOtp() {
 
                 <div className="w-1/2 flex-1 flex justify-center items-center">
                     <form className="flex flex-col justify-center items-center p-4 m-4 h-[400px]" onSubmit={formik.handleSubmit}>
-                        {/* <h1 className="text-5xl font-bold m-5 text-center text-black dark:text-white">OTP Verification</h1> */}
+                        {/* <h1 className="text-5xl font-bold m-5 text-center text-inerit dark:text-white">OTP Verification</h1> */}
                         <h2 className="text-lg text-center m-2 p-2 text-gray-500">
                             6 digit OTP has been sent to your Email, <br /> enter otp to procced. check span if not found.
                         </h2>
@@ -112,11 +112,11 @@ export default function VerifyPasswordResetOtp() {
                             {authStore.buttonLoading ? "Verifying OTP..." : "Verify OTP"}
                         </button>
 
-                        <h4 className="m-4 p-4 text-black dark:text-zinc-300">
+                        <h4 className="m-4 p-4 text-inerit dark:text-zinc-300">
                             {isResendEnabled ? (
                                 <>
                                     Didn't Get OTP?{" "}
-                                    <a href="#" onClick={handleResendOtp} className="text-black dark:text-zinc-300">
+                                    <a href="#" onClick={handleResendOtp} className="text-inerit dark:text-zinc-300">
                                         Resend
                                     </a>
                                 </>

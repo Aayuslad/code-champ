@@ -209,25 +209,29 @@ const Problem = ({ problem }: { problem: ProblemType }) => {
                                 <span className="font-medium">Output: </span>
                                 <span>{example.output}</span>
                             </div>
-                            <div>
-                                <span className="font-medium">Explanation: </span>
-                                <span>{example.explanation}</span>
-                            </div>
+                            {example.explanation && (
+                                <div>
+                                    <span className="font-medium">Explanation: </span>
+                                    <span>{example.explanation}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 );
             })}
 
-            <div>
-                <h2 className="text-xl font-semibold mb-3">Constraints</h2>
-                <ul className="list-disc pl-5 space-y-2">
-                    {problem.constraints.map((constraint, index) => (
-                        <li key={index} className="text-justify">
-                            {constraint}
-                        </li>
-                    ))}
-                </ul>
-            </div>
+            {problem.constraints.length > 0 && (
+                <div>
+                    <h2 className="text-xl font-semibold mb-3">Constraints</h2>
+                    <ul className="list-disc pl-5 space-y-2">
+                        {problem.constraints.map((constraint, index) => (
+                            <li key={index} className="text-justify">
+                                {constraint}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
 
             <div>
                 <h2 className="text-xl font-semibold mb-3">Topic Tags</h2>
@@ -245,19 +249,21 @@ const Problem = ({ problem }: { problem: ProblemType }) => {
                 </ul>
             </div>
 
-            <div>
-                <h2 className="text-xl font-semibold mb-3">Hints</h2>
-                <ul className="space-y-3">
-                    {problem.hints.map((hint, index) => (
-                        <li key={index} className="text-justify cursor-pointer">
-                            <details>
-                                <summary className="font-medium">Hint {index + 1}</summary>
-                                <p className="mt-2 ml-4">{hint}</p>
-                            </details>
-                        </li>
-                    ))}
-                </ul>
-            </div>
+            {problem.hints.length > 0 && (
+                <div>
+                    <h2 className="text-xl font-semibold mb-3">Hints</h2>
+                    <ul className="space-y-3">
+                        {problem.hints.map((hint, index) => (
+                            <li key={index} className="text-justify cursor-pointer">
+                                <details>
+                                    <summary className="font-medium">Hint {index + 1}</summary>
+                                    <p className="mt-2 ml-4">{hint}</p>
+                                </details>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
 
             <div className="flex flex-wrap items-center gap-6 mt-6 pb-4">
                 <span className="text-lightText800 dark:text-darkText800">
@@ -294,7 +300,7 @@ const Submissions = ({ submissions }: { submissions?: Submission[] }) => {
                 </div>
             ) : null}
 
-            {!viewCode && submissions && (
+            {!viewCode && submissions && submissions?.length > 0 && (
                 <table className="w-full">
                     <thead className="w-full border-b border-light300 dark:border-dark300">
                         <tr className="">
