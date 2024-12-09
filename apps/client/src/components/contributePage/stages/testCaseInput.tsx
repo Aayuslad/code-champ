@@ -2,6 +2,7 @@ import { useState } from "react";
 import { TestCasesNav } from "../testCasesNav";
 import { ContributeProblemSchemaType } from "@repo/common/zod";
 import { ProblemStore } from "../../../stores/problemStore";
+import toast from "react-hot-toast";
 
 type Props = {
     form: ContributeProblemSchemaType;
@@ -116,6 +117,7 @@ export const TestCaseInput = ({ form, setForm }: Props) => {
                     )}
                 </div>
             ))}
+            
             <div className="flex flex-col gap-2">
                 <label className="font-semibold text-darkText900">
                     Output {"( "}
@@ -159,7 +161,10 @@ export const TestCaseInput = ({ form, setForm }: Props) => {
                 />
             </div>
 
-            <button type="button" onClick={() => handleDeleteTestCase(isTestCase, isTestCase ? currentNavIndex : currentSampleNavIndex)}>
+            <button
+                type="button"
+                onClick={() => handleDeleteTestCase(isTestCase, isTestCase ? currentNavIndex : currentSampleNavIndex)}
+            >
                 delete
             </button>
         </>
@@ -175,11 +180,16 @@ export const TestCaseInput = ({ form, setForm }: Props) => {
                     </div>
 
                     <TestCasesNav
-                        isSample={true}
-                        form={form}
+                        testCases={form.sampleTestCases}
                         currentNavIndex={currentSampleNavIndex}
                         setCurrentNavIndex={setCurrentSampleNavIndex}
-                        addTestCase={() => addTestCase(true)}
+                        addTestCase={() => {
+                            if (form.sampleTestCases.length >= 4) {
+                                toast("only 4 examples can be added");
+                            } else {
+                                addTestCase(true);
+                            }
+                        }}
                     />
 
                     <div className="flex flex-col gap-2 py-4">{renderInputFields(currentSampleTestCase, false)}</div>
@@ -192,7 +202,7 @@ export const TestCaseInput = ({ form, setForm }: Props) => {
                     </div>
 
                     <TestCasesNav
-                        form={form}
+                        testCases={form.testCases}
                         currentNavIndex={currentNavIndex}
                         setCurrentNavIndex={setCurrentNavIndex}
                         addTestCase={() => addTestCase(false)}

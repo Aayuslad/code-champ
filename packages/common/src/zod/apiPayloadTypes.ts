@@ -102,3 +102,10 @@ export const putOngoingProblemSchma = zod.object({
 });
 
 export type PutOngoingProblemSchmaType = zod.infer<typeof putOngoingProblemSchma>;
+
+export const contrubuteTestCasesSchema = zod.object({
+    problemId: zod.string(),
+    contributedTestCases: zod.array(testCaseSchema),
+});
+
+export type ContrubuteTestCasesSchemaType = zod.infer<typeof contrubuteTestCasesSchema>;

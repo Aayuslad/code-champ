@@ -1,27 +1,36 @@
-import React, { useEffect, useState, useRef } from "react";
-import { ContributeProblemSchemaType } from "@repo/common/zod";
-import { IoMdAdd } from "react-icons/io";
+import React, { useEffect, useRef, useState } from "react";
 import { FaAngleLeft, FaChevronRight } from "react-icons/fa6";
-import toast from "react-hot-toast";
+import { IoMdAdd } from "react-icons/io";
+
+type TestCases =
+    | {
+          input: {
+              value: string;
+              name: string;
+          }[];
+          output: string;
+          explanation?: string | undefined;
+      }[]
+    | undefined;
 
 type Props = {
-    form: ContributeProblemSchemaType;
+    testCases: TestCases;
     currentNavIndex: number;
     setCurrentNavIndex: React.Dispatch<React.SetStateAction<number>>;
-    addTestCase: () => void;
-    isSample?: boolean;
+    navIndexOfset?: number;
+    addTestCase?: () => void;
 };
 
-export const TestCasesNav = ({ form, currentNavIndex, setCurrentNavIndex, addTestCase, isSample }: Props) => {
+export const TestCasesNav = ({ currentNavIndex, setCurrentNavIndex, addTestCase, testCases, navIndexOfset }: Props) => {
     const [isAtStart, setIsAtStart] = useState(true);
     const [isAtEnd, setIsAtEnd] = useState(false);
     const [isScrollable, setIsScrollable] = useState(false);
     const navRef = useRef<HTMLUListElement>(null);
 
     useEffect(() => {
-        if ((isSample ? form?.sampleTestCases : form?.testCases)?.length === 0) {
+        if (testCases?.length === 0) {
             setCurrentNavIndex(0);
-            addTestCase();
+            addTestCase && addTestCase();
         }
     }, []);
 
@@ -47,9 +56,7 @@ export const TestCasesNav = ({ form, currentNavIndex, setCurrentNavIndex, addTes
 
     useEffect(() => {
         handleScroll();
-    }, [form?.sampleTestCases, form?.testCases]);
-
-    const testCases = isSample ? form?.sampleTestCases : form?.testCases;
+    }, [testCases]);
 
     return (
         <nav className="border-b border-gray-400 dark:border-b-[#ffffff90] relative w-full max-w-[750px]">
@@ -59,28 +66,29 @@ export const TestCasesNav = ({ form, currentNavIndex, setCurrentNavIndex, addTes
                         <li
                             key={index}
                             className={`pb-2 pt-1 px-4 w-fit cursor-pointer whitespace-nowrap ${index === currentNavIndex ? "border-b border-black dark:border-white dark:text-white" : "text-gray-400 dark:text-gray-500"}`}
-                            onClick={() => setCurrentNavIndex(index)}
+                            onClick={() => {
+                                console.log(index);
+                                setCurrentNavIndex(index);
+                            }}
                         >
-                            Test Case {index + 1}
+                            Test Case {navIndexOfset ? index + 1 + navIndexOfset : index + 1}
                         </li>
                     );
                 })}
 
-                <button
-                    type="button"
-                    className="text-2xl px-3 pb-1 pr-[70px]"
-                    onClick={() => {
-                        if (isSample && testCases?.length >= 4) {
-                            toast("You can only have a maximum of 4 sample test cases.");
-                            return;
-                        }
-                        addTestCase();
-                        setCurrentNavIndex(testCases?.length);
-                        setTimeout(handleScroll, 0);
-                    }}
-                >
-                    <IoMdAdd />
-                </button>
+                {addTestCase && (
+                    <button
+                        type="button"
+                        className="text-2xl px-3 pb-1 pr-[70px]"
+                        onClick={() => {
+                            addTestCase();
+                            setCurrentNavIndex(testCases?.length || 0);
+                            setTimeout(handleScroll, 0);
+                        }}
+                    >
+                        <IoMdAdd />
+                    </button>
+                )}
             </ul>
 
             {!isAtStart && (

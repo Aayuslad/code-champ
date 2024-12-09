@@ -1,11 +1,36 @@
+import { useNavigate } from "react-router-dom";
 import CustomDropdown from "../../inputs/CustomDropDwon";
 
 type Props = {
-    constributionType: "Submit a Problem" | "Add a Test Case";
+    contributionType: "Submit a Problem" | "Add a Test Case";
     setContributionType: React.Dispatch<React.SetStateAction<"Submit a Problem" | "Add a Test Case">>;
+    setCurrentStage: React.Dispatch<
+        React.SetStateAction<
+            | "contribute-type"
+            | "problem-detailes"
+            | "function-template"
+            | "test-case-input"
+            | "problem-search"
+            | "test-case-contribution"
+        >
+    >;
 };
 
-export const ContributionType = ({ constributionType, setContributionType }: Props) => {
+export const ContributionType = ({ setCurrentStage, contributionType, setContributionType }: Props) => {
+    const navigate = useNavigate();
+
+    const onClickHandler = () => {
+        if (contributionType === "Submit a Problem") {
+            setContributionType("Submit a Problem");
+            setCurrentStage("problem-detailes");
+            navigate("/contribute/problem-detailes");
+        } else {
+            setContributionType("Add a Test Case");
+            setCurrentStage("problem-search");
+            navigate("/contribute/problem-search");
+        }
+    };
+
     return (
         <div className="flex flex-col w-full">
             <div className="basis-[60%] flex">
@@ -20,25 +45,25 @@ export const ContributionType = ({ constributionType, setContributionType }: Pro
                         Whether it's a tricky algorithm or a clever edge case, we welcome your contribution.
                     </p>
                 </div>
-
-                {/* <div className="basis-[50%] pt-16 text-left text-gray-700 dark:text-gray-300 px-10">
-                    <h3 className="text-3xl font-bold mb-3 dark:text-white">Why Contribute?</h3>
-                    <p className="text-lg py-2">Help the community grow and become stronger.</p>
-                    <p className="text-lg py-2">Get recognized for your contributions through badges and leaderboards.</p>
-                    <p className="text-lg py-2">
-                        Contribute to high-quality problems that can prepare users for interviews and competitions.
-                    </p>
-                </div> */}
             </div>
 
             <div className="basis-[40%] flex flex-col items-center gap-10">
                 <p className="text-xl">Select an option to either submit a problem or add a test case to enhance our platform.</p>
 
-                <CustomDropdown
-                    options={["Submit a Problem", "Add a Test Case"]}
-                    selectedOption={constributionType as unknown as string}
-                    setSelectedOption={setContributionType as unknown as React.Dispatch<React.SetStateAction<string>>}
-                />
+                <div className="space-x-10 flex items-center">
+                    <CustomDropdown
+                        options={["Submit a Problem", "Add a Test Case"]}
+                        selectedOption={contributionType as unknown as string}
+                        setSelectedOption={setContributionType as unknown as React.Dispatch<React.SetStateAction<string>>}
+                    />
+                    <button
+                        type="button"
+                        className="border-[3px] rounded-xl border-light300 dark:border-dark300 py-0.5 px-3 font-semibold bg-light400 dark:bg-dark300"
+                        onClick={onClickHandler}
+                    >
+                        GO
+                    </button>
+                </div>
             </div>
         </div>
     );

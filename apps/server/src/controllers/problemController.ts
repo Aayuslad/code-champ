@@ -1,9 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import {
     contributeProblemSchema,
+    contrubuteTestCasesSchema,
     putOngoingProblemSchma,
     sumitSolutionSchema,
-    TestCaseType
+    TestCaseType,
 } from "@repo/common/zod";
 import axios from "axios";
 import { Request, Response } from "express";
@@ -27,8 +28,6 @@ export async function contributeProblem(req: Request, res: Response) {
             topicTags,
             hints,
             constraints,
-            boilerplateCode,
-            submissionCode,
         } = parsed.data;
 
         const slug = await generateUniqueSlug(title);
@@ -99,16 +98,6 @@ export async function contributeProblem(req: Request, res: Response) {
             message: "Problem created successfully",
             problem: newProblem,
         });
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({
-            message: "Internal Server Error",
-        });
-    }
-}
-
-export async function contrubuteTestCases(req: Request, res: Response) {
-    try {
     } catch (err) {
         console.log(err);
         res.status(500).json({
@@ -477,6 +466,154 @@ export async function getSubmissions(req: Request, res: Response) {
 
         return res.status(200).json(submission);
     } catch (err) {
+        res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+}
+
+export async function getProblemsBySearch(req: Request, res: Response) {
+    const searchQurey = req.query.query as string;
+    try {
+        const isNumber = !isNaN(parseInt(searchQurey));
+        let problems: any = [];        
+
+        if (isNumber) {
+            problems = await prisma.problem.findMany({
+                where: {
+                    problemNumber: parseInt(searchQurey),
+                },
+                select: {
+                    id: true,
+                    problemNumber: true,
+                    title: true,
+                    difficultyLevel: true,
+                },
+            });
+        } else {
+            problems = await prisma.problem.findMany({
+                where: {
+                    title: {
+                        contains: searchQurey,
+                    },
+                },
+                select: {
+                    id: true,
+                    problemNumber: true,
+                    title: true,
+                    difficultyLevel: true,
+                },
+            });
+        } 
+
+        return res.status(200).json(problems);
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+}
+
+export async function getProblemForContribution(req: Request, res: Response) {
+    const { problemId } = req.params;    
+
+    try {
+        const problem = await prisma.problem.findFirst({
+            where: { id: problemId },
+            select: {
+                id: true,
+                problemNumber: true,
+                title: true,
+                description: true,
+                difficultyLevel: true,
+                sampleTestCasesKey: true,
+                testCasesKey: true,
+                constraints: { select: { content: true } },
+                topicTags: { select: { content: true } },
+                hints: { select: { content: true } },
+                testCasesCount: true,
+                functionStructure: true,
+                createdBy: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        profileImg: true,
+                    },
+                },
+                submissionCount: true,
+                acceptedSubmissions: true,
+            },
+        });
+
+        if (!problem) {
+            return res.status(404).json({ message: "Problem not found" });
+        }
+
+        const sampleTestCasesJson = await getObjectFromS3(problem.sampleTestCasesKey);
+        const testCasesJson = await getObjectFromS3(problem.testCasesKey);
+        const parsedsampleTestCases: TestCaseType[] = JSON.parse(sampleTestCasesJson);
+        const parsedTestCases: TestCaseType[] = JSON.parse(testCasesJson);
+
+        const acceptanceRate =
+            problem.submissionCount > 0 ? ((problem.acceptedSubmissions / problem.submissionCount) * 100).toFixed(2) : "0.00";
+
+        const { sampleTestCasesKey, testCasesKey, ...editedProblem } = {
+            ...problem,
+            acceptanceRate,
+            constraints: problem.constraints.map(constraint => constraint.content),
+            hints: problem.hints.map(hint => hint.content),
+            topicTags: problem.topicTags.map(tag => tag.content),
+            functionStructure: JSON.parse(problem.functionStructure),
+            exampleTestCases: parsedsampleTestCases,
+            testCases: parsedTestCases,
+        };
+
+        return res.status(200).json(editedProblem);
+    } catch (err) {
+        res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+}
+
+export async function contrubuteTestCases(req: Request, res: Response) {
+    try {
+        const parsed = contrubuteTestCasesSchema.safeParse(req.body);
+        if (!parsed.success) return res.status(422).json({ message: "Invalid data" });
+        const { problemId, contributedTestCases } = parsed.data;
+
+        const problem = await prisma.problem.findFirst({
+            where: {
+                id: problemId,
+            },
+            select: {
+                testCasesKey: true,
+                slug: true,
+            },
+        });
+
+        if (!problem) return res.status(404).json({ message: "Problem not found" });
+
+        const testCasesJson = await getObjectFromS3(problem.testCasesKey);
+        const parsedTestCases: TestCaseType[] = JSON.parse(testCasesJson);
+
+        const updatedTestCases = [...parsedTestCases, ...contributedTestCases];
+
+        await uploadJsonToS3(`problem-test-cases/${problem.slug}/testCases.json`, updatedTestCases);
+
+        await prisma.problem.update({
+            where: {
+                id: problemId,
+            },
+            data: {
+                testCasesCount: {
+                    increment: contributedTestCases.length,
+                },
+            },
+        });
+
+        return res.status(200).json({ message: "Test cases updated successfully" });
+    } catch (error) {
         res.status(500).json({
             message: "Internal Server Error",
         });

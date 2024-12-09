@@ -435,7 +435,7 @@ const TestResult = ({ problem }: { problem: ProblemType }) => {
                                 className="flex flex-col gap-2 rounded-md mb-3 mr-6 bg-light300 dark:bg-dark300 group"
                             >
                                 <summary
-                                    className={`py-2 pl-3 pr-4 font-semibold cursor-pointer flex gap-3 justify-between items-center`}
+                                    className={`pt-2 pl-3 pr-4 font-semibold cursor-pointer flex gap-3 justify-between items-center`}
                                 >
                                     <div className="flex gap-3 w-full">
                                         <span className="px-1 ">{testCase.id + 1}</span>
@@ -576,7 +576,7 @@ const SubmissionResult = ({ problem }: { problem: ProblemType }) => {
                                 className="flex flex-col gap-2 rounded-md mb-3 mr-6 bg-light300 dark:bg-dark300 group"
                             >
                                 <summary
-                                    className={`py-2 pl-3 pr-4 font-semibold cursor-pointer flex gap-3 justify-between items-center`}
+                                    className={`pt-2 pl-3 pr-4 font-semibold cursor-pointer flex gap-3 justify-between items-center`}
                                 >
                                     <div className="flex gap-3 w-full">
                                         <span className="px-1 ">{testCase.id + 1}</span>

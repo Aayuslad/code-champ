@@ -9,6 +9,9 @@ import {
     PutOngoingProblemSchmaType,
     OnGoingProblemType,
     ContributeProblemSchemaType,
+    ProbelmSearchResultType,
+    ProblemTypeForContribution,
+    TestCaseType,
 } from "@repo/common/zod";
 import axios from "axios";
 import { languageToIdMppings } from "../config/languageIdMppings";
@@ -50,6 +53,9 @@ type ProblemStoreType = {
     contributeProblem: (values: ContributeProblemSchemaType) => Promise<void>;
     clearSubmissionResult: (problemId: string) => void;
     clearTestResult: (problemId: string) => void;
+    searchProblem: (query: string) => Promise<ProbelmSearchResultType[] | undefined>;
+    getProblemForContribution: (problemId: string) => Promise<ProblemTypeForContribution | undefined>;
+    contributeTestCases: (values: { problemId: string; contributedTestCases: TestCaseType[] }) => Promise<void>;
 };
 
 export const ProblemStore = create<ProblemStoreType>(set => ({
@@ -300,5 +306,41 @@ export const ProblemStore = create<ProblemStoreType>(set => ({
                 return problem;
             }),
         }));
-    }
+    },
+
+    searchProblem: async query => {
+        try {
+            set({ skeletonLoading: true });
+            const { data } = await axios.get<ProbelmSearchResultType[]>(`/problem/search?query=${query}`);
+            return data;
+        } catch (error) {
+            apiErrorHandler(error);
+        } finally {
+            set({ skeletonLoading: false });
+        }
+    },
+
+    getProblemForContribution: async problemId => {
+        try {
+            set({ skeletonLoading: true });
+            const { data } = await axios.get<ProblemTypeForContribution>(`/problem/for-contribution/${problemId}`);
+            return data;
+        } catch (error) {
+            apiErrorHandler(error);
+        } finally {
+            set({ skeletonLoading: false });
+        }
+    },
+
+    contributeTestCases: async values => {
+        try {
+            set({ buttonLoading: true });
+            await axios.post("/problem/contribute-testcases", values);
+            toast.success("Test cases contributed");
+        } catch (error) {
+            apiErrorHandler(error);
+        } finally {
+            set({ buttonLoading: false });
+        }
+    },
 }));

@@ -1,4 +1,4 @@
-import { BoilerPlateCode, TestCaseType } from "./subTypes";
+import { BoilerPlateCode, FunctionStructureType, TestCaseType } from "./subTypes";
 
 // ########## user contoller response types ##########
 
@@ -117,6 +117,36 @@ export type CheckBatchSubmissionType = {
 
 export type OnGoingProblemType = {
     solutions: string;
+};
+
+export type ProbelmSearchResultType = {
+    id: string;
+    problemNumber: number;
+    title: string;
+    difficulty: DifficultyLevel;
+};
+
+export type ProblemTypeForContribution = {
+    id: string;
+    problemNumber: number;
+    title: string;
+    difficultyLevel: DifficultyLevel;
+    description: string;
+    acceptanceRate: string;
+    constraints: string[];
+    topicTags: string[];
+    hints: string[];
+    testCasesCount: number;
+    createdBy: {
+        id: string;
+        userName: string;
+        profileImg: string;
+    };
+    submissionCount: number;
+    acceptedSubmissions: number;
+    functionStructure: FunctionStructureType;
+    exampleTestCases: TestCaseType[];
+    testCases: TestCaseType[];
 };
 
 // enums
