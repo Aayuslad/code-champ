@@ -1,23 +1,26 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import GoogleOneTapLogin from "./components/googleOneTapLogin";
+import Blogs from "./pages/Blogs";
+import ContestRegisteration from "./pages/ContestRegistration";
+import Contribute from "./pages/Contribute";
 import ForgotPassword from "./pages/ForgotPassword";
-import LandingPage from "./pages/LandigPage";
+import CodeChampLandingPage from "./pages/LandingPage2";
+import LiveContest from "./pages/LiveContest";
+import LoadingPage from "./pages/LoadingPage";
 import PasswordReset from "./pages/PasswordReset";
+import Problems from "./pages/Problems";
+import Profile from "./pages/Profile";
 import Signin from "./pages/Signin";
 import Signup from "./pages/Signup";
+import SolveProblem from "./pages/SolveProblem";
 import VerifyPasswordResetOtp from "./pages/VerifyPasswordResetOtp";
 import VerifySignupOtp from "./pages/VerifySignupOtp";
-import Problems from "./pages/Problems";
-import Contribute from "./pages/Contribute";
-import Profile from "./pages/Profile";
-import Blogs from "./pages/Blogs";
-import Contest from "./pages/Contest";
-import SolveProblem from "./pages/SolveProblem";
-import LoadingPage from "./pages/LoadingPage";
-import { UiStore } from "./stores/uiStore";
-import { useEffect } from "react";
-import { defineEditorThemes } from "./utils/editorThemes";
 import { AuthStore } from "./stores/authStore";
-import GoogleOneTapLogin from "./components/googleOneTapLogin";
+import { UiStore } from "./stores/uiStore";
+import { defineEditorThemes } from "./utils/editorThemes";
+import ContestFeed from "./pages/ContestFeed";
+import SolveContestProblem from "./pages/SolveContestProblem";
 
 function App() {
     const uiStore = UiStore();
@@ -35,7 +38,7 @@ function App() {
                 {!authStore.loading && !authStore.isLoggedIn && <GoogleOneTapLogin />}
 
                 <Routes>
-                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/" element={<CodeChampLandingPage />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/password-reset" element={<PasswordReset />} />
                     <Route path="/signin" element={<Signin />} />
@@ -47,10 +50,20 @@ function App() {
                     <Route path="/contribute/:stage" element={authStore.loading ? <LoadingPage /> : <Contribute />} />
                     <Route path="/profile/:userId" element={authStore.loading ? <LoadingPage /> : <Profile />} />
                     <Route path="/blogs" element={authStore.loading ? <LoadingPage /> : <Blogs />} />
-                    <Route path="/contest" element={authStore.loading ? <LoadingPage /> : <Contest />} />
+                    <Route path="/contest" element={authStore.loading ? <LoadingPage /> : <ContestFeed />} />
+                    {/* <Route path="/contest" element={authStore.loading ? <LoadingPage /> : <Blogs />} /> */}
                     <Route
                         path="/solve-problem/:id/:nav1/:nav2"
                         element={authStore.loading ? <LoadingPage /> : <SolveProblem />}
+                    />
+                    <Route
+                        path="/contest-registration/:contestId"
+                        element={authStore.loading ? <LoadingPage /> : <ContestRegisteration />}
+                    />
+                    <Route path="/live-contest/:contestId" element={authStore.loading ? <LoadingPage /> : <LiveContest />} />
+                    <Route
+                        path="/live-contest/:contestId/solve-problem/:contestProblemId/:participantId/:nav1/:nav2"
+                        element={authStore.loading ? <LoadingPage /> : <SolveContestProblem />}
                     />
                 </Routes>
             </div>

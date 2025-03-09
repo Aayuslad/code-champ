@@ -1,24 +1,28 @@
-import { ProblemType, Submission } from "@repo/common/zod";
+import { ContestProblemType, Submission } from "@repo/common/zod";
 import { useEffect, useRef, useState } from "react";
 import { IoIosArrowForward, IoMdClose } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
-import CodeEditor from "../components/codeEditor";
 import { ContainerSplitter } from "../components/containerSplitter";
-import { PorblemPageHeader } from "../components/headers/problemPageHeader";
+import ContestCodeEditor from "../components/contestCodeEditor";
+import { ContestPorblemPageHeader } from "../components/headers/contestProblemPageheader";
 import { Navbar02 } from "../components/navbars/navbar02";
 import { SideNavbar } from "../components/navbars/sideNavbar";
 import MainWrapper from "../components/wrappers/mainWrapper";
 import { idToLanguageMappings } from "../config/languageIdMppings";
 import { formatDate } from "../helper/formatDate";
 import { AuthStore } from "../stores/authStore";
+import { ContestStore } from "../stores/contestStore";
 import { ProblemStore } from "../stores/problemStore";
 
-export default function SolveProblem() {
-    const problemStore = ProblemStore();
+export default function SolveContestProblem() {
+    // const problemStore = ProblemStore();
+    const contestStore = ContestStore();
     const authStore = AuthStore();
     const navigate = useNavigate();
-    const { id, nav1, nav2 } = useParams<{
-        id: string;
+    const { contestId, contestProblemId, participantId, nav1, nav2 } = useParams<{
+        contestProblemId: string;
+        contestId: string;
+        participantId: string;
         nav1: string;
         nav2: string;
     }>();
@@ -28,7 +32,7 @@ export default function SolveProblem() {
 
     useEffect(() => {
         if (nav2 === "Result") setActiveNav2("Code");
-        navigate(`/solve-problem/${id}/${activeNav1}/Code`);
+        navigate(`/live-contest/${contestId}/solve-problem/${contestProblemId}/${participantId}/${activeNav1}/Code`);
     }, []);
 
     useEffect(() => {
@@ -40,11 +44,12 @@ export default function SolveProblem() {
     }, [nav2]);
 
     useEffect(() => {
-        if (!id) return;
+        if (!contestProblemId) return;
         (async () => {
-            await problemStore.getProblem(id, authStore.userProfile?.id || "");
+            // #todo participant id here
+            await contestStore.getContestProblem(contestProblemId, participantId as string);
         })();
-    }, [id]);
+    }, [contestProblemId]);
 
     useEffect(() => {
         switch (nav1) {
@@ -55,7 +60,7 @@ export default function SolveProblem() {
             case "Discussion":
                 break;
             case "Submissions":
-                problemStore.getProblemSubmissions(id as string);
+                contestStore.getContestProblemSubmissions(contestProblemId as string, participantId as string);
                 break;
             default:
                 break;
@@ -77,7 +82,9 @@ export default function SolveProblem() {
         }
     }, [nav2]);
 
-    const problem = problemStore.onGoingProblems.find(problem => problem.id === id);
+    console.log(contestStore.onGoingContestProblems);
+
+    const problem = contestStore.onGoingContestProblems?.find(problem => problem.contestProblemId === contestProblemId);
 
     return (
         <div className="SolveProblemPage">
@@ -85,7 +92,7 @@ export default function SolveProblem() {
 
             {problem && (
                 <MainWrapper>
-                    <PorblemPageHeader problemNumber={problem?.problemNumber} title={problem.title} />
+                    <ContestPorblemPageHeader contestId={contestId as string} order={problem?.order} title={problem.title} />
 
                     <div className="w-full h-[calc(100vh-50px)] flex">
                         {/* Left container */}
@@ -94,15 +101,13 @@ export default function SolveProblem() {
                             style={{ width: `${leftWidth}%` }}
                         >
                             <Navbar02
-                                navs={["Problem", "Solution", "Discussion", "Submissions"]}
+                                navs={["Problem", "Submissions"]}
                                 currentNav={activeNav1}
                                 setCurrentNav={setActiveNav1}
-                                baseRoute={`solve-problem/${id}/nav/${activeNav2}`}
+                                baseRoute={`live-contest/${contestId}/solve-problem/${contestProblemId}/${participantId}/nav/${activeNav2}`}
                             />
 
                             {activeNav1 === "Problem" && <Problem problem={problem} />}
-                            {activeNav1 === "Solution" && <div>Solution</div>}
-                            {activeNav1 === "Discussion" && <div>Discussion</div>}
                             {activeNav1 === "Submissions" && <Submissions submissions={problem.submissions} />}
                         </div>
 
@@ -122,19 +127,34 @@ export default function SolveProblem() {
                                 ]}
                                 currentNav={activeNav2}
                                 setCurrentNav={setActiveNav2}
-                                baseRoute={`solve-problem/${id}/${activeNav1}/nav`}
+                                baseRoute={`live-contest/${contestId}/solve-problem/${contestProblemId}/${participantId}/${activeNav1}/nav`}
                             />
 
                             {activeNav2 === "Code" && (
-                                <CodeEditor
-                                    problemId={problem.id}
+                                <ContestCodeEditor
+                                    contestProblemId={problem.contestProblemId}
+                                    problemId={problem.problemId}
+                                    participantId={participantId as string}
                                     navToSubmissionResult={() => {
-                                        problemStore.clearSubmissionResult(problem.id);
-                                        setTimeout(() => navigate(`/solve-problem/${id}/${activeNav1}/Submission Result`), 1000);
+                                        contestStore.clearSubmissionResult(problem.contestProblemId);
+                                        setTimeout(
+                                            () =>
+                                                navigate(
+                                                    `/live-contest/${contestId}/solve-problem/${contestProblemId}/${participantId}/${activeNav1}/Submission Result`,
+                                                ),
+                                            1000,
+                                        );
                                     }}
                                     navToTestResult={() => {
-                                        problemStore.clearTestResult(problem.id);
-                                        setTimeout(() => navigate(`/solve-problem/${id}/${activeNav1}/Test Result`), 1000);
+                                        contestStore.clearTestResult(problem.contestProblemId);
+
+                                        setTimeout(
+                                            () =>
+                                                navigate(
+                                                    `/live-contest/${contestId}/solve-problem/${contestProblemId}/${participantId}/${activeNav1}/Test Result`,
+                                                ),
+                                            1000,
+                                        );
                                     }}
                                 />
                             )}
@@ -146,14 +166,16 @@ export default function SolveProblem() {
                 </MainWrapper>
             )}
 
-            {!problem && problemStore.skeletonLoading && <div className="w-full h-screen flex items-center justify-center">loading...</div>}
+            {!problem && contestStore.skeletonLoading && (
+                <div className="w-full h-screen flex items-center justify-center">loading...</div>
+            )}
         </div>
     );
 }
 
-const Problem = ({ problem }: { problem: ProblemType }) => {
+const Problem = ({ problem }: { problem: ContestProblemType }) => {
     return (
-        <div className="space-y-10 flex flex-col">
+        <div className="space-y-10 flex flex-col pb-10">
             <div>
                 <div className="text-normal mb-4 flex gap-6 justify-between items-center">
                     <h2 className="text-xl font-semibold">Problem Statement</h2>
@@ -173,18 +195,7 @@ const Problem = ({ problem }: { problem: ProblemType }) => {
                         >
                             {problem.difficultyLevel}
                         </span>{" "}
-                        <span>
-                            Points:{" "}
-                            {problem.difficultyLevel
-                                ? problem.difficultyLevel === "Basic"
-                                    ? 1
-                                    : problem.difficultyLevel === "Easy"
-                                      ? 2
-                                      : problem.difficultyLevel === "Medium"
-                                        ? 4
-                                        : 8
-                                : "-"}
-                        </span>
+                        <span>Points: {problem.points}</span>
                     </div>
                 </div>
                 <p className="text-justify font-poppins">{problem.description}</p>
@@ -264,20 +275,6 @@ const Problem = ({ problem }: { problem: ProblemType }) => {
                     </ul>
                 </div>
             )}
-
-            <div className="flex flex-wrap items-center gap-6 mt-6 pb-4">
-                <span className="text-lightText800 dark:text-darkText800">
-                    <span className="font-semibold">Accepted:</span> <span>{problem.acceptedSubmissions}</span>
-                </span>
-                <span>|</span>
-                <span className="text-lightText800 dark:text-darkText800">
-                    <span className="font-semibold">Submissions:</span> <span>{problem.submissionCount}</span>
-                </span>
-                <span>|</span>
-                <span className="text-lightText800 dark:text-darkText800">
-                    <span className="font-semibold">Acceptance Rate:</span> <span>{problem.acceptanceRate}%</span>
-                </span>
-            </div>
         </div>
     );
 };
@@ -399,7 +396,7 @@ const Submissions = ({ submissions }: { submissions?: Submission[] }) => {
     );
 };
 
-const TestResult = ({ problem }: { problem: ProblemType }) => {
+const TestResult = ({ problem }: { problem: ContestProblemType }) => {
     const problemStore = ProblemStore();
     const resultRef = useRef<HTMLDivElement>(null);
 
@@ -540,7 +537,7 @@ const TestResult = ({ problem }: { problem: ProblemType }) => {
     );
 };
 
-const SubmissionResult = ({ problem }: { problem: ProblemType }) => {
+const SubmissionResult = ({ problem }: { problem: ContestProblemType }) => {
     const problemStore = ProblemStore();
     const resultRef = useRef<HTMLDivElement>(null);
 

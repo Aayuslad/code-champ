@@ -78,6 +78,34 @@ export type ProblemType = {
     testResult?: CheckBatchSubmissionType;
 };
 
+export type ContestProblemType = {
+    contestProblemId: string;
+    problemId: string;
+    order: number;
+    points: number;
+    title: string;
+    description: string;
+    difficultyLevel: DifficultyLevel;
+    exampleTestCases: TestCaseType[];
+    boilerplateCode: BoilerPlateCode;
+    constraints: string[];
+    topicTags: string[];
+    hints: string[];
+    testCasesCount: number;
+    createdBy: {
+        id: string;
+        userName: string;
+        profileImg: string;
+    };
+    submissions?: Submission[];
+    solutions?: {
+        languageId: number;
+        solutionCode: string;
+    }[];
+    submissionResult?: CheckBatchSubmissionType;
+    testResult?: CheckBatchSubmissionType;
+};
+
 export type Submission = {
     status: SubmissionStatus;
     id: string;
@@ -119,6 +147,10 @@ export type OnGoingProblemType = {
     solutions: string;
 };
 
+export type OnGoingContestProblemType = {
+    solutions: string;
+};
+
 export type ProbelmSearchResultType = {
     id: string;
     problemNumber: number;
@@ -147,6 +179,54 @@ export type ProblemTypeForContribution = {
     functionStructure: FunctionStructureType;
     exampleTestCases: TestCaseType[];
     testCases: TestCaseType[];
+};
+
+// ########## Contest controller responses #########
+
+export type FeedContests = {
+    id: string;
+    title: string;
+    status: "Scheduled" | "Ongoing" | "Completed";
+    startTime: string;
+    endTime: string;
+};
+
+export type RegisterContestDetails = {
+    id: string;
+    title: string;
+    status: "Scheduled" | "Ongoing" | "Completed";
+    startTime: string;
+    endTime: string;
+    description: string;
+    createdBy: {
+        id: string;
+        userName: string;
+        profileImg: string;
+        avatar: string;
+    };
+    isRegistered: boolean;
+};
+
+export type LiveContestDetails = {
+    id: string;
+    participantId: string;
+    title: string;
+    startTime: string;
+    endTime: string;
+    problems: {
+        contestProblemId: string;
+        problemId: string;
+        points: number;
+        order: number;
+        title: string;
+        isSolved: boolean;
+    }[];
+    participants: {
+        id: string;
+        profileImg: string;
+        avatar: string;
+        userName: string;
+    }[];
 };
 
 // enums

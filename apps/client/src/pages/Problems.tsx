@@ -31,7 +31,7 @@ export default function Problems() {
                             </div>
                         )}
 
-                        {problemStore.feedProblems.length === 0 && <div>Loading...</div>}
+                        {problemStore.feedProblems.length === 0 && <div className="h-screen w-screen flex items-center justify-center">Loading...</div>}
 
                         <div className="sideBar lg:w-[350px] xl:w-[400px] hidden lg:block"></div>
                     </div>

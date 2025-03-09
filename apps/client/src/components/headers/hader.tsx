@@ -34,7 +34,7 @@ export const Header = () => {
                         </button>
                         <button
                             type="button"
-                            className="px-4 py-1 border border-green-500 rounded-[100vh]"
+                            className="px-4 py-1 border border-green-500 rounded-[100vh] font-semibold"
                             onClick={() => navigate("/signin")}
                         >
                             Sign in

@@ -1,21 +1,21 @@
-import { create } from "zustand";
-import apiErrorHandler from "../helper/apiCallErrorHandler";
 import {
-    FeedProblemsType,
-    ProblemType,
-    SumitSolutionSchemaType,
     CheckBatchSubmissionType,
-    Submission,
-    PutOngoingProblemSchmaType,
-    OnGoingProblemType,
     ContributeProblemSchemaType,
+    FeedProblemsType,
+    OnGoingProblemType,
     ProbelmSearchResultType,
+    ProblemType,
     ProblemTypeForContribution,
+    PutOngoingProblemSchmaType,
+    Submission,
+    SumitSolutionSchemaType,
     TestCaseType,
 } from "@repo/common/zod";
 import axios from "axios";
-import { languageToIdMppings } from "../config/languageIdMppings";
 import toast from "react-hot-toast";
+import { create } from "zustand";
+import { languageToIdMppings } from "../config/languageIdMppings";
+import apiErrorHandler from "../helper/apiCallErrorHandler";
 
 type ProblemStoreType = {
     feedProblems: FeedProblemsType[];
@@ -240,7 +240,6 @@ export const ProblemStore = create<ProblemStoreType>(set => ({
     getOngoingProblem: async problemId => {
         try {
             const { data } = await axios.get<OnGoingProblemType>(`/problem/ongoing-problem/${problemId}`);
-            console.log(data);
             return data;
         } catch (error) {
             apiErrorHandler(error);

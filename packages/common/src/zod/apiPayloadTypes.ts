@@ -96,6 +96,15 @@ export const sumitSolutionSchema = zod.object({
 });
 export type SumitSolutionSchemaType = zod.infer<typeof sumitSolutionSchema>;
 
+export const sumitContestSolutionSchema = zod.object({
+    participantId: zod.string(),
+    contestProblemId: zod.string(),
+    problemId: zod.string(),
+    languageId: zod.number(),
+    solutionCode: zod.string(),
+});
+export type SumitContestSolutionSchemaType = zod.infer<typeof sumitContestSolutionSchema>;
+
 export const putOngoingProblemSchma = zod.object({
     problemId: zod.string(),
     solutions: zod.string(),
@@ -103,9 +112,37 @@ export const putOngoingProblemSchma = zod.object({
 
 export type PutOngoingProblemSchmaType = zod.infer<typeof putOngoingProblemSchma>;
 
+export const putOngoingContestProblemSchma = zod.object({
+    contestProblemId: zod.string(),
+    participantId: zod.string(),
+    solutions: zod.string(),
+});
+
+export type PutOngoingContestProblemType = zod.infer<typeof putOngoingContestProblemSchma>;
+
 export const contrubuteTestCasesSchema = zod.object({
     problemId: zod.string(),
     contributedTestCases: zod.array(testCaseSchema),
 });
 
 export type ContrubuteTestCasesSchemaType = zod.infer<typeof contrubuteTestCasesSchema>;
+
+export const ContestStatus = zod.enum(["Scheduled", "Ongoing", "Completed"]);
+export const ContestVisibility = zod.enum(["Public", "Private"]);
+
+export const createContestSchma = zod.object({
+    title: zod.string(),
+    description: zod.string(),
+    startTime: zod.string(),
+    endTime: zod.string(),
+    visibility: ContestVisibility,
+    problems: zod.array(
+        zod.object({
+            problemId: zod.string(),
+            points: zod.number(),
+            order: zod.number(),
+        }),
+    ),
+    points: zod.number(),
+});
+

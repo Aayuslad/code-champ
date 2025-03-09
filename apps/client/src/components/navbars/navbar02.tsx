@@ -17,7 +17,7 @@ export function Navbar02({ navs, currentNav, setCurrentNav, baseRoute }: props) 
                     return (
                         <li
                             key={index}
-                            className={`inline-block ${currentNav === nav ? "border-b border-black dark:border-white text-inerit dark:text-white" : ""}`}
+                            className={`inline-block ${currentNav === nav ? "border-b border-black dark:border-white text-black dark:text-white" : ""}`}
                             onClick={() => {
                                 setCurrentNav(nav);
                                 {

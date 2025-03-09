@@ -5,25 +5,31 @@ import { LuUser2 } from "react-icons/lu";
 import { IoChevronBackOutline } from "react-icons/io5";
 
 type props = {
-    problemNumber: number;
+    order: number;
     title: string;
+    contestId: string;
 };
 
-export const PorblemPageHeader = ({ problemNumber, title }: props) => {
+export const ContestPorblemPageHeader = ({ order, title, contestId }: props) => {
     const navigate = useNavigate();
     const authStore = AuthStore();
 
     return (
         <div className="Header w-full flex-1 h-12 px-4 border-b-2 flex items-center justify-center gap-2 bg-light200 dark:bg-dark200 border-light300 dark:border-dark300">
-            <button type="button" className="text-xl px-1 py-1 pr-1.5 mr-2 rounded-full bg-light400 dark:bg-dark300 hover:cursor-pointer" onClick={() => navigate("/problems")}>
+            <button
+                type="button"
+                className="text-xl px-1 py-1 pr-1.5 mr-2 rounded-full bg-light400 dark:bg-dark300 hover:cursor-pointer"
+                onClick={() => navigate(`/live-contest/${contestId}`)}
+            >
                 <IoChevronBackOutline />
             </button>
 
             <h1 className="text-2xl font-semibold space-x-2">
-                <span>{`#${problemNumber}`}</span> <span>{title}</span>
+                <span>{`#${order}`}</span> <span>{title}</span>
             </h1>
 
             <div className="mx-3 flex gap-3 ml-auto">
+                <span className="text-green-400 text-xl">Inside a Contest</span>
                 {!authStore.userProfile && (
                     <>
                         <button

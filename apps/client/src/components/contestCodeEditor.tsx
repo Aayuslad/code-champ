@@ -9,18 +9,28 @@ import useDebounce from "../hooks/useDebounce";
 import { FaArrowRotateLeft } from "react-icons/fa6";
 import { AuthStore } from "../stores/authStore";
 import toast from "react-hot-toast";
+import { ContestStore } from "../stores/contestStore";
 
 type Prop = {
+    contestProblemId: string;
     problemId: string;
+    participantId: string;
     navToSubmissionResult: () => void;
     navToTestResult: () => void;
 };
 
-export default function CodeEditor({ problemId, navToTestResult, navToSubmissionResult }: Prop) {
-    const problemStore = ProblemStore();
+export default function ContestCodeEditor({
+    contestProblemId,
+    problemId,
+    navToTestResult,
+    navToSubmissionResult,
+    participantId,
+}: Prop) {
+    // const problemStore = ProblemStore();
+    const contestStore = ContestStore();
     const authStore = AuthStore();
     const uiStore = UiStore();
-    const problem = problemStore.onGoingProblems.find(problem => problem.id === problemId);
+    const problem = contestStore.onGoingContestProblems?.find(problem => problem.contestProblemId === contestProblemId);
     const [language, setLanguage] = useState<string>();
 
     useEffect(() => {
@@ -30,7 +40,7 @@ export default function CodeEditor({ problemId, navToTestResult, navToSubmission
                 languageId: languageToIdMppings["cpp"],
                 solutionCode: problem?.boilerplateCode["cpp"],
             };
-            problemStore.addSolution(problemId, solution);
+            contestStore.addContestSolution(contestProblemId, solution);
             setLanguage("cpp");
         } else {
             const languageId = problem.solutions[problem.solutions.length - 1].languageId;
@@ -50,9 +60,9 @@ export default function CodeEditor({ problemId, navToTestResult, navToSubmission
                 languageId: languageToIdMppings[language as string],
                 solutionCode: problem?.boilerplateCode[language as keyof BoilerPlateCode],
             };
-            problemStore.addSolution(problemId, solution);
+            contestStore.addContestSolution(contestProblemId, solution);
         } else {
-            problemStore.addSolution(problemId, exist);
+            contestStore.addContestSolution(contestProblemId, exist);
         }
     }, [language]);
 
@@ -62,14 +72,18 @@ export default function CodeEditor({ problemId, navToTestResult, navToSubmission
             languageId: languageToIdMppings[language as string],
             solutionCode: code as string,
         };
-        problemStore.updateSolution(problemId, solution);
+        contestStore.updateContestSolution(contestProblemId, solution);
     };
 
     const debouncedValue = useDebounce(problem?.solutions, 2000);
 
     useEffect(() => {
         if (debouncedValue && authStore.userProfile && problem?.solutions) {
-            problemStore.putOngoingProblem({ problemId: problem?.id as string, solutions: JSON.stringify(debouncedValue) });
+            contestStore.putOngoingContestProblem({
+                contestProblemId: problem?.contestProblemId as string,
+                solutions: JSON.stringify(debouncedValue),
+                participantId,
+            });
         }
     }, [debouncedValue]);
 
@@ -114,12 +128,14 @@ export default function CodeEditor({ problemId, navToTestResult, navToSubmission
                                     !problem.solutions.find(
                                         solution => solution.languageId === languageToIdMppings[language as string],
                                     )?.solutionCode ||
-                                    problemStore.testButtonLoading ||
-                                    problemStore.submitButtonLoading
+                                    contestStore.testButtonLoading ||
+                                    contestStore.submitButtonLoading
                                 }
                                 onClick={async () => {
-                                    const res = await problemStore.testProblem({
-                                        problemId,
+                                    const res = await contestStore.testContestProblem({
+                                        contestProblemId: problem.contestProblemId,
+                                        problemId: problem.problemId,
+                                        participantId: participantId,
                                         languageId: languageToIdMppings[language as string],
                                         solutionCode: problem?.solutions?.find(
                                             solution => solution.languageId === languageToIdMppings[language as string],
@@ -128,7 +144,7 @@ export default function CodeEditor({ problemId, navToTestResult, navToSubmission
                                     if (res === true) navToTestResult();
                                 }}
                             >
-                                {problemStore.testButtonLoading ? "Testing..." : "Test"}
+                                {contestStore.testButtonLoading ? "Testing..." : "Test"}
                             </button>
                             <button
                                 type="button"
@@ -137,14 +153,16 @@ export default function CodeEditor({ problemId, navToTestResult, navToSubmission
                                     !problem.solutions.find(
                                         solution => solution.languageId === languageToIdMppings[language as string],
                                     )?.solutionCode ||
-                                    problemStore.testButtonLoading ||
-                                    problemStore.submitButtonLoading
+                                    contestStore.testButtonLoading ||
+                                    contestStore.submitButtonLoading
                                 }
                                 onClick={async () => {
                                     if (!authStore.isLoggedIn) toast.error("sing in to submit");
                                     else {
-                                        const res = await problemStore.submitProblem({
-                                            problemId,
+                                        const res = await contestStore.submitProblem({
+                                            contestProblemId: problem.contestProblemId,
+                                            problemId: problem.problemId,
+                                            participantId,
                                             languageId: languageToIdMppings[language as string],
                                             solutionCode: problem?.solutions?.find(
                                                 solution => solution.languageId === languageToIdMppings[language as string],
@@ -154,7 +172,7 @@ export default function CodeEditor({ problemId, navToTestResult, navToSubmission
                                     }
                                 }}
                             >
-                                {problemStore.submitButtonLoading ? "Submiting..." : "Submit"}
+                                {contestStore.submitButtonLoading ? "Submiting..." : "Submit"}
                             </button>
                         </div>
 
@@ -165,7 +183,7 @@ export default function CodeEditor({ problemId, navToTestResult, navToSubmission
                                 title="Reset Code"
                                 onClick={() => {
                                     const flag = confirm("Are you sure you want to reset your code? will loose all your code");
-                                    flag && problemStore.resetCode(problem.id, language);
+                                    flag && contestStore.resetCode(problem.contestProblemId, language);
                                 }}
                             >
                                 <FaArrowRotateLeft />
