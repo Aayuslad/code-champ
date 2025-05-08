@@ -2,6 +2,7 @@ import {
     CheckBatchSubmissionType,
     ContestProblemType,
     FeedContests,
+    LeaderBoardType,
     LiveContestDetails,
     OnGoingContestProblemType,
     PutOngoingContestProblemType,
@@ -20,10 +21,10 @@ interface contestStoreType {
     skeletonLoading: boolean;
     testButtonLoading: boolean;
     submitButtonLoading: boolean;
-    contests: FeedContests[] | undefined;
+    contests: FeedContests | undefined;
     onGoingContestProblems: ContestProblemType[] | undefined;
 
-    fetchContests: () => Promise<void>;
+    fetchContests: (userId: string | undefined) => Promise<void>;
     fetchRegisterContestDetails: (contestId: string, userId: string | undefined) => Promise<RegisterContestDetails | undefined>;
     registerForContest: (contestId: string) => Promise<void>;
     fetchLiveContestDetails: (contestId: string) => Promise<LiveContestDetails | undefined>;
@@ -53,6 +54,7 @@ interface contestStoreType {
     resetCode: (contestProblemId: string, language: string) => void;
     clearSubmissionResult: (contestProblemId: string) => void;
     clearTestResult: (contestProblemId: string) => void;
+    getLeaderBoard: (contestId: string) => Promise<LeaderBoardType[] | undefined>;
 }
 
 export const ContestStore = create<contestStoreType>(set => ({
@@ -63,11 +65,11 @@ export const ContestStore = create<contestStoreType>(set => ({
     contests: undefined,
     onGoingContestProblems: undefined,
 
-    fetchContests: async function () {
+    fetchContests: async function (userId = undefined) {
         try {
             set({ skeletonLoading: true });
-            const result = await axios.get("/contest/public");
-            set({ contests: result.data as FeedContests[] });
+            const result = await axios.get<FeedContests>(`/contest/feed/${userId}`);
+            set({ contests: result.data as FeedContests });
         } catch (error) {
             apiErrorHandler(error);
         } finally {
@@ -341,5 +343,14 @@ export const ContestStore = create<contestStoreType>(set => ({
                     return problem;
                 }) ?? [],
         }));
+    },
+
+    getLeaderBoard: async contestId => {
+        try {
+            const { data } = await axios.get<LeaderBoardType[]>(`/contest/live-contest/leader-board/${contestId}`);
+            return data;
+        } catch (error) {
+            apiErrorHandler(error);
+        }
     },
 }));

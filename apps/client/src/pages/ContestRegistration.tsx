@@ -177,7 +177,13 @@ const ContestRegistration = () => {
                                     <button
                                         type="button"
                                         className="mt-5 px-5 py-2 min-w-[130px] rounded-xl bg-green-600 text-white text-xl font-semibold"
-                                        onClick={() => navigate(`/live-contest/${contestId}`)}
+                                        onClick={() => {
+                                            if (!authStore.isLoggedIn) {
+                                                toast.error("Login to start the contest");
+                                                return;
+                                            }
+                                            navigate(`/live-contest/${contestId}`)
+                                        }}
                                     >
                                         Start
                                     </button>

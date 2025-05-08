@@ -311,7 +311,11 @@ export async function signinUser(req: Request, res: Response) {
         }
 
         const passwordWithPepper = password + PEPPER;
-        //@ts-ignore
+        if(!user.password) {
+            return res.status(400).json({
+                message: "Please sign in with Google as you registered using Google",
+            });
+        }
         const isPasswordCorrect = await bcrypt.compare(passwordWithPepper, user.password);
         if (!isPasswordCorrect) {
             return res.status(400).json({

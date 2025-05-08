@@ -5,6 +5,7 @@ import { Header } from "../components/headers/hader";
 import { SideNavbar } from "../components/navbars/sideNavbar";
 import MainWrapper from "../components/wrappers/mainWrapper";
 import { ContestStore } from "../stores/contestStore";
+import { LuUser2 } from "react-icons/lu";
 
 export default function LiveContest() {
     const contestStore = ContestStore();
@@ -22,35 +23,61 @@ export default function LiveContest() {
     useEffect(() => {
         (async () => {
             const contestDetails = await contestStore.fetchLiveContestDetails(contestId || "");
-            setContestDetails(contestDetails);
-            setHasStarted(true);
 
             const currentTime = new Date();
             const contestEndTime = new Date(contestDetails?.endTime || "");
-            const hours = Math.floor((contestEndTime.getTime() - currentTime.getTime()) / (1000 * 60 * 60)) % 24;
-            const minutes = Math.floor((contestEndTime.getTime() - currentTime.getTime()) / (1000 * 60)) % 60;
-            const seconds = Math.floor((contestEndTime.getTime() - currentTime.getTime()) / 1000) % 60;
-            setTimer({
-                hours,
-                minutes,
-                seconds,
-                miliseconds: 0,
-            });
+            const timeDiff = contestEndTime.getTime() - currentTime.getTime();
+
+            if (timeDiff <= 0) {
+                setTimer({
+                    hours: 0,
+                    minutes: 0,
+                    seconds: 0,
+                    miliseconds: 0,
+                });
+            } else {
+                const hours = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60)) % 24);
+                const minutes = Math.floor((timeDiff / (1000 * 60)) % 60);
+                const seconds = Math.floor((timeDiff / 1000) % 60);
+                setTimer({
+                    hours,
+                    minutes,
+                    seconds,
+                    miliseconds: 0,
+                });
+            }
+
+            setContestDetails(contestDetails);
+            setHasStarted(true);
         })();
+    }, [contestId]);
+
+    useEffect(() => {
+        async function updateLeaderboard() {
+            const leaderBoard = await contestStore.getLeaderBoard(contestId || "");
+            if (!leaderBoard) return;
+            setContestDetails(prevDetails => (prevDetails ? { ...prevDetails, leaderBoard } : undefined));
+        }
+
+        const interval = setInterval(updateLeaderboard, 5000);
+
+        return () => clearInterval(interval);
     }, []);
 
     useEffect(() => {
         const interval = setInterval(() => {
             const { miliseconds, seconds, minutes, hours } = timer;
 
+            if (hours <= 0 && minutes <= 0 && seconds <= 0 && miliseconds <= 0) {
+                clearInterval(interval);
+                return;
+            }
+
             if (miliseconds === 0) {
                 if (seconds === 0) {
                     if (minutes === 0) {
-                        if (hours === 0) {
-                            clearInterval(interval);
-
+                        if (hours > 0) {
                             setTimer({
-                                ...timer,
                                 hours: hours - 1,
                                 minutes: 59,
                                 seconds: 59,
@@ -120,8 +147,11 @@ export default function LiveContest() {
                         </div>
 
                         <div className="main-container flex lg:px-[100px]">
-                            <div className="questions flex-1 flex flex-col items-center pr-[80px]">
-                                <h3 className="text-xl font-semibold w-full text-left mx-10 mt-6">Problems</h3>
+                            <div className="questions flex-1 flex flex-col items-center pr-[120px]">
+                                <div className="w-full flex justify-between items-center">
+                                    <h3 className="text-xl font-semibold text-left mt-6">Problems</h3>
+                                    <h3 className="w-[200px] mt-6 text-lg whitespace-pre text-right">{`Your Score  ${contestDetails.yourScore}`}</h3>
+                                </div>
 
                                 <table className="w-full max-w-[800px] border-separate border-spacing-y-3">
                                     <thead>
@@ -138,14 +168,12 @@ export default function LiveContest() {
                                                 key={index}
                                                 className={`h-10 backdrop:blur-md ${index % 2 ? "bg-lightTableRow2 dark:bg-darkTableRow2" : "bg-lightTableRow1 dark:bg-darkTableRow1"} rounded-lg cursor-pointer`}
                                                 onClick={() => {
-                                                    console.log(contestId);
                                                     navigate(
                                                         `/live-contest/${contestId}/solve-problem/${problem.contestProblemId}/${contestDetails.participantId}/Problem/Code`,
                                                     );
                                                 }}
                                             >
                                                 <td className="rounded-l-lg text-center">{index + 1}</td>
-                                                {/* // todo figure out this, is probblem solved or not thing */}
                                                 <td className="text-center">{problem.isSolved ? "✓" : "-"}</td>
                                                 <td>{problem.title}</td>
                                                 <td className="rounded-r-lg text-center">{problem.points}</td>
@@ -154,8 +182,42 @@ export default function LiveContest() {
                                     </tbody>
                                 </table>
                             </div>
-                            <div className="leaderbord w-[450px] flex justify-center ">
-                                <h3 className="text-xl font-semibold w-full text-left mt-6">Leader Bord</h3>
+                            <div className="leaderbord w-[450px] flex flex-col">
+                                <h3 className="text-xl font-semibold w-full text-left mt-6">Leader Board</h3>
+                                <table className="w-full border-separate border-spacing-y-3">
+                                    <thead>
+                                        <tr className="h-10 backdrop:blur-md rounded-lg font-semibold">
+                                            <th className="font-semibold w-[20%]">Rank</th>
+                                            <th className="font-semibold w-[30%]">Score</th>
+                                            <th className="font-semibold w-[50%]">Participant</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {contestDetails?.leaderBoard.map((participant, index) => (
+                                            <tr key={index}>
+                                                <td className="text-center mb-3">{participant.score === 0 ? "-" : index + 1}</td>
+                                                <td className="text-center mb-3">{participant.score}</td>
+                                                <td
+                                                    className="text-center flex justify-center items-center gap-2 hover:cursor-pointer"
+                                                    onClick={() => window.open(`/profile/${participant.userId}`, "_blank")}
+                                                >
+                                                    <span className="Profile h-7 w-7 p-0 rounded-full aspect-square flex items-center justify-center overflow-hidden border border-light300 dark:border-dark300 text-xl">
+                                                        {!participant.avatar && !participant?.profileImg && <LuUser2 />}
+
+                                                        {(participant.profileImg || participant.avatar) && (
+                                                            <img
+                                                                src={participant.profileImg || participant.avatar}
+                                                                alt="profile image"
+                                                                className="w-full h-full object-cover aspect-square"
+                                                            />
+                                                        )}
+                                                    </span>
+                                                    <span>{participant.userName}</span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -164,5 +226,3 @@ export default function LiveContest() {
         </div>
     );
 }
-
-const date = new Date().toISOString();

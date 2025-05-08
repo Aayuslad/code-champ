@@ -54,15 +54,16 @@ export const createContest = async (req: Request, res: Response) => {
         });
     }
 };
+
 // get public contests
-export const getPublicContests = async (req: Request, res: Response) => {
+export const getFeedContests = async (req: Request, res: Response) => {
+    const userId = req.params.userId;
+
     try {
-        const contests = await prisma.contest.findMany({
+        const upcomming = await prisma.contest.findMany({
             where: {
                 visibility: "Public",
-                status: {
-                    in: ["Scheduled", "Ongoing"],
-                },
+                status: "Scheduled",
             },
             select: {
                 id: true,
@@ -73,7 +74,82 @@ export const getPublicContests = async (req: Request, res: Response) => {
             },
         });
 
-        return res.status(200).json(contests);
+        const live = await prisma.contest.findMany({
+            where: {
+                visibility: "Public",
+                status: "Ongoing",
+            },
+            select: {
+                id: true,
+                title: true,
+                status: true,
+                startTime: true,
+                endTime: true,
+            },
+        });
+
+        const completed = await prisma.contest.findMany({
+            where: {
+                visibility: "Public",
+                status: "Completed",
+            },
+            select: {
+                id: true,
+                title: true,
+                status: true,
+                startTime: true,
+                endTime: true,
+            },
+        });
+
+        let completedByYou, registerd;
+        if (userId) {
+            completedByYou = await prisma.contest.findMany({
+                where: {
+                    participants: {
+                        some: {
+                            userId,
+                        },
+                    },
+                    status: "Completed",
+                },
+                select: {
+                    id: true,
+                    title: true,
+                    status: true,
+                    startTime: true,
+                    endTime: true,
+                },
+            });
+
+            registerd = await prisma.contest.findMany({
+                where: {
+                    participants: {
+                        some: {
+                            userId,
+                        },
+                    },
+                    status: {
+                        in: ["Ongoing", "Scheduled"],
+                    },
+                },
+                select: {
+                    id: true,
+                    title: true,
+                    status: true,
+                    startTime: true,
+                    endTime: true,
+                },
+            });
+        }
+
+        return res.status(200).json({
+            upcomming,
+            live,
+            registerd,
+            completed,
+            completedByYou,
+        });
     } catch (err) {
         console.log(err);
         return res.status(500).json({
@@ -186,6 +262,7 @@ export const getLiveContestDetails = async (req: Request, res: Response) => {
                 userId: req.user?.id,
             },
         });
+        
         if (!isParticipant) {
             return res.status(400).json({ message: "You haven't registerd" });
         }
@@ -223,14 +300,16 @@ export const getLiveContestDetails = async (req: Request, res: Response) => {
                                 userName: true,
                             },
                         },
+                        score: true,
                     },
                 },
             },
         });
 
-        const flatenedContest = {
+        const { participants, ...flatenedContest } = {
             ...liveContest,
             participantId: isParticipant?.id,
+            yourScore: isParticipant?.score,
             problems: liveContest?.problems
                 ? await Promise.all(
                       liveContest.problems.map(async problem => {
@@ -253,16 +332,17 @@ export const getLiveContestDetails = async (req: Request, res: Response) => {
                       }),
                   )
                 : [],
-            participants:
+            leaderBoard:
                 liveContest?.participants?.map(participant => {
                     return {
-                        ...participant.user,
+                        userId: participant.user.id,
+                        userName: participant.user.userName || "",
+                        profileImg: participant.user.profileImg || "",
                         avatar: participant.user.avatar || "",
+                        score: participant.score,
                     };
                 }) || [],
         };
-
-        console.log(flatenedContest);
 
         flatenedContest.problems?.forEach(problem => {
             if ("problem" in problem) {
@@ -271,6 +351,47 @@ export const getLiveContestDetails = async (req: Request, res: Response) => {
         });
 
         return res.status(200).json(flatenedContest);
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+};
+
+export const getLeaderBard = async (req: Request, res: Response) => {
+    const { contestId } = req.params;
+
+    try {
+        const leaderBoard = await prisma.contestParticipant.findMany({
+            where: {
+                contestId,
+            },
+            select: {
+                user: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        avatar: true,
+                        profileImg: true,
+                    },
+                },
+                score: true,
+            },
+            orderBy: {
+                score: "desc",
+            },
+        });
+
+        const normalizedLeaderBoard = leaderBoard.map(entry => ({
+            userId: entry.user.id,
+            userName: entry.user.userName,
+            profileImg: entry.user.profileImg,
+            avatar: entry.user.avatar,
+            score: entry.score,
+        }));
+
+        return res.status(200).json(normalizedLeaderBoard);
     } catch (err) {
         console.log(err);
         return res.status(500).json({

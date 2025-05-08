@@ -10,14 +10,12 @@ import { SideNavbar } from "../components/navbars/sideNavbar";
 import MainWrapper from "../components/wrappers/mainWrapper";
 import { idToLanguageMappings } from "../config/languageIdMppings";
 import { formatDate } from "../helper/formatDate";
-import { AuthStore } from "../stores/authStore";
 import { ContestStore } from "../stores/contestStore";
 import { ProblemStore } from "../stores/problemStore";
 
 export default function SolveContestProblem() {
     // const problemStore = ProblemStore();
     const contestStore = ContestStore();
-    const authStore = AuthStore();
     const navigate = useNavigate();
     const { contestId, contestProblemId, participantId, nav1, nav2 } = useParams<{
         contestProblemId: string;
@@ -81,8 +79,6 @@ export default function SolveContestProblem() {
                 break;
         }
     }, [nav2]);
-
-    console.log(contestStore.onGoingContestProblems);
 
     const problem = contestStore.onGoingContestProblems?.find(problem => problem.contestProblemId === contestProblemId);
 

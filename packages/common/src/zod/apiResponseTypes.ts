@@ -184,6 +184,14 @@ export type ProblemTypeForContribution = {
 // ########## Contest controller responses #########
 
 export type FeedContests = {
+    upcomming: FeedContest[];
+    live: FeedContest[];
+    registerd: FeedContest[];
+    completed: FeedContest[];
+    completedByYou: FeedContest[];
+};
+
+export type FeedContest = {
     id: string;
     title: string;
     status: "Scheduled" | "Ongoing" | "Completed";
@@ -213,6 +221,7 @@ export type LiveContestDetails = {
     title: string;
     startTime: string;
     endTime: string;
+    yourScore: number;
     problems: {
         contestProblemId: string;
         problemId: string;
@@ -221,12 +230,15 @@ export type LiveContestDetails = {
         title: string;
         isSolved: boolean;
     }[];
-    participants: {
-        id: string;
-        profileImg: string;
-        avatar: string;
-        userName: string;
-    }[];
+    leaderBoard: LeaderBoardType[];
+};
+
+export type LeaderBoardType = {
+    userId: string;
+    userName: string;
+    profileImg: string;
+    avatar: string;
+    score: number;
 };
 
 // enums

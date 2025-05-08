@@ -1,15 +1,14 @@
 import { Editor } from "@monaco-editor/react";
-import CustomDropdown2 from "./inputs/CustomDropDown2";
-import { ProblemStore } from "../stores/problemStore";
-import { useEffect, useState } from "react";
-import { idToLanguageMappings, languageToIdMppings } from "../config/languageIdMppings";
 import { BoilerPlateCode } from "@repo/common/zod";
-import { UiStore } from "../stores/uiStore";
-import useDebounce from "../hooks/useDebounce";
-import { FaArrowRotateLeft } from "react-icons/fa6";
-import { AuthStore } from "../stores/authStore";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { FaArrowRotateLeft } from "react-icons/fa6";
+import { idToLanguageMappings, languageToIdMppings } from "../config/languageIdMppings";
+import useDebounce from "../hooks/useDebounce";
+import { AuthStore } from "../stores/authStore";
 import { ContestStore } from "../stores/contestStore";
+import { UiStore } from "../stores/uiStore";
+import CustomDropdown2 from "./inputs/CustomDropDown2";
 
 type Prop = {
     contestProblemId: string;
@@ -19,13 +18,7 @@ type Prop = {
     navToTestResult: () => void;
 };
 
-export default function ContestCodeEditor({
-    contestProblemId,
-    problemId,
-    navToTestResult,
-    navToSubmissionResult,
-    participantId,
-}: Prop) {
+export default function ContestCodeEditor({ contestProblemId, navToTestResult, navToSubmissionResult, participantId }: Prop) {
     // const problemStore = ProblemStore();
     const contestStore = ContestStore();
     const authStore = AuthStore();

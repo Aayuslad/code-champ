@@ -4,13 +4,15 @@ import { Header } from "../components/headers/hader";
 import { SideNavbar } from "../components/navbars/sideNavbar";
 import MainWrapper from "../components/wrappers/mainWrapper";
 import { ContestStore } from "../stores/contestStore";
+import { AuthStore } from "../stores/authStore";
 
 export default function ContestFeed() {
     const contestStore = ContestStore();
     const navigate = useNavigate();
+    const authStore = AuthStore();
 
     useEffect(() => {
-        contestStore.fetchContests();
+        contestStore.fetchContests(authStore.userProfile?.id);
     }, []);
 
     return (
@@ -34,29 +36,144 @@ export default function ContestFeed() {
                     </div>
                 </div>
 
+                {contestStore.contests?.registerd && contestStore.contests.registerd.length > 0 && (
+                    <div className="public-contests px-10 py-8">
+                        <h2 className="text-xl font-semibold">Contest you have registerd for</h2>
+
+                        <div className="flex my-3 gap-2">
+                            {contestStore.contests.registerd.map(contest => {
+                                return (
+                                    <div
+                                        key={contest.id}
+                                        className="px-6 py-4 border-2 border-light400 dark:border-dark300 rounded-lg min-w-[320px] max-w-[400px]"
+                                    >
+                                        <h3 className="font-semibold text-lg">{contest.title}</h3>
+                                        <p>starts on {new Date(contest.startTime).toDateString()}</p>{" "}
+                                        <button
+                                            type="button"
+                                            className="bg-light400 dark:bg-dark300 px-3 py-1 mt-6 rounded-lg block ml-auto font-semibold"
+                                            onClick={() => navigate(`/contest-registration/${contest.id}`)}
+                                        >
+                                            Explore More
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {contestStore.contests?.live && contestStore.contests.live.length > 0 && (
+                    <div className="public-contests px-10 py-8">
+                        <h2 className="text-xl font-semibold">Live Contests</h2>
+
+                        <div className="flex my-3 gap-2">
+                            {contestStore.contests.live.map(contest => {
+                                return (
+                                    <div
+                                        key={contest.id}
+                                        className="px-6 py-4 border-2 border-light400 dark:border-dark300 rounded-lg min-w-[320px] max-w-[400px]"
+                                    >
+                                        <h3 className="font-semibold text-lg">{contest.title}</h3>
+                                        <p>starts on {new Date(contest.startTime).toDateString()}</p>{" "}
+                                        <button
+                                            type="button"
+                                            className="bg-light400 dark:bg-dark300 px-3 py-1 mt-6 rounded-lg block ml-auto font-semibold"
+                                            onClick={() => navigate(`/contest-registration/${contest.id}`)}
+                                        >
+                                            Explore More
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
                 <div className="public-contests px-10 py-8">
                     <h2 className="text-xl font-semibold">Upcoming Public Contests</h2>
 
                     <div className="flex my-3 gap-2">
-                        {contestStore.contests &&
-                            contestStore.contests.map(contest => (
-                                <div
-                                    key={contest.id}
-                                    className="px-6 py-4 border-2 border-light400 dark:border-dark300 rounded-lg min-w-[320px] max-w-[400px]"
-                                >
-                                    <h3 className="font-semibold text-lg">{contest.title}</h3>
-                                    <p>starts on {new Date(contest.startTime).toDateString()}</p>{" "}
-                                    <button
-                                        type="button"
-                                        className="bg-light400 dark:bg-dark300 px-3 py-1 mt-6 rounded-lg block ml-auto font-semibold"
-                                        onClick={() => navigate(`/contest-registration/${contest.id}`)}
+                        {contestStore.contests?.upcomming && contestStore.contests.upcomming.length ? (
+                            contestStore.contests.upcomming.map(contest => {
+                                return (
+                                    <div
+                                        key={contest.id}
+                                        className="px-6 py-4 border-2 border-light400 dark:border-dark300 rounded-lg min-w-[320px] max-w-[400px]"
                                     >
-                                        Explore More
-                                    </button>
-                                </div>
-                            ))}
+                                        <h3 className="font-semibold text-lg">{contest.title}</h3>
+                                        <p>starts on {new Date(contest.startTime).toDateString()}</p>{" "}
+                                        <button
+                                            type="button"
+                                            className="bg-light400 dark:bg-dark300 px-3 py-1 mt-6 rounded-lg block ml-auto font-semibold"
+                                            onClick={() => navigate(`/contest-registration/${contest.id}`)}
+                                        >
+                                            Explore More
+                                        </button>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <p className="text-gray-500 h-[170px] w-[700px] text-lg flex items-center justify-center">
+                                No upcoming contests available at the moment.
+                            </p>
+                        )}
                     </div>
                 </div>
+
+                {contestStore.contests?.completedByYou && contestStore.contests.completedByYou.length > 0 && (
+                    <div className="public-contests px-10 py-8">
+                        <h2 className="text-xl font-semibold">Contests Completed by You</h2>
+
+                        <div className="flex my-3 gap-2">
+                            {contestStore.contests.completedByYou.map(contest => {
+                                return (
+                                    <div
+                                        key={contest.id}
+                                        className="px-6 py-4 border-2 border-light400 dark:border-dark300 rounded-lg min-w-[320px] max-w-[400px]"
+                                    >
+                                        <h3 className="font-semibold text-lg">{contest.title}</h3>
+                                        <p>completed on {new Date(contest.endTime).toDateString()}</p>{" "}
+                                        <button
+                                            type="button"
+                                            className="bg-light400 dark:bg-dark300 px-3 py-1 mt-6 rounded-lg block ml-auto font-semibold"
+                                            onClick={() => navigate(`/contest-registration/${contest.id}`)}
+                                        >
+                                            Explore More
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {contestStore.contests?.completed && contestStore.contests.completed.length > 0 && (
+                    <div className="public-contests px-10 py-8">
+                        <h2 className="text-xl font-semibold">Completed Public Contests</h2>
+
+                        <div className="flex my-3 gap-2">
+                            {contestStore.contests.completed.map(contest => {
+                                return (
+                                    <div
+                                        key={contest.id}
+                                        className="px-6 py-4 border-2 border-light400 dark:border-dark300 rounded-lg min-w-[320px] max-w-[400px]"
+                                    >
+                                        <h3 className="font-semibold text-lg">{contest.title}</h3>
+                                        <p>completed on {new Date(contest.endTime).toDateString()}</p>{" "}
+                                        <button
+                                            type="button"
+                                            className="bg-light400 dark:bg-dark300 px-3 py-1 mt-6 rounded-lg block ml-auto font-semibold"
+                                            onClick={() => navigate(`/contest-registration/${contest.id}`)}
+                                        >
+                                            Explore More
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </MainWrapper>
         </div>
     );
