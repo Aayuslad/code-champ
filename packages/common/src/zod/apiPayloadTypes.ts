@@ -86,6 +86,7 @@ export const contributeProblemSchema = zod.object({
     hints: zod.array(zod.string()),
     boilerplateCode: zod.string(),
     submissionCode: zod.string(),
+    visibility: zod.enum(["Public", "Private"]),
 });
 export type ContributeProblemSchemaType = zod.infer<typeof contributeProblemSchema>;
 
@@ -135,6 +136,7 @@ export const createContestSchma = zod.object({
     description: zod.string(),
     startTime: zod.string(),
     endTime: zod.string(),
+    durationMs: zod.number(),
     visibility: ContestVisibility,
     problems: zod.array(
         zod.object({
@@ -144,5 +146,9 @@ export const createContestSchma = zod.object({
         }),
     ),
     points: zod.number(),
+    bestOf: zod.number().default(0).optional(), // Best N of total questions for scoring
 });
 
+export const registerUserForContestSchema = zod.object({
+    enrollmentNum: zod.number(),
+});

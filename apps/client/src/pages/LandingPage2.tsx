@@ -13,7 +13,7 @@ import {
     FaUserFriends,
     FaUserGraduate,
 } from "react-icons/fa";
-import { LuUser2 } from "react-icons/lu";
+import { LuUser } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import Founder from "../assets/Founder.jpg";
 import UserAvatar from "../assets/img_avatar.png";
@@ -56,7 +56,7 @@ const CodeChampLandingPage: React.FC = () => {
             <div className="flex items-center mt-auto">
                 {/* <img src={image} alt={name} className="w-12 h-12 rounded-full mr-4" /> */}
                 <div className="Profile mr-4 h-9 w-9 p-0 rounded-full aspect-square flex items-center justify-center overflow-hidden cursor-pointer border border-dark100 dark:border-light200 text-xl">
-                    <LuUser2 />
+                    <LuUser />
                 </div>
 
                 <div>

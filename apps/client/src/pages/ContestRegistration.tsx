@@ -1,7 +1,7 @@
 import { RegisterContestDetails } from "@repo/common/zod";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { LuUser2 } from "react-icons/lu";
+import { LuUser } from "react-icons/lu";
 import { useNavigate, useParams } from "react-router-dom";
 import { Header } from "../components/headers/hader";
 import { SideNavbar } from "../components/navbars/sideNavbar";
@@ -12,6 +12,7 @@ import { ContestStore } from "../stores/contestStore";
 const ContestRegistration = () => {
     const { contestId } = useParams<{ contestId: string }>();
     const [contestDetails, setContestDetails] = useState<RegisterContestDetails | undefined>();
+    const [enrollmentNum, setEnrollmentNum] = useState<string>();
     const contestStore = ContestStore();
     const authStore = AuthStore();
     const navigate = useNavigate();
@@ -45,8 +46,8 @@ const ContestRegistration = () => {
                     seconds,
                     miliseconds: 0,
                 });
+                setHasStarted(true);
             }
-            setHasStarted(true);
             setContestDetails(contestDetails);
         })();
     }, []);
@@ -56,7 +57,10 @@ const ContestRegistration = () => {
             const { miliseconds, seconds, minutes, hours, days } = timer;
 
             if (hasStarted && days === 0 && hours === 0 && minutes === 0 && seconds === 0 && miliseconds === 1) {
-                window.location.reload();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+
                 return;
             }
 
@@ -112,11 +116,13 @@ const ContestRegistration = () => {
 
     async function handleRegister() {
         if (!authStore.isLoggedIn) {
-            toast.error("Login to register for the contest");
+            toast.error("Login to start the contest");
             return;
         }
 
-        await contestStore.registerForContest(contestId || "");
+        await contestStore.registerForContest(contestId || "", Number(enrollmentNum));
+
+        navigate(`/live-contest/${contestId}`);
     }
 
     return (
@@ -128,14 +134,30 @@ const ContestRegistration = () => {
 
                 {contestDetails && (
                     <div className="">
-                        <div className="pr-14 banner w-full h-[350px] text-center flex flex-col gap-4 items-center justify-center bg-slate-200 dark:bg-slate-900">
+                        <div className="pr-14 banner w-full h-[360px] text-center flex flex-col gap-4 items-center justify-center bg-slate-200 dark:bg-slate-900">
                             <h1 className="text-5xl font-semibold">{contestDetails.title}</h1>
                             <h3 className="text-xl space-x-3">
+                                <span>You can attempt this contest between</span>{" "}
                                 <span className="font-medium">{new Date(contestDetails.startTime).toLocaleString()}</span>{" "}
-                                <span>To</span>
+                                <span>and</span>{" "}
                                 <span className="font-medium">{new Date(contestDetails.endTime).toLocaleString()}</span>
                             </h3>
-                            <h3 className="text-lg space-x-4 flex">
+                            <h3 className="text-lg font-medium">
+                                Contest Duration:{" "}
+                                {Math.floor(contestDetails.durationMs / (1000 * 60 * 60)) > 0 && (
+                                    <span>
+                                        {Math.floor(contestDetails.durationMs / (1000 * 60 * 60))} hour
+                                        {Math.floor(contestDetails.durationMs / (1000 * 60 * 60)) !== 1 && "s"}
+                                    </span>
+                                )}{" "}
+                                {Math.floor((contestDetails.durationMs % (1000 * 60 * 60)) / (1000 * 60)) > 0 && (
+                                    <span>
+                                        {Math.floor((contestDetails.durationMs % (1000 * 60 * 60)) / (1000 * 60))} minute
+                                        {Math.floor((contestDetails.durationMs % (1000 * 60 * 60)) / (1000 * 60)) !== 1 && "s"}
+                                    </span>
+                                )}
+                            </h3>
+                            {/* <h3 className="text-lg space-x-4 flex">
                                 <span>Created by</span>
                                 <div
                                     className="flex items-center justify-center gap-1 hover:underline hover:cursor-pointer"
@@ -143,7 +165,7 @@ const ContestRegistration = () => {
                                 >
                                     <div className="w-6 h-6 border aspect-square rounded-full overflow-hidden">
                                         {!contestDetails.createdBy?.avatar && !contestDetails.createdBy?.profileImg && (
-                                            <LuUser2 />
+                                            <LuUser />
                                         )}
 
                                         {(contestDetails.createdBy?.profileImg || contestDetails.createdBy?.avatar) && (
@@ -156,44 +178,98 @@ const ContestRegistration = () => {
                                     </div>
                                     <span>{contestDetails.createdBy.userName}</span>
                                 </div>
-                            </h3>
+                            </h3> */}
 
                             <div className="flex space-x-10">
-                                {!contestDetails.isRegistered ? (
-                                    <button
-                                        type="button"
-                                        className="mt-5 px-5 py-2 min-w-[130px] rounded-xl bg-red-600 text-white text-xl font-semibold hover:cursor-pointer"
-                                        onClick={handleRegister}
-                                    >
-                                        Register
-                                    </button>
-                                ) : (
-                                    <div className="mt-5 px-5 py-2 min-w-[130px] rounded-xl border border-red-600 text-white text-xl font-semibold hover:cursor-pointer">
-                                        Already Registerd
-                                    </div>
-                                )}
-
-                                {contestDetails.status == "Ongoing" && (
-                                    <button
-                                        type="button"
-                                        className="mt-5 px-5 py-2 min-w-[130px] rounded-xl bg-green-600 text-white text-xl font-semibold"
-                                        onClick={() => {
-                                            if (!authStore.isLoggedIn) {
-                                                toast.error("Login to start the contest");
-                                                return;
-                                            }
-                                            navigate(`/live-contest/${contestId}`)
-                                        }}
-                                    >
-                                        Start
-                                    </button>
-                                )}
+                                {contestDetails.status == "Ongoing" &&
+                                    (!contestDetails.isRegistered ? (
+                                        <form
+                                            className="flex justify-center items-center space-x-6"
+                                            onSubmit={e => {
+                                                e.preventDefault();
+                                                // Validate enrollment number: exactly 12 digits
+                                                const regex = /^\d{12}$/;
+                                                if (!regex.test(enrollmentNum || "")) {
+                                                    toast.error(
+                                                        "Enrollment number must be 12 digits",
+                                                    );
+                                                    return;
+                                                }
+                                                handleRegister();
+                                            }}
+                                        >
+                                            <input
+                                                type="text"
+                                                required
+                                                inputMode="numeric"
+                                                placeholder="Enter 12 digit Enrollment Number"
+                                                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white"
+                                                value={enrollmentNum}
+                                                // maxLength={12}
+                                                // pattern="\d{12}"
+                                                onChange={e => setEnrollmentNum(e.target.value.replace(/\D/g, "").slice(0, 12))}
+                                            />
+                                            <button
+                                                type="submit"
+                                                className=" px-5 py-2 min-w-[130px] rounded-xl bg-red-600 text-white text-xl font-semibold hover:cursor-pointer"
+                                            >
+                                                Start
+                                            </button>
+                                        </form>
+                                    ) : (
+                                        <div className="flex items-center justify-center space-x-6">
+                                            {contestDetails.joinedAt &&
+                                                (new Date(
+                                                    new Date(contestDetails.joinedAt).getTime() + contestDetails.durationMs,
+                                                ) > new Date() ? (
+                                                    <>
+                                                        <div className="text-lg">You have already started</div>
+                                                        <button
+                                                            type="button"
+                                                            className="px-5 py-2 min-w-[130px] rounded-xl bg-green-600 text-white text-xl font-semibold hover:cursor-pointer hover:bg-green-700"
+                                                            onClick={() => {
+                                                                if (!authStore.isLoggedIn) {
+                                                                    toast.error("Login to Resume the contest");
+                                                                    return;
+                                                                }
+                                                                navigate(`/live-contest/${contestId}`);
+                                                            }}
+                                                        >
+                                                            Resume
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="text-lg">You have completed the contest</div>
+                                                        <button
+                                                            type="button"
+                                                            className="px-5 py-2 min-w-[130px] rounded-xl bg-green-600 text-white text-xl font-semibold hover:cursor-pointer hover:bg-green-700"
+                                                            onClick={() => {
+                                                                if (!authStore.isLoggedIn) {
+                                                                    toast.error("Login to vivew the contest");
+                                                                    return;
+                                                                }
+                                                                navigate(`/live-contest/${contestId}`);
+                                                            }}
+                                                        >
+                                                            View
+                                                        </button>
+                                                    </>
+                                                ))}
+                                        </div>
+                                    ))}
                             </div>
                         </div>
 
                         <div className="pr-14 contest-starts-in py-20 flex flex-col gap-8 items-center justify-center">
                             <h2 className="text-3xl font-semibold mb-10">
-                                {contestDetails.status === "Scheduled" ? "Contest Starts In" : "Contest Started"}
+                                {contestDetails.joinedAt &&
+                                new Date(new Date(contestDetails.joinedAt as Date).getTime() + contestDetails.durationMs) <
+                                    new Date() ? (
+                                    <span>Contest Completed</span>
+                                ) : (
+                                    <span>{contestDetails.status === "Scheduled" ? "Contest Starts In" : "Contest Started"}</span>
+                                )}
                             </h2>
 
                             <div className="flex justify-center items-center">
@@ -259,7 +335,7 @@ const ContestRegistration = () => {
                     </div>
                 )}
 
-                {!contestDetails && contestStore.skeletonLoading && <div>Loading...</div>}
+                {!contestDetails && contestStore.skeletonLoading && <div className="w-full min-h-screen">Loading...</div>}
             </MainWrapper>
         </div>
     );

@@ -43,6 +43,7 @@ export default function Contribute() {
                 description: "",
             },
         },
+        visibility: "Public",
         boilerplateCode: "",
         submissionCode: "",
         testCases: [],

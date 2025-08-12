@@ -4,7 +4,7 @@ import { SideNavbar } from "../components/navbars/sideNavbar";
 import MainWrapper from "../components/wrappers/mainWrapper";
 import { useEffect, useState } from "react";
 import { AuthStore } from "../stores/authStore";
-import { LuUser2 } from "react-icons/lu";
+import { LuUser } from "react-icons/lu";
 import { WholeUserProfile } from "@repo/common/zod";
 import { HalfCircleGraph } from "../components/HalfCircleGraph";
 import { idToLanguageMappings } from "../config/languageIdMppings";
@@ -49,7 +49,7 @@ export default function Profile() {
                                     <div></div>
 
                                     <div className="img border-4 border-gray-300 dark:border-gray-400 aspect-square h-[170px] w-[170px] rounded-full flex items-center justify-center text-[120px] text-gray-400 dark:text-gray-500">
-                                        {!userProfile.profileImg && !userProfile.avatar && <LuUser2 />}
+                                        {!userProfile.profileImg && !userProfile.avatar && <LuUser />}
 
                                         {(userProfile.profileImg || userProfile.avatar) && (
                                             <img

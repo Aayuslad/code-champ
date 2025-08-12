@@ -1,5 +1,6 @@
 import {
     CheckBatchSubmissionType,
+    CheckContestBatchSubmissionType,
     ContestProblemType,
     FeedContests,
     LeaderBoardType,
@@ -23,10 +24,11 @@ interface contestStoreType {
     submitButtonLoading: boolean;
     contests: FeedContests | undefined;
     onGoingContestProblems: ContestProblemType[] | undefined;
+    liveContestDetails: LiveContestDetails | undefined;
 
     fetchContests: (userId: string | undefined) => Promise<void>;
     fetchRegisterContestDetails: (contestId: string, userId: string | undefined) => Promise<RegisterContestDetails | undefined>;
-    registerForContest: (contestId: string) => Promise<void>;
+    registerForContest: (contestId: string, enrollmentNum: number) => Promise<void>;
     fetchLiveContestDetails: (contestId: string) => Promise<LiveContestDetails | undefined>;
     getContestProblem: (contestProblemId: string, participantId: string) => Promise<void>;
     setOngoingContestProblem: (problem: ContestProblemType) => void;
@@ -54,7 +56,9 @@ interface contestStoreType {
     resetCode: (contestProblemId: string, language: string) => void;
     clearSubmissionResult: (contestProblemId: string) => void;
     clearTestResult: (contestProblemId: string) => void;
-    getLeaderBoard: (contestId: string) => Promise<LeaderBoardType[] | undefined>;
+    updateLeaderBoard: (contestId: string) => Promise<void>;
+    updateProblemAttemptStatus: (contestProblemId: string, status: "Not Attempted" | "Attempted" | "Accepted") => void;
+    calculateAndUpdatePoints: (problemId: string, passedTestCases?: number) => void;
 }
 
 export const ContestStore = create<contestStoreType>(set => ({
@@ -64,6 +68,7 @@ export const ContestStore = create<contestStoreType>(set => ({
     submitButtonLoading: false,
     contests: undefined,
     onGoingContestProblems: undefined,
+    liveContestDetails: undefined,
 
     fetchContests: async function (userId = undefined) {
         try {
@@ -90,10 +95,10 @@ export const ContestStore = create<contestStoreType>(set => ({
         }
     },
 
-    registerForContest: async function (contestId) {
+    registerForContest: async function (contestId, enrollmentNum) {
         try {
             set({ skeletonLoading: true });
-            await axios.post(`/contest/register/${contestId}`);
+            await axios.post(`/contest/register/${contestId}`, { enrollmentNum });
             toast.success("Registered for contest successfully");
         } catch (error) {
             apiErrorHandler(error);
@@ -106,6 +111,7 @@ export const ContestStore = create<contestStoreType>(set => ({
         try {
             set({ skeletonLoading: true });
             const result = await axios.get<LiveContestDetails>(`/contest/live-contest/${contestId}`);
+            set({ liveContestDetails: result.data });
             return result.data;
         } catch (error) {
             apiErrorHandler(error);
@@ -227,10 +233,12 @@ export const ContestStore = create<contestStoreType>(set => ({
     },
 
     checkSubmissionResult: async (taskId, contestProblemId) => {
+        const contestStore = ContestStore.getState();
+
         try {
             set({ skeletonLoading: true });
             while (1) {
-                const { data }: { data: CheckBatchSubmissionType } = await axios.get(
+                const { data }: { data: CheckContestBatchSubmissionType } = await axios.get(
                     `/contest-problem/check/${taskId}/${contestProblemId}`,
                 );
                 set(state => ({
@@ -245,10 +253,28 @@ export const ContestStore = create<contestStoreType>(set => ({
                             return problem;
                         }) ?? [],
                 }));
+
+                if (data.status === "accepted") {
+                    contestStore.updateProblemAttemptStatus(contestProblemId, "Accepted");
+                    contestStore.calculateAndUpdatePoints(data.contestProblemId, data.passedTestCases);
+                    toast.success("Submission Accepted");
+                }
+
+                if (
+                    data.status === "executing" ||
+                    data.status === "rejected" ||
+                    data.status === "run time error" ||
+                    data.status === "compilation error" ||
+                    data.status === "time limit exceeded"
+                ) {
+                    contestStore.updateProblemAttemptStatus(contestProblemId, "Attempted");
+                    contestStore.calculateAndUpdatePoints(data.contestProblemId, data.passedTestCases);
+                }
+
                 if (data.status !== "executing" && data.status !== "pending" && data.status !== "notFound") {
                     break;
                 }
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise(resolve => setTimeout(resolve, 300));
             }
         } catch (error) {
             apiErrorHandler(error);
@@ -345,12 +371,93 @@ export const ContestStore = create<contestStoreType>(set => ({
         }));
     },
 
-    getLeaderBoard: async contestId => {
+    updateLeaderBoard: async contestId => {
         try {
             const { data } = await axios.get<LeaderBoardType[]>(`/contest/live-contest/leader-board/${contestId}`);
-            return data;
+            set(state => ({
+                ...state,
+                liveContestDetails: state.liveContestDetails
+                    ? {
+                          ...state.liveContestDetails,
+                          leaderBoard: data,
+                      }
+                    : undefined,
+            }));
         } catch (error) {
             apiErrorHandler(error);
         }
+    },
+
+    updateProblemAttemptStatus: (contestProblemId, status) => {
+        set(state => ({
+            ...state,
+            liveContestDetails: state.liveContestDetails
+                ? {
+                      ...state.liveContestDetails,
+                      problems: state.liveContestDetails?.problems?.map(problem =>
+                          problem.contestProblemId === contestProblemId ? { ...problem, attemptState: status } : problem,
+                      ),
+                  }
+                : undefined,
+        }));
+    },
+
+    calculateAndUpdatePoints: (contestProblemId, passedTestCases = undefined) => {
+        console.log(
+            "Calculating and updating points for contestProblemId:",
+            contestProblemId,
+            "with passedTestCases:",
+            passedTestCases,
+        );
+
+        // update individual problem points
+        set(state => ({
+            ...state,
+            liveContestDetails: state.liveContestDetails
+                ? {
+                      ...state.liveContestDetails,
+                      problems: state.liveContestDetails?.problems?.map(problem =>
+                          problem.contestProblemId === contestProblemId
+                              ? {
+                                    ...problem,
+                                    scoredPoints:
+                                        Math.round(
+                                            problem.points *
+                                                ((passedTestCases ?? problem.testCasesCount) / problem.testCasesCount) *
+                                                100,
+                                        ) / 100,
+                                }
+                              : problem,
+                      ),
+                  }
+                : undefined,
+        }));
+
+        // update total scored points
+        set(state => ({
+            ...state,
+            liveContestDetails: state.liveContestDetails
+                ? {
+                      ...state.liveContestDetails,
+                      yourScore: (state => {
+                          const bestOf = state?.liveContestDetails?.bestOf;
+                          let totalScoredPoints = 0;
+                          if (bestOf && bestOf > 0) {
+                              totalScoredPoints =
+                                  state?.liveContestDetails?.problems
+                                      ?.sort((a, b) => b.scoredPoints - a.scoredPoints)
+                                      .slice(0, bestOf)
+                                      .reduce((acc, problem) => acc + problem.scoredPoints, 0) || 0;
+                          } else {
+                              totalScoredPoints =
+                                  state?.liveContestDetails?.problems?.reduce((acc, problem) => acc + problem.scoredPoints, 0) ||
+                                  0;
+                          }
+
+                          return totalScoredPoints || 0;
+                      })(state),
+                  }
+                : undefined,
+        }));
     },
 }));

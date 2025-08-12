@@ -1,6 +1,6 @@
 import { FiUser } from "react-icons/fi";
 import { GoDiscussionClosed, GoTrophy } from "react-icons/go";
-import { LuCode2 } from "react-icons/lu";
+import { LuCode } from "react-icons/lu";
 import { MdLogout } from "react-icons/md";
 import { RiApps2AddLine } from "react-icons/ri";
 import { Link } from "react-router-dom";
@@ -14,15 +14,15 @@ export const SideNavbar = () => {
 
     return (
         <aside
-            className={`SideNavbar fixed border-r-2 ${uiStore.sideBarToggle ? "w-48" : "w-16"} h-screen flex flex-col transition-[width] duration-300 bg-light200 dark:bg-dark200 border-light300 dark:border-dark300`}
+            className={`SideNavbar fixed border-r-2 ${uiStore.sideBarToggle ? "w-48" : "w-12"} h-screen flex flex-col transition-[width] duration-300 bg-light200 dark:bg-dark200 border-light300 dark:border-dark300`}
         >
-            <div className={`flex items-center h-14 px-3 ${uiStore.sideBarToggle ? "justify-end" : "justify-center"}`}>
+            <div className={`flex items-center h-14 px-1.5 ${uiStore.sideBarToggle ? "justify-end" : "justify-center"}`}>
                 <NavToggleButton />
             </div>
 
             <nav className="pt-4 h-full">
                 <ul
-                    className={`h-full flex pl-[20px] pr-4 flex-col ${uiStore.sideBarToggle ? "items-start" : "items-start"} text-xl gap-1`}
+                    className={`h-full flex pl-[11px] pr-4 flex-col ${uiStore.sideBarToggle ? "items-start" : "items-start"} text-xl gap-1`}
                 >
                     <li className="w-full">
                         <Link
@@ -44,7 +44,7 @@ export const SideNavbar = () => {
                     <li className="w-full">
                         <Link to="/problems" className="flex items-center gap-4 hover:underline" title="Problems">
                             <div className="text-2xl py-4">
-                                <LuCode2 />
+                                <LuCode />
                             </div>
                             <div
                                 className={`transition-opacity duration-300 cubic-bezier(0.860, 0.000, 0.070, 1.000) ${uiStore.sideBarToggle ? "opacity-100" : "opacity-0 hidden"}`}

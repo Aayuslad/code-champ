@@ -41,7 +41,7 @@ export type WholeUserProfile = {
 
 export type FeedProblemsType = {
     id: string;
-    problemNumber: number;
+    problemNumber: number | null;
     title: string;
     difficulty: DifficultyLevel;
     acceptanceRate: string;
@@ -51,7 +51,7 @@ export type FeedProblemsType = {
 
 export type ProblemType = {
     id: string;
-    problemNumber: number;
+    problemNumber: number | null;
     title: string;
     description: string;
     difficultyLevel: DifficultyLevel;
@@ -102,7 +102,7 @@ export type ContestProblemType = {
         languageId: number;
         solutionCode: string;
     }[];
-    submissionResult?: CheckBatchSubmissionType;
+    submissionResult?: CheckContestBatchSubmissionType;
     testResult?: CheckBatchSubmissionType;
 };
 
@@ -143,6 +143,36 @@ export type CheckBatchSubmissionType = {
     ];
 };
 
+export type CheckContestBatchSubmissionType = {
+    contestProblemId: string;
+    passedTestCases: number;
+    status?:
+
+        | "pending"
+        | "executing"
+        | "accepted"
+        | "notFound"
+        | "rejected"
+        | "run time error"
+        | "compilation error"
+        | "time limit exceeded";
+    compilationError?: string;
+    tasks?: [
+        {
+            id: string;
+            status: "error" | "success";
+            output: string;
+            accepted: boolean;
+            inputs: {
+                name: string;
+                value: string;
+            }[];
+            expectedOutput: string;
+            executionTime: number;
+        },
+    ];
+};
+
 export type OnGoingProblemType = {
     solutions: string;
 };
@@ -153,14 +183,14 @@ export type OnGoingContestProblemType = {
 
 export type ProbelmSearchResultType = {
     id: string;
-    problemNumber: number;
+    problemNumber: number | null;
     title: string;
     difficulty: DifficultyLevel;
 };
 
 export type ProblemTypeForContribution = {
     id: string;
-    problemNumber: number;
+    problemNumber: number | null;
     title: string;
     difficultyLevel: DifficultyLevel;
     description: string;
@@ -205,6 +235,7 @@ export type RegisterContestDetails = {
     status: "Scheduled" | "Ongoing" | "Completed";
     startTime: string;
     endTime: string;
+    durationMs: number;
     description: string;
     createdBy: {
         id: string;
@@ -213,22 +244,28 @@ export type RegisterContestDetails = {
         avatar: string;
     };
     isRegistered: boolean;
+    joinedAt?: Date | null;
 };
 
 export type LiveContestDetails = {
     id: string;
     participantId: string;
     title: string;
-    startTime: string;
-    endTime: string;
+    startTime: Date;
+    endTime: Date;
+    durationMs: number;
     yourScore: number;
+    joinedAt: Date;
+    bestOf: number | null;
     problems: {
         contestProblemId: string;
         problemId: string;
         points: number;
+        scoredPoints: number;
         order: number;
         title: string;
-        isSolved: boolean;
+        testCasesCount: number;
+        attemptState: "Not Attempted" | "Attempted" | "Accepted";
     }[];
     leaderBoard: LeaderBoardType[];
 };
@@ -239,6 +276,7 @@ export type LeaderBoardType = {
     profileImg: string;
     avatar: string;
     score: number;
+    enrollmentNum: string;
 };
 
 // enums

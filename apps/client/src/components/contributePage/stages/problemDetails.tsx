@@ -4,6 +4,7 @@ import { TopicDropDwon } from "../inputs/topicDropdown";
 import { DifficultyDropdown } from "../inputs/difficultyDropdown";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import { FaRegLightbulb } from "react-icons/fa6";
+import CustomDropDown from "../inputs/customDropDown";
 
 type Props = {
     form: ContributeProblemSchemaType;
@@ -92,6 +93,17 @@ export const ProblemDetails = ({ form, setForm }: Props) => {
                             options={TOIPC_TAGS}
                             selectedOptions={form.topicTags}
                             setSelectedOptions={newOptions => setForm(prev => ({ ...prev, topicTags: [...newOptions] }))}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-2 -z-100">
+                        <label className="font-semibold">Visibility *</label>
+                        <CustomDropDown
+                            options={["Private", "Public"]}
+                            selectedOption={form.visibility}
+                            setSelectedOption={(value: "Public" | "Private" | string) =>
+                                setForm(prev => ({ ...prev, visibility: value as "Public" | "Private" }))
+                            }
                         />
                     </div>
                 </div>

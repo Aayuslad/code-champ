@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "ContestParticipant" ALTER COLUMN "score" SET DEFAULT 0,
+ALTER COLUMN "score" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "ContestSubmission" ALTER COLUMN "points" SET DATA TYPE DOUBLE PRECISION;

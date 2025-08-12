@@ -37,10 +37,10 @@ export default function ContestFeed() {
                 </div>
 
                 {contestStore.contests?.registerd && contestStore.contests.registerd.length > 0 && (
-                    <div className="public-contests px-10 py-8">
+                    <div className="public-contests px-10 py-8 overflow-hidden scrollbar-hide">
                         <h2 className="text-xl font-semibold">Contest you have registerd for</h2>
 
-                        <div className="flex my-3 gap-2">
+                        <div className="flex my-3 gap-2 overflow-x-auto hide-scrollbar">
                             {contestStore.contests.registerd.map(contest => {
                                 return (
                                     <div

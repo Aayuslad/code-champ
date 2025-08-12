@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Contest" ADD COLUMN     "bestOf" INTEGER NOT NULL DEFAULT 0;

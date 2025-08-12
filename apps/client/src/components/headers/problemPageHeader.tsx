@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { AuthStore } from "../../stores/authStore";
 import { ThemeChanger } from "../themeChanger";
-import { LuUser2 } from "react-icons/lu";
+import { LuUser } from "react-icons/lu";
 import { IoChevronBackOutline } from "react-icons/io5";
 
 type props = {
@@ -53,7 +53,7 @@ export const PorblemPageHeader = ({ problemNumber, title }: props) => {
                     className="Profile mr-4 ml-4 h-8 w-8 p-0 rounded-full aspect-square flex items-center justify-center overflow-hidden cursor-pointer border border-light300 dark:border-dark300 text-xl"
                     onClick={() => navigate(`/profile/${authStore.userProfile?.id}`)}
                 >
-                    {!authStore.userProfile?.avatar && !authStore.userProfile?.profileImg && <LuUser2 />}
+                    {!authStore.userProfile?.avatar && !authStore.userProfile?.profileImg && <LuUser />}
 
                     {(authStore.userProfile?.profileImg || authStore.userProfile?.avatar) && (
                         <img
