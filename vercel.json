@@ -5,12 +5,12 @@
             "src": "apps/client/package.json",
             "use": "@vercel/static-build",
             "config": {
-                "distDir": "apps/client/dist"
+                "distDir": "dist"
             }
         }
     ],
     "routes": [
         { "handle": "filesystem" },
-        { "src": "/(.*)", "dest": "/index.html" }
+        { "src": "/(.*)", "dest": "apps/client/dist/index.html" }
     ]
 }
