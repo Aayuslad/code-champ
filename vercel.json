@@ -11,6 +11,6 @@
     ],
     "routes": [
         { "handle": "filesystem" },
-        { "src": "/(.*)", "dest": "apps/client/dist/index.html" }
+        { "src": "/(.*)", "dest": "dist/index.html" }
     ]
 }
