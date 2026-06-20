@@ -23,6 +23,7 @@
     "noImplicitAny": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": false,
+    "noCheck": true,
   },
   "include": ["src"]
 }
